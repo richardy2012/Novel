@@ -37,6 +37,7 @@ public class ReadTimeActivity extends BaseActivity implements ReadTimeAdapter.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_read_time);
+        setupMusicService();
         configure = NovelConfigureManager.getConfigure(getApplicationContext());
         sqLiteNovel = SQLiteNovel.getSqLiteNovel(getApplicationContext());
         ActionBar actionBar = getSupportActionBar();

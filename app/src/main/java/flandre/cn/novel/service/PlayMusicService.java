@@ -364,7 +364,7 @@ public class PlayMusicService extends Service {
     /**
      * 添加一首歌到播放列表
      */
-    private void addPlayQueue(long id) {
+    private boolean addPlayQueue(long id) {
         if (!playList.contains(id)) {
             if (playList.size() == 0) {
                 saveList.add(id);
@@ -375,7 +375,9 @@ public class PlayMusicService extends Service {
                 saveList.add(saveList.indexOf(songId) + 1, id);
                 playList.add(playPosition + 1, id);
             }
+            return playSongs.containsKey(id);
         }
+        return true;
     }
 
     /**
@@ -744,8 +746,8 @@ public class PlayMusicService extends Service {
         }
 
         @Override
-        public void addPlayQueue(long id) throws RemoteException {
-            mService.get().addPlayQueue(id);
+        public boolean addPlayQueue(long id) throws RemoteException {
+            return mService.get().addPlayQueue(id);
         }
 
         @Override

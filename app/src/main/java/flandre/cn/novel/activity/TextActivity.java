@@ -163,7 +163,7 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
 
     private void setLoad() {
         if (!loadIsAdd) {
-            loadDialogFragment.show(getSupportFragmentManager(), "dialog");
+            loadDialogFragment.show(getSupportFragmentManager(), "LoadDialog");
             loadIsAdd = true;
         }
     }
@@ -372,24 +372,25 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
     }
 
     private void setUpView(Bundle savedInstanceState) {
-        dialogFragment = new AlarmTriggerDialogFragment();
         popup = findViewById(R.id.popup);
         RelativeLayout relativeLayout = findViewById(R.id.viewPage);
         pageView = NovelConfigureManager.getPageView(this);
         pageView.setOnPageTurnListener(this);
         pageView.setPadding(26, 20, 29, 20);
         relativeLayout.addView(pageView);
-        if (savedInstanceState != null) {
+        if (savedInstanceState == null) {
             fragment = new TextPopupFragment();
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.add(R.id.popup, fragment, "TextPopupFragment");
             transaction.commit();
         }else {
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragment = (TextPopupFragment) getSupportFragmentManager().findFragmentByTag("TextPopupFragment");
+            fragmentTransaction.attach(fragment);
         }
+        dialogFragment = new AlarmTriggerDialogFragment();
         loadDialogFragment = new LoadDialogFragment();
         loadDialogFragment.setCancelable(false);
-        // loadDialogFragment.show(getSupportFragmentManager(), "dialog");
     }
 
     private void setUpText(Bundle savedInstanceState) {

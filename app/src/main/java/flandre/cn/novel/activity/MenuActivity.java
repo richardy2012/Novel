@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 章节选择界面
+ * 章节选择界面(应该做一个fragment的, 懒得改了)
  * 2019.12.8
  */
 public class MenuActivity extends BaseActivity implements AdapterView.OnItemClickListener {
@@ -32,7 +32,7 @@ public class MenuActivity extends BaseActivity implements AdapterView.OnItemClic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
-
+        setupMusicService();
 
         LinearLayout linearLayout = findViewById(R.id.layout);
         linearLayout.setBackgroundColor(NovelConfigureManager.getConfigure().getBackgroundColor());

@@ -302,12 +302,12 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
     @Override
     public synchronized void onDownloadFinish(NovelText novelText, String table, int id) {
         downloadInfo.setFinish(downloadInfo.getFinish() + 1);
+        sendDownloadFinishBroadcast();
         if (downloadInfo.getFinish() == downloadInfo.getCount()) {
             saveDownload(downloadInfo, SQLiteNovel.DOWNLOAD_FINISH, false);
             downloadInfo.setFinish(0);
             continueDownload();
         }
-        sendDownloadFinishBroadcast();
         if (novelText == null) return;
         ContentValues values = new ContentValues();
         values.put("text", novelText.getText().replace("\'", "\""));
@@ -364,7 +364,7 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
     /**
      * 发送下载广播
      */
-    private void sendDownloadFinishBroadcast() {
+    private synchronized void sendDownloadFinishBroadcast() {
         Intent intent = new Intent();
         intent.setAction(NovelService.DOWNLOAD_FINISH);
         intent.putExtra("count", downloadInfo.getCount());

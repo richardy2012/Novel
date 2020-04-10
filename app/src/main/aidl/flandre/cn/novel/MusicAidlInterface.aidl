@@ -22,7 +22,7 @@ interface MusicAidlInterface {
 
     long[] setPlayQueue(in long[] queue);
 
-    void addPlayQueue(long id);
+    boolean addPlayQueue(long id);
 
     void deletePlayQueue(long id);
 

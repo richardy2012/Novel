@@ -38,6 +38,7 @@ import java.util.List;
  * 2019.??
  */
 public class UserFragment extends AttachFragment implements UserAdapter.OnItemClick, FileParse.OnfinishParse {
+    public static final String TAG = "UserFragment";
     private LinearLayout top;
     private TextView todayRead;
     private TextView alarmRest;

@@ -1,6 +1,8 @@
 package flandre.cn.novel.info;
 
-public class NovelTextItem {
+import java.io.Serializable;
+
+public class NovelTextItem implements Serializable {
     private String chapter;
     private String url;
 

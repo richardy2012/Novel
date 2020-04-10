@@ -8,11 +8,8 @@ import flandre.cn.novel.interfaces.DownloadListener;
 import flandre.cn.novel.interfaces.MusicListener;
 
 public abstract class AttachFragment extends Fragment implements DownloadListener, MusicListener {
+    public static final String TAG = "";
     Context mContext;
-
-    public String getFragmentTag(){
-        return null;
-    }
 
     @Override
     public void onAttach(Context context) {

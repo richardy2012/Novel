@@ -30,6 +30,7 @@ import java.util.List;
  * 2019.??
  */
 public class BookFragment extends AttachFragment implements SwipeRefreshLayout.OnRefreshListener, NovelService.UpdateNovel {
+    public static final String TAG = "BookFragment";
     private BookAdapter bookAdapter;
     private SwipeRefreshLayout refresh;
     private SQLiteNovel sqLiteNovel;

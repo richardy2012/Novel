@@ -165,17 +165,16 @@ public class Sourceymoxuan extends BaseCrawler {
             }
 
             try {
-                Element element = doc.select("div.left > article.info").get(0);
-                Elements info = doc.select("div.left > article.info > p");
-                imgUrl = element.select("div.cover > img").get(0).attr("src");
+                Elements elements = doc.select("body > section > div.left > article.info");
+                imgUrl = elements.select("div.cover > img").attr("src");
 
-                novelInfo.setName(element.select(".line > h1").get(0).text());
-                novelInfo.setAuthor(info.get(0).select("i").get(0).text());
-                novelInfo.setComplete(info.get(0).select("i").get(1).text().contains("完本") ? 1 : 0);
-                novelInfo.setChapter(info.get(2).select("i > a").get(0).text());
-                novelInfo.setIntroduce(info.get(3).text());
+                novelInfo.setName(elements.select("header > h1").get(0).text());
+                novelInfo.setAuthor(elements.select("p.detail.pt20 > i:nth-child(1) > a").text());
+                novelInfo.setComplete(elements.select("p.detail.pt20 > i:nth-child(3)").text().contains("完本") ? 1 : 0);
+                novelInfo.setChapter(elements.select("p").get(2).select("i > a").select("i > a").text());
+                novelInfo.setIntroduce(elements.select("p.desc").text());
                 novelInfo.setSource(Sourceymoxuan.class.getName());
-                novelInfo.setUrl("https:" + element.select("footer > a").get(0).attr("href"));
+                novelInfo.setUrl("https:" + elements.select("footer > a").get(0).attr("href"));
 
                 getImage();
 

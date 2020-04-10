@@ -36,7 +36,7 @@ public class ConfigureThemeActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configure);
-
+        setupMusicService();
         configure = NovelConfigureManager.getConfigure(this.getApplicationContext());
 
         saveData = new String[]{

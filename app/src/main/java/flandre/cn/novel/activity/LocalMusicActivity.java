@@ -401,7 +401,9 @@ public class LocalMusicActivity extends BaseActivity {
                             switch (which) {
                                 case 0:
                                     try {
-                                        musicService.addPlayQueue(musicInfo.getSongId());
+                                        if (!musicService.addPlayQueue(musicInfo.getSongId())){
+                                            musicService.addPlayInfo(musicInfo.getSongId(), musicInfo);
+                                        }
                                     } catch (RemoteException e) {
                                         e.printStackTrace();
                                     }

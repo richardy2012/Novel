@@ -6,7 +6,6 @@ import android.os.*;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -16,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.*;
 import android.widget.*;
+import flandre.cn.novel.adapter.FragmentPagerAdapter;
 import flandre.cn.novel.fragment.*;
 import flandre.cn.novel.service.NovelService;
 import flandre.cn.novel.Tools.NovelConfigure;
@@ -60,24 +60,8 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
     private Handler handler;  // UI线程消息处理
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.remove(bookFragment);
-        transaction.remove(rankFragment);
-        transaction.remove(userFragment);
-        transaction.commitAllowingStateLoss();
-    }
-
-    /**
-     * 既然不想overwrite Adapter, 那干脆就不保存了
-     *
-     * @param outState
-     */
-    @SuppressLint("MissingSuperCall")
-    @Override
     protected void onSaveInstanceState(Bundle outState) {
-//        super.onSaveInstanceState(outState);
+        super.onSaveInstanceState(outState);
         outState.putLong("SaveTime", new Date().getTime());
         if (musicService != null)
             outState.putBoolean("isPlaying", isPlaying);
@@ -115,7 +99,7 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
 
         setupValues();
         setupTool();
-        setupPager();
+        setupPager(savedInstanceState);
         setTextListener();
         setupPopLeft();
         changePartly();
@@ -193,15 +177,21 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
         actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
     }
 
-    private void setupPager() {
+    private void setupPager(Bundle savedInstanceState) {
         pager.setOffscreenPageLimit(2);
         mainAdapter = new MainAdapter(getSupportFragmentManager());
-        bookFragment = new BookFragment();
-        rankFragment = new RankFragment();
-        userFragment = new UserFragment();
-        mainAdapter.addFragment(bookFragment);
-        mainAdapter.addFragment(rankFragment);
-        mainAdapter.addFragment(userFragment);
+        if (savedInstanceState  == null) {
+            bookFragment = new BookFragment();
+            rankFragment = new RankFragment();
+            userFragment = new UserFragment();
+        }else {
+            bookFragment = (BookFragment) getSupportFragmentManager().findFragmentByTag(BookFragment.TAG);
+            rankFragment = (RankFragment) getSupportFragmentManager().findFragmentByTag(RankFragment.TAG);
+            userFragment = (UserFragment) getSupportFragmentManager().findFragmentByTag(UserFragment.TAG);
+        }
+        mainAdapter.addFragment(bookFragment, BookFragment.TAG);
+        mainAdapter.addFragment(rankFragment, RankFragment.TAG);
+        mainAdapter.addFragment(userFragment, UserFragment.TAG);
         pager.setAdapter(mainAdapter);
         pager.setCurrentItem(0);
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -220,7 +210,6 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
 
             }
         });
-
     }
 
     private void setTextListener() {
@@ -361,7 +350,7 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.search:
                 // 点击放大镜时去搜索页面
@@ -515,8 +504,9 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
             super(fm);
         }
 
-        void addFragment(AttachFragment fragment) {
+        void addFragment(AttachFragment fragment, String tag) {
             list.add(fragment);
+            addTag(tag);
         }
 
         @Override
@@ -527,10 +517,6 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
         @Override
         public int getCount() {
             return list.size();
-        }
-
-        private String makeFragmentName(int viewId, long id) {
-            return "android:switcher:" + viewId + ":" + id;
         }
     }
 }
