@@ -51,12 +51,7 @@ public abstract class BaseActivity extends AppCompatActivity implements Download
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         // 设定加载图片
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                setScreen();
-            }
-        });
+        setScreen();
         super.onCreate(savedInstanceState);
         // 绑定接收者
         receiver = new Receiver();
@@ -162,7 +157,7 @@ public abstract class BaseActivity extends AppCompatActivity implements Download
     @Override
     protected void onResume() {
         super.onResume();
-        if (bindMusicEnable && !hasBindMusic){
+        if (bindMusicEnable && !hasBindMusic) {
             setupMusicService();
         }
         if (splashDialog != null) {

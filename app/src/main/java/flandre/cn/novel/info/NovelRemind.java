@@ -1,5 +1,8 @@
 package flandre.cn.novel.info;
 
+/**
+ * 搜索提示信息
+ */
 public class NovelRemind {
     private String name;
     private String chapter;

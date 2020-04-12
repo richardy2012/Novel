@@ -4,8 +4,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.util.Map;
-
 public class SQLiteNovel extends SQLiteOpenHelper {
     public static final int DOWNLOAD_PAUSE = 0;
     public static final int DOWNLOAD_WAIT = 1;
@@ -20,14 +18,14 @@ public class SQLiteNovel extends SQLiteOpenHelper {
     }
 
     public static SQLiteNovel getSqLiteNovel(Context context) {
-        if (sqLiteNovel == null){
+        if (sqLiteNovel == null) {
             sqLiteNovel = newInstance(context.getApplicationContext(), "novel.db", 2);
         }
         return sqLiteNovel;
     }
 
-    public static SQLiteNovel newInstance(Context context, String name, int version){
-        if (sqLiteNovel == null){
+    public static SQLiteNovel newInstance(Context context, String name, int version) {
+        if (sqLiteNovel == null) {
             sqLiteNovel = new SQLiteNovel(context, name, null, version);
         }
         return sqLiteNovel;

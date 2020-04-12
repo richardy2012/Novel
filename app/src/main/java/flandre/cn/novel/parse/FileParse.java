@@ -26,9 +26,10 @@ public class FileParse {
     public static final int OK = 1;
     private static final int ALWAYS = 0;
     private static final int ERROR = 2;
-    private  static final String[] CODE = new String[]{"utf8", "gbk", "utf16", "utf32", "ansi", "gb2312", "big5", "gb18030"};
+    private static final String[] CODE = new String[]{"utf8", "gbk", "utf16", "utf32", "ansi", "gb2312", "big5", "gb18030"};
     private final static String allChineseNum = "零一二三四五六七八九十百千万亿";
-    private static final String compile = "第[0-9零一二三四五六七八九十百千万亿]*?[章节]";
+    private final static String chineseUnit = "十百千万亿";
+    private static final String compile = "第[0-9零一二三四五六七八九十百千万亿两]*?[章节 ]";
 
     private Charset code;  // 编码格式
     private SQLiteNovel sqLiteNovel;
@@ -75,7 +76,7 @@ public class FileParse {
      */
     private void parseData() throws IOException {
         sqLiteNovel.freeStatus = false;
-        int read, lastLength,  start = result.length();
+        int read, lastLength, start = result.length();
         int now = parseInt(result.substring(1, result.length() - 1));  // 当前章节是第几章
         int next;  // 下一章节, 是第几章
         char[] buffer = new char[4092];
@@ -247,7 +248,7 @@ public class FileParse {
         end = stringBuffer.indexOf(result, start);
         if (start > 0 && end > 0) {
             introduce = strip(stringBuffer.substring(start, end), "\r\n -", "\r\n= -");
-        }else {
+        } else {
             introduce = "没有简介";
         }
         // 去除以解析部分
@@ -266,7 +267,7 @@ public class FileParse {
         for (String s1 : CODE) {
             try {
                 String s = new String(bytes, 0, read, Charset.forName(s1));
-                if (!s.substring(0, s.length() - 1).contains("�")) {
+                if (!s.substring(0, s.length() - 5).contains("�")) {
                     code = Charset.forName(s1);
                     stream.close();
                     return;
@@ -308,24 +309,61 @@ public class FileParse {
 
     /**
      * 把字符串的数字(阿拉伯以及中国)转换成数字
+     * 211, 二百一十一, 二百一一, 二一一
      */
     private int parseInt(String number) {
+        // 如果是数字的话直接转换成数字
         try {
             return Integer.parseInt(number);
         } catch (Exception ignored) {
         }
         int result = 0;
-        int result2 = 0;
-        boolean have = false;
-        int temp = 1;
-        for (int i = 0; i < number.length(); i++) {
-            char c = number.charAt(i);
-            int p = allChineseNum.indexOf(c);
-            if (p >= 10) have = true;
-            if (!have) {
-                if (i != 0) result2 *= 10;
-                result2 += p;
+        int i, j;
+        number = number.replace("两", "二");  // 把无法解析的两替换成二
+        Matcher matcher = Pattern.compile("[十百千万亿]").matcher(number);
+        // 如果没有出现中断零, 那么单位是没有作用的
+        if (!matcher.find() || !number.contains("零")) {
+            // 如果第一个是单位, 在前面加个一
+            if (chineseUnit.contains(number.substring(0, 1))) number = "一" + number;
+            // 如果最后的是单位的话, 把单位变成若干个零
+            if (chineseUnit.contains(number.substring(number.length() - 1))) {
+                j = chineseUnit.indexOf(number.charAt(number.length() - 1));
+                switch (j) {
+                    case 0:
+                        number = number + "零";
+                        break;
+                    case 1:
+                        number = number + "零零";
+                        break;
+                    case 2:
+                        number = number + "零零零";
+                        break;
+                    case 3:
+                        number = number + "零零零零";
+                        break;
+                    case 4:
+                        number = number + "零零零零零零零零";
+                        break;
+                    default:
+                        break;
+                }
             }
+            // 把单位替换掉
+            for (i = 0; i < chineseUnit.length(); i++) {
+                number = number.replace(chineseUnit.substring(i, i + 1), "");
+            }
+            // 转换成数字
+            for (i = 0; i < number.length(); i++) {
+                int p = allChineseNum.indexOf(number.charAt(i));
+                result *= 10;
+                result += p;
+            }
+            return result;
+        }
+        // 如果出现了中断零, 就得把单位也算上
+        int temp = 1;
+        for (i = 0; i < number.length(); i++) {
+            int p = allChineseNum.indexOf(number.charAt(i));
             if (p < 10) {
                 if (i != 0) result += temp;
                 temp = p;
@@ -352,10 +390,10 @@ public class FileParse {
             }
         }
         result += temp;
-        return have ? result : result2;
+        return result;
     }
 
-    static class ParseTask extends AsyncTask<Void, Void, Integer>{
+    static class ParseTask extends AsyncTask<Void, Void, Integer> {
         private FileParse mParse;
         private File file;
 
@@ -406,6 +444,7 @@ public class FileParse {
     public interface OnfinishParse {
         /**
          * 当解析完成时调用
+         *
          * @param mode 解析的情况
          */
         public void onFinishParse(int mode);

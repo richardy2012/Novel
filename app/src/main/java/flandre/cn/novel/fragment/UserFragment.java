@@ -3,6 +3,7 @@ package flandre.cn.novel.fragment;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -27,7 +28,7 @@ import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.adapter.UserAdapter;
 import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.Tools.Decoration;
-import flandre.cn.novel.Tools.Item;
+import flandre.cn.novel.info.Item;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class UserFragment extends AttachFragment implements UserAdapter.OnItemCl
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.user_fragment_layout, container, false);
         // 设置头部的圆形图片
         ImageView imageView = view.findViewById(R.id.image);

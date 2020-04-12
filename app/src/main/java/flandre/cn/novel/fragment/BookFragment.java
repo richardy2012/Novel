@@ -4,7 +4,7 @@ import android.content.*;
 import android.graphics.*;
 import android.os.Bundle;
 import android.os.Message;
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -68,7 +68,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.book_fragment_layout, container, false);
         empty = view.findViewById(R.id.empty);
         empty.setTextColor(NovelConfigureManager.getConfigure().getIntroduceTheme());
@@ -87,7 +87,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -151,12 +151,13 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
             notifyDataSetChanged();
         }
 
+        @NonNull
         @Override
-        public Holder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        public Holder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
             View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.index_list, viewGroup, false);
             view.setOnClickListener(this);
             view.setOnLongClickListener(this);
-            return new Holder(view, i);
+            return new Holder(view);
         }
 
         @Override
@@ -167,7 +168,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
             if (hasDelete != null) for (Integer p : hasDelete) if (p < base) position--;
             final NovelInfo novelInfo = data.get(position);
             IndexDialogFragment fragment = IndexDialogFragment.newInstance(novelInfo, base);
-            fragment.show(getFragmentManager(), "dialog");
+            fragment.show(getChildFragmentManager(), "dialog");
             return true;
         }
 
@@ -184,7 +185,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
         }
 
         @Override
-        public void onBindViewHolder(Holder viewHolder, int i) {
+        public void onBindViewHolder(@NonNull Holder viewHolder, int i) {
             NovelInfo novelInfo = data.get(i);
             viewHolder.itemView.setTag(i);
             viewHolder.image.setImageBitmap(BitmapFactory.decodeFile(novelInfo.getImagePath()));
@@ -204,7 +205,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
             ImageView image;
             TextView title, chapter;
 
-            Holder(final View itemView, final int i) {
+            Holder(final View itemView) {
                 super(itemView);
                 image = itemView.findViewById(R.id.image);
                 title = itemView.findViewById(R.id.title);

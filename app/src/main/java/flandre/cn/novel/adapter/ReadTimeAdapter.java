@@ -1,6 +1,5 @@
 package flandre.cn.novel.adapter;
 
-import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -25,15 +24,13 @@ import java.util.Map;
 public class ReadTimeAdapter extends RecyclerView.Adapter<ReadTimeAdapter.ItemHolder> implements View.OnClickListener {
     public List<WrapperNovelInfo> data;
     private OnItemClick listener;
-    private Context mContext;
 
     public void setListener(OnItemClick listener) {
         this.listener = listener;
     }
 
-    public ReadTimeAdapter(List<WrapperNovelInfo> data, Context context) {
+    public ReadTimeAdapter(List<WrapperNovelInfo> data) {
         this.data = data;
-        mContext = context;
     }
 
     public void update(List<WrapperNovelInfo> list) {
@@ -41,15 +38,16 @@ public class ReadTimeAdapter extends RecyclerView.Adapter<ReadTimeAdapter.ItemHo
         notifyDataSetChanged();
     }
 
+    @NonNull
     @Override
-    public ItemHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public ItemHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         // 当read不为空时表示创建的是一个详细信息
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.read_list, viewGroup, false);
         return new ItemHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ItemHolder holder, int i) {
+    public void onBindViewHolder(@NonNull ItemHolder holder, int i) {
         setItemData(holder, i);
     }
 
@@ -79,11 +77,11 @@ public class ReadTimeAdapter extends RecyclerView.Adapter<ReadTimeAdapter.ItemHo
             holder.minute_left.setText(new SimpleDateFormat("mm分").format(info.getStart()));
             if (info.getFinish() != 0) {
                 holder.finish.setText("完成时间");
-                holder.year_right.setText(new SimpleDateFormat("yyyy年").format(info.getStart()));
-                holder.month_right.setText(new SimpleDateFormat("MM月").format(info.getStart()));
-                holder.day_right.setText(new SimpleDateFormat("dd日").format(info.getStart()));
-                holder.hour_right.setText(new SimpleDateFormat("HH时").format(info.getStart()));
-                holder.minute_right.setText(new SimpleDateFormat("mm分").format(info.getStart()));
+                holder.year_right.setText(new SimpleDateFormat("yyyy年").format(info.getFinish()));
+                holder.month_right.setText(new SimpleDateFormat("MM月").format(info.getFinish()));
+                holder.day_right.setText(new SimpleDateFormat("dd日").format(info.getFinish()));
+                holder.hour_right.setText(new SimpleDateFormat("HH时").format(info.getFinish()));
+                holder.minute_right.setText(new SimpleDateFormat("mm分").format(info.getFinish()));
             }
             holder.watchChapter.setText(wrapperNovelInfo.getNowChapter());
             holder.watchLately.setText(NovelTools.resolver(new Date().getTime() - info.getTime()) + "前");

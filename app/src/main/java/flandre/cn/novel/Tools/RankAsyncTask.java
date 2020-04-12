@@ -7,7 +7,6 @@ import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.adapter.RankAdapter;
 import flandre.cn.novel.crawler.BaseCrawler;

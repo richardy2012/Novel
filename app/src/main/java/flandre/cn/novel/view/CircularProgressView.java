@@ -18,7 +18,6 @@ import flandre.cn.novel.R;
  * Author: JueYes jueyes_1024@163.com
  * Time: 2019-08-07 15:38
  */
-
 public class CircularProgressView extends View {
 
     private Paint mBackPaint, mProgPaint;   // 绘制画笔
@@ -73,7 +72,8 @@ public class CircularProgressView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int viewWide = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
         int viewHigh = getMeasuredHeight() - getPaddingTop() - getPaddingBottom();
-        int mRectLength = (int) ((viewWide > viewHigh ? viewHigh : viewWide) - (mBackPaint.getStrokeWidth() > mProgPaint.getStrokeWidth() ? mBackPaint.getStrokeWidth() : mProgPaint.getStrokeWidth()));
+        int mRectLength = (int) ((viewWide > viewHigh ? viewHigh : viewWide) - (mBackPaint.getStrokeWidth() >
+                mProgPaint.getStrokeWidth() ? mBackPaint.getStrokeWidth() : mProgPaint.getStrokeWidth()));
         int mRectL = getPaddingLeft() + (viewWide - mRectLength) / 2;
         int mRectT = getPaddingTop() + (viewHigh - mRectLength) / 2;
         mRectF = new RectF(mRectL, mRectT, mRectL + mRectLength, mRectT + mRectLength);

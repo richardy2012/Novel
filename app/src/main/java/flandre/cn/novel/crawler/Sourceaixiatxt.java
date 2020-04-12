@@ -52,7 +52,7 @@ public class Sourceaixiatxt extends BaseCrawler {
         Document document = crawlerGET(URL);
         Element element = document.select("#info").get(2);
         Elements items = element.select("div > ul > li");
-        for (Element item:items){
+        for (Element item : items) {
             NovelTextItem novelTextItem = new NovelTextItem();
             novelTextItem.setChapter(item.select("a").text());
             novelTextItem.setUrl(URL + item.select("a").attr("href"));
@@ -66,7 +66,7 @@ public class Sourceaixiatxt extends BaseCrawler {
         return run_text(URL, 1);
     }
 
-    private NovelText run_text(String URL, int times){
+    private NovelText run_text(String URL, int times) {
 
         Document document = crawlerGET(URL);
 
@@ -114,7 +114,7 @@ public class Sourceaixiatxt extends BaseCrawler {
         document.select("body > div:nth-child(3) > div.mpRight > div.fic_type_box > div.fic_type_tabcont > div > ul > li:nth-child(1)").remove();
         Elements elements = document.select("body > div:nth-child(3) > div.mpRight > div.fic_type_box > div.fic_type_tabcont > div > ul > li");
         Pattern pattern = Pattern.compile("《(.*?)》");
-        for (Element element:elements){
+        for (Element element : elements) {
             NovelRemind novelRemind = new NovelRemind();
             Matcher matcher = pattern.matcher(element.select("a.name").text());
             if (matcher.find() && matcher.groupCount() > 0)
@@ -139,24 +139,29 @@ public class Sourceaixiatxt extends BaseCrawler {
                 run(++times);
                 return;
             }
-            Elements elements = doc.select("body > div:nth-child(4) > div.show > div:nth-child(1) > div");
-            imgUrl = DOMAIN + elements.select("div.detail_pic > img").attr("src").substring(1);
-            Matcher matcher = Pattern.compile("《(.*?)》").matcher(elements.select("div.detail_info > div > h1").text());
-            if (matcher.find() && matcher.groupCount() > 0)
-                novelInfo.setName(matcher.group(1));
-            else return;
-            novelInfo.setAuthor(elements.select("div.detail_info > div > ul > li:nth-child(6)").text().substring(5));
-            novelInfo.setComplete(elements.select("div.detail_info > div > ul > li:nth-child(5)").text().contains("完本") ? 1 : 0);
-            novelInfo.setChapter(elements.select("div.detail_info > div > ul > li:nth-child(8) > a").text());
-            novelInfo.setIntroduce(doc.select("body > div:nth-child(4) > div.show > div:nth-child(2) > div.showInfo > p").text());
-            novelInfo.setSource(Sourceaixiatxt.class.getName());
-            novelInfo.setUrl(DOMAIN + doc.select("body > div:nth-child(4) > div.show > div:nth-child(4) " +
-                    "> div.showDown > ul > li:nth-child(1) > a").attr("href").substring(1));
 
-            getImage();
+            try {
+                Elements elements = doc.select("body > div:nth-child(4) > div.show > div:nth-child(1) > div");
+                imgUrl = DOMAIN + elements.select("div.detail_pic > img").attr("src").substring(1);
+                Matcher matcher = Pattern.compile("《(.*?)》").matcher(elements.select("div.detail_info > div > h1").text());
+                if (matcher.find() && matcher.groupCount() > 0)
+                    novelInfo.setName(matcher.group(1));
+                else return;
+                novelInfo.setAuthor(elements.select("div.detail_info > div > ul > li:nth-child(6)").text().substring(5));
+                novelInfo.setComplete(elements.select("div.detail_info > div > ul > li:nth-child(5)").text().contains("完本") ? 1 : 0);
+                novelInfo.setChapter(elements.select("div.detail_info > div > ul > li:nth-child(8) > a").text());
+                novelInfo.setIntroduce(doc.select("body > div:nth-child(4) > div.show > div:nth-child(2) > div.showInfo > p").text());
+                novelInfo.setSource(Sourceaixiatxt.class.getName());
+                novelInfo.setUrl(DOMAIN + doc.select("body > div:nth-child(4) > div.show > div:nth-child(4) " +
+                        "> div.showDown > ul > li:nth-child(1) > a").attr("href").substring(1));
 
-            if (rank != -1) list.set(rank, novelInfo);
-            else list.add(novelInfo);
+                getImage();
+
+                if (rank != -1) list.set(rank, novelInfo);
+                else list.add(novelInfo);
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override

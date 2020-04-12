@@ -1,12 +1,10 @@
 package flandre.cn.novel.activity;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.*;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -26,7 +24,7 @@ import flandre.cn.novel.Tools.Decoration;
 import flandre.cn.novel.R;
 import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.Tools.NovelAttr;
-import flandre.cn.novel.Tools.Item;
+import flandre.cn.novel.info.Item;
 
 import java.io.*;
 import java.util.*;
@@ -54,14 +52,15 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
     private ImageView imageView;  // 侧面弹出菜单头顶的图片
     private AlarmDialogFragment alarmDialogFragment;
     private MainAdapter mainAdapter;
-    private boolean isPlayMusic = false;
-    private boolean isPlaying = false;
+    private boolean isPlayMusic = false;  // 是否在服务准备好时自动播放音乐
+    private boolean isPlaying = false;  // 是否正在播放音乐
 
     private Handler handler;  // UI线程消息处理
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        // 保存当前时间与播放的状态
         outState.putLong("SaveTime", new Date().getTime());
         if (musicService != null)
             outState.putBoolean("isPlaying", isPlaying);
@@ -69,6 +68,7 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
 
     @Override
     void onServiceConnected(int service) {
+        // 分配模式的意外退出时, 会自动播放音乐
         if (service == BaseActivity.MUSIC_SERVICE_CONNECTED && isPlayMusic) {
             try {
                 musicService.play();

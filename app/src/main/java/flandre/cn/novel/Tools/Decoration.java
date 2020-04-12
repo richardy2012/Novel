@@ -3,24 +3,20 @@ package flandre.cn.novel.Tools;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import flandre.cn.novel.Tools.NovelAttr;
-import flandre.cn.novel.Tools.NovelConfigureManager;
 
 public class Decoration extends RecyclerView.ItemDecoration {
 
-    private final int[] ATTRS = new int[]{
+    private static final int[] ATTRS = new int[]{
             android.R.attr.listDivider
     };
     private Drawable mDivider;
-    Paint paint;
-
-    private int mOrientation;
+    private Paint paint;
 
     public Decoration(Context context) {
         // 拿到ListView的属性
@@ -31,7 +27,7 @@ public class Decoration extends RecyclerView.ItemDecoration {
     }
 
     @Override
-    public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
+    public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
         final int left = parent.getPaddingLeft();
         final int right = parent.getWidth() - parent.getPaddingRight();
         paint.setColor(NovelConfigureManager.getConfigure().getIntroduceTheme() & 0x22FFFFFF | 0x22000000);
@@ -50,7 +46,7 @@ public class Decoration extends RecyclerView.ItemDecoration {
     }
 
     @Override
-    public void getItemOffsets(Rect outRect, int itemPosition, RecyclerView parent) {
+    public void getItemOffsets(@NonNull Rect outRect, int itemPosition, @NonNull RecyclerView parent) {
         // 横屏或竖屏
         outRect.set(0, 0, 0, mDivider.getIntrinsicHeight());
     }

@@ -11,9 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -181,7 +179,7 @@ public class Sourceymoxuan extends BaseCrawler {
                 if (rank != -1) list.set(rank, novelInfo);
                 else list.add(novelInfo);
 
-            } catch (Exception e) {
+            } catch (NullPointerException e) {
                 e.printStackTrace();
             }
         }

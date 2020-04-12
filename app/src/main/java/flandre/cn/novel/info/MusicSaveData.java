@@ -1,5 +1,8 @@
 package flandre.cn.novel.info;
 
+/**
+ * 音乐保存信息
+ */
 public class MusicSaveData {
     private String saveList;
     private long songId;

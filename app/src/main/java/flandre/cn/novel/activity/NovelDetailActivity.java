@@ -11,10 +11,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.*;
 import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.NovelConfigure;
 import flandre.cn.novel.Tools.NovelConfigureManager;
@@ -109,6 +106,10 @@ public class NovelDetailActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void starBook(TextView readView, TextView textView) {
+        if (novelInfo.getSource() == null){
+            Toast.makeText(this, "请再次使用本地导入", Toast.LENGTH_SHORT).show();
+            return;
+        }
         // 把数据保存起来
         Bitmap bitmap = novelInfo.getBitmap();
         File imagePath = getImagePath();

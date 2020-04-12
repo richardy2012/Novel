@@ -1,5 +1,8 @@
 package flandre.cn.novel.info;
 
+/**
+ * 小说下载信息
+ */
 public class NovelDownloadInfo {
     private String table;
     private int novelId;

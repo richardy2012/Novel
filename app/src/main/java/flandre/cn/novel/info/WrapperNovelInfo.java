@@ -1,5 +1,8 @@
 package flandre.cn.novel.info;
 
+/**
+ * 小说详细信息
+ */
 public class WrapperNovelInfo {
     private NovelInfo info;
     private int count = 1;

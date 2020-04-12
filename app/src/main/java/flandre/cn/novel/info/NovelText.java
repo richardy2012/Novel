@@ -1,8 +1,10 @@
 package flandre.cn.novel.info;
 
-
 import java.io.Serializable;
 
+/**
+ * 小说文本信息
+ */
 public class NovelText implements Serializable {
     private String text;
     private String chapter;
@@ -21,26 +23,5 @@ public class NovelText implements Serializable {
 
     public void setChapter(String chapter) {
         this.chapter = chapter;
-    }
-
-    public static class WrapperNovelText {
-        private String table;
-        private NovelText novelText;
-
-        public String getTable() {
-            return table;
-        }
-
-        public void setTable(String table) {
-            this.table = table;
-        }
-
-        public NovelText getNovelText() {
-            return novelText;
-        }
-
-        public void setNovelText(NovelText novelText) {
-            this.novelText = novelText;
-        }
     }
 }

@@ -2,6 +2,7 @@ package flandre.cn.novel.fragment;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,7 +37,7 @@ public class LoadDialogFragment extends AttachDialogFragment implements Runnable
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.load_fragment_layout, container, false);
         imageView = view.findViewById(R.id.load);
         return view;

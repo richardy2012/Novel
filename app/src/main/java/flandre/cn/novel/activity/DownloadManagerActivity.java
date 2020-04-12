@@ -67,6 +67,9 @@ public class DownloadManagerActivity extends BaseActivity {
         loadData();
     }
 
+    /**
+     * 加载下载信息
+     */
     private void loadData() {
         List<NovelDownloadInfo> downloadInfo = SQLTools.getDownloadInfo(sqLiteNovel);
         if (downloadInfo.size() > 0) {
@@ -91,12 +94,14 @@ public class DownloadManagerActivity extends BaseActivity {
                 break;
         if (pos >= adapter.infos.size()) return;
         NovelDownloadInfo downloadInfo = adapter.infos.get(pos);
+        // 如果下载到了下一个任务, 重新导入
         if (downloadInfo.getStatus() != SQLiteNovel.DOWNLOAD_PAUSE) {
             loadData();
             return;
         }
         downloadInfo.setCount(downloadCount);
         downloadInfo.setFinish(downloadFinish);
+        // 下载完成时更新状态
         if (downloadCount == downloadFinish) {
             downloadInfo.setStatus(SQLiteNovel.DOWNLOAD_FINISH);
             ContentValues values = new ContentValues();
@@ -105,6 +110,7 @@ public class DownloadManagerActivity extends BaseActivity {
             values.put("status", downloadInfo.getStatus());
             sqLiteNovel.getReadableDatabase().update("download", values, "id = ?", new String[]{String.valueOf(downloadId)});
         }
+        // 这里有个小bug, 一直更新界面的话会消化不了用户的点击
         adapter.notifyDataSetChanged();
 //        adapter.notifyItemChanged(pos);
     }

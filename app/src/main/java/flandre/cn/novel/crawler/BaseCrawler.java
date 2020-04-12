@@ -10,10 +10,7 @@ import android.os.Message;
 import android.util.Log;
 import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.NovelTools;
-import flandre.cn.novel.info.NovelInfo;
-import flandre.cn.novel.info.NovelRemind;
-import flandre.cn.novel.info.NovelText;
-import flandre.cn.novel.info.NovelTextItem;
+import flandre.cn.novel.info.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -48,6 +45,8 @@ public abstract class BaseCrawler {
     public static final int MIDDLE_THREAD_COUNT = 2;  // 允许一般的线程数量
     public static final int MIN_THREAD_COUNT = 1;  // 允许开的最小线程数
 
+    private static final int TIMEOUT = 30 * 1000;
+
     String CHARSET;  // 网页的编码
     String DOMAIN;  // 网页的域名
     public int THREAD_COUNT = MAX_THREAD_COUNT;  // 使用的线程数量
@@ -63,13 +62,14 @@ public abstract class BaseCrawler {
     private void configureConn(HttpURLConnection connection) throws IOException {
         connection.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 " +
                 "(KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36");
-        connection.addRequestProperty("Connection", "keep-alive");
+//        connection.addRequestProperty("Connection", "keep-alive");
+        connection.addRequestProperty("Connection", "close");
         connection.addRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         connection.addRequestProperty("Referer", DOMAIN);
         connection.addRequestProperty("Origin:", DOMAIN);
         connection.setInstanceFollowRedirects(false);
-        connection.setConnectTimeout(1000 * 30);
-        connection.setReadTimeout(1000 * 30);
+        connection.setConnectTimeout(TIMEOUT);
+        connection.setReadTimeout(TIMEOUT);
         connection.connect();
     }
 
@@ -291,7 +291,7 @@ public abstract class BaseCrawler {
         @Override
         protected Void doInBackground(Void... voids) {
             Message message = new Message();
-            NovelText.WrapperNovelText wrapperNovelText = new NovelText.WrapperNovelText();
+            WrapperNovelText wrapperNovelText = new WrapperNovelText();
             try {
                 wrapperNovelText.setNovelText(mCrawler.run_text(URL));
             } catch (Exception e) {

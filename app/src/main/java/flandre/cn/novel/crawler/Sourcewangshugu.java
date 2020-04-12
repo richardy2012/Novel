@@ -69,7 +69,7 @@ public class Sourcewangshugu extends BaseCrawler {
         return run_text(URL, 1);
     }
 
-    private NovelText run_text(String URL, int times){
+    private NovelText run_text(String URL, int times) {
         Document document = crawlerGET(URL);
         if (document == null && times < 4) {
             return run_text(URL, ++times);
@@ -115,7 +115,7 @@ public class Sourcewangshugu extends BaseCrawler {
         Document document = crawlerGET(DOMAIN);
         document.select("#centeri > div > div.blockcontent > ul > li.more").remove();
         Elements elements = document.select("#centeri > div > div.blockcontent > ul > li");
-        for (Element element:elements){
+        for (Element element : elements) {
             NovelRemind novelRemind = new NovelRemind();
             novelRemind.setName(element.select("p.ul1 > a.poptext").text());
             novelRemind.setChapter(element.select("p.ul2 > a").text());
@@ -137,19 +137,23 @@ public class Sourcewangshugu extends BaseCrawler {
                 return;
             }
 
-            novelInfo.setName(doc.select("#content > dd:nth-child(2) > h1").get(0).text().split(" ")[0]);
-            novelInfo.setAuthor(doc.select("#at > tbody > tr:nth-child(1) > td:nth-child(4)").get(0).text().substring(1));
-            novelInfo.setComplete(doc.select("#at > tbody > tr:nth-child(1) > td:nth-child(6)").get(0).text().contains("连载") ? 0 : 1);
-            novelInfo.setIntroduce(doc.select("#content > dd:nth-child(7) > p:nth-child(3)").get(0).text());
-            novelInfo.setUrl(doc.select("#content > dd:nth-child(3) > div:nth-child(2) > p.btnlinks > a.read").attr("href"));
-            novelInfo.setSource(Sourcewangshugu.this.getClass().getName());
-            novelInfo.setChapter(doc.select("#content > dd:nth-child(7) > p:nth-child(7) > a").get(0).text());
-            if (imgUrl == null) {
-                imgUrl = doc.select("#content > dd:nth-child(3) > div:nth-child(1) > a > img").attr("src");
+            try {
+                novelInfo.setName(doc.select("#content > dd:nth-child(2) > h1").get(0).text().split(" ")[0]);
+                novelInfo.setAuthor(doc.select("#at > tbody > tr:nth-child(1) > td:nth-child(4)").get(0).text().substring(1));
+                novelInfo.setComplete(doc.select("#at > tbody > tr:nth-child(1) > td:nth-child(6)").get(0).text().contains("连载") ? 0 : 1);
+                novelInfo.setIntroduce(doc.select("#content > dd:nth-child(7) > p:nth-child(3)").get(0).text());
+                novelInfo.setUrl(doc.select("#content > dd:nth-child(3) > div:nth-child(2) > p.btnlinks > a.read").attr("href"));
+                novelInfo.setSource(Sourcewangshugu.this.getClass().getName());
+                novelInfo.setChapter(doc.select("#content > dd:nth-child(7) > p:nth-child(7) > a").get(0).text());
+                if (imgUrl == null) {
+                    imgUrl = doc.select("#content > dd:nth-child(3) > div:nth-child(1) > a > img").attr("src");
+                }
+                getImage();
+                if (rank != -1) list.set(rank, novelInfo);  // 因为是排行榜, 所以要确保位置不变
+                else list.add(novelInfo);
+            } catch (NullPointerException e) {
+                e.printStackTrace();
             }
-            getImage();
-            if (rank != -1) list.set(rank, novelInfo);  // 因为是排行榜, 所以要确保位置不变
-            else list.add(novelInfo);
         }
 
         @Override

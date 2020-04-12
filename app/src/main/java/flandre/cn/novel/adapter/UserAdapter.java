@@ -1,5 +1,6 @@
 package flandre.cn.novel.adapter;
 
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.NovelConfigureManager;
-import flandre.cn.novel.Tools.Item;
+import flandre.cn.novel.info.Item;
 
 import java.util.List;
 
@@ -29,15 +30,16 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.Holder> implem
         this.onItemClick = onItemClick;
     }
 
+    @NonNull
     @Override
-    public UserAdapter.Holder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public UserAdapter.Holder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.user_list, viewGroup, false);
         view.setOnClickListener(this);
         return new Holder(view);
     }
 
     @Override
-    public void onBindViewHolder(UserAdapter.Holder holder, int i) {
+    public void onBindViewHolder(@NonNull UserAdapter.Holder holder, int i) {
         Item item = list.get(i);
         holder.itemView.setTag(i);
         holder.imageView.setImageResource(item.getImageId());

@@ -3,12 +3,10 @@ package flandre.cn.novel.view;
 import android.content.Context;
 import android.graphics.*;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 public class SmoothPageView extends PageView {
     private static final int NORMAL_DRAW = 0;  // 普通作画

@@ -11,6 +11,10 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
+/**
+ * 拿到文件路径
+ * @author 百度
+ */
 public class PathParse {
     private Context mContext;
     private String path;

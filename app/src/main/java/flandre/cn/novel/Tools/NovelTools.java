@@ -1,20 +1,13 @@
 package flandre.cn.novel.Tools;
 
-import android.app.Notification;
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Build;
-import android.support.v4.app.NotificationCompat;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.database.SharedTools;
 
-import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.MessageDigest;

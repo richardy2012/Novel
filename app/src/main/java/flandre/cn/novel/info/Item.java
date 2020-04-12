@@ -1,4 +1,4 @@
-package flandre.cn.novel.Tools;
+package flandre.cn.novel.info;
 
 
 public class Item {

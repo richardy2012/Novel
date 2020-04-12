@@ -147,7 +147,10 @@ public class LocalMusicActivity extends BaseActivity {
         if (savedInstanceState == null) {
             musicControlerFragment = new MusicControlerFragment();
             getSupportFragmentManager().beginTransaction().add(R.id.control, musicControlerFragment, "ControlFragment").commit();
-        }else musicControlerFragment = (MusicControlerFragment) getSupportFragmentManager().findFragmentByTag("ControlFragment");
+        } else {
+            musicControlerFragment = (MusicControlerFragment) getSupportFragmentManager().findFragmentByTag("ControlFragment");
+            getSupportFragmentManager().beginTransaction().attach(musicControlerFragment);
+        }
         mDialogFragment = new MusicDialogFragment();
 
         setupRecycle();
@@ -235,7 +238,7 @@ public class LocalMusicActivity extends BaseActivity {
                         for (long l : queue) {
                             MusicInfo musicInfo = musicData.get(l);
                             if (musicInfo != null)
-                                musicInfos.add(musicData.get(l));
+                                musicInfos.add(musicInfo);
                         }
                         mDialogFragment.setInfos(musicInfos);
                         mDialogFragment.show(getSupportFragmentManager(), "MusicDialog");
@@ -401,7 +404,7 @@ public class LocalMusicActivity extends BaseActivity {
                             switch (which) {
                                 case 0:
                                     try {
-                                        if (!musicService.addPlayQueue(musicInfo.getSongId())){
+                                        if (!musicService.addPlayQueue(musicInfo.getSongId())) {
                                             musicService.addPlayInfo(musicInfo.getSongId(), musicInfo);
                                         }
                                     } catch (RemoteException e) {

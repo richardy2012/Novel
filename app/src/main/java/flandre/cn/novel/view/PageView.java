@@ -5,23 +5,20 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 import flandre.cn.novel.Tools.DisplayUtil;
-import flandre.cn.novel.database.SQLTools;
-import flandre.cn.novel.database.SQLiteNovel;
-import flandre.cn.novel.database.SharedTools;
-import flandre.cn.novel.info.NovelInfo;
 import flandre.cn.novel.info.NovelText;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
 
 import static flandre.cn.novel.activity.TextActivity.BufferChapterCount;
 
+/**
+ * 翻页的基类, 处理数据
+ */
 public abstract class PageView extends View {
     public static final int REDIRECT = 0;  // 跳转
     static final int NEXT = 1;  // 下一页
@@ -354,8 +351,8 @@ public abstract class PageView extends View {
         ArrayList<String> strings = textPosition.get(tp);
         for (int i = 1; i <= strings.size(); i++) {
             String[] mark = strings.get(i - 1).split(":");
-            canvas.drawText(text, Integer.valueOf(mark[0]), Integer.valueOf(mark[1]), leftPadding + paddingLeft,
-                    paddingTop + i * (size + rowSpace) - rowSpace, textPaint);
+            canvas.drawText(text, Integer.valueOf(mark[0]), Integer.valueOf(mark[1]), leftPadding +
+                    paddingLeft, paddingTop + i * (size + rowSpace) - rowSpace, textPaint);
         }
     }
 

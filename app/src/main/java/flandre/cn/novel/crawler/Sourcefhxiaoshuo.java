@@ -11,12 +11,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.min;
 
@@ -181,11 +178,9 @@ public class Sourcefhxiaoshuo extends BaseCrawler {
                 getImage();
 
                 list.add(novelInfo);
-            } catch (Exception e) {
+            } catch (NullPointerException e) {
                 e.printStackTrace();
             }
-
-
         }
 
         @Override

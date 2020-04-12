@@ -2,6 +2,9 @@ package flandre.cn.novel.info;
 
 import java.io.Serializable;
 
+/**
+ * 小说文本网址
+ */
 public class NovelTextItem implements Serializable {
     private String chapter;
     private String url;

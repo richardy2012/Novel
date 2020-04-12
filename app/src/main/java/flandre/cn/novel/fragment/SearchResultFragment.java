@@ -20,6 +20,7 @@ import android.widget.Toast;
 import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.Decoration;
 import flandre.cn.novel.Tools.NovelConfigureManager;
+import flandre.cn.novel.activity.ConfigureSourceActivity;
 import flandre.cn.novel.activity.NovelDetailActivity;
 import flandre.cn.novel.activity.SearchActivity;
 import flandre.cn.novel.crawler.BaseCrawler;
@@ -31,9 +32,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.List;
 
-public class SearchResultFragment extends AttachFragment {
+public class SearchResultFragment extends AttachFragment implements View.OnClickListener {
     private ResultAdapter resultAdapter;
     private View search_result;
+    private TextView changeSource;
 
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
@@ -46,6 +48,9 @@ public class SearchResultFragment extends AttachFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         search_result = inflater.inflate(R.layout.search_result, container, false);
         search_result.setTag("result");
+        changeSource = search_result.findViewById(R.id.changeSource);
+        changeSource.setTextColor(NovelConfigureManager.getConfigure().getIntroduceTheme());
+        changeSource.setOnClickListener(this);
         LinearLayoutManager manager = new LinearLayoutManager(mContext);
         manager.setOrientation(LinearLayoutManager.VERTICAL);
         resultAdapter = new ResultAdapter(null);
@@ -59,6 +64,12 @@ public class SearchResultFragment extends AttachFragment {
 
     public void runSearch(String text) {
         new SearchTask(this).execute(text);
+    }
+
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent(mContext, ConfigureSourceActivity.class);
+        startActivity(intent);
     }
 
     static class SearchTask extends AsyncTask<String, Void, List<NovelInfo>> {
@@ -109,9 +120,13 @@ public class SearchResultFragment extends AttachFragment {
             SearchActivity mContext = (SearchActivity) mFragment.get().mContext;
             // 如果搜索成功显示数据, 如果网络存在问题显示提示页面
             if (list != null) {
+                mFragment.get().changeSource.setVisibility(View.GONE);
                 if (mContext.getRemindFragment().getUserVisibleHint()) {
                     mContext.getRemindFragment().setUserVisibleHint(false);
                     mContext.getResultFragment().setUserVisibleHint(true);
+                }
+                if (list.size() == 0){
+                    mFragment.get().changeSource.setVisibility(View.VISIBLE);
                 }
                 // 显示到界面
                 mFragment.get().resultAdapter.update(list);
@@ -170,11 +185,11 @@ public class SearchResultFragment extends AttachFragment {
         @Override
         public void onClick(View v) {
             NovelInfo novelInfo = list.get((Integer) v.getTag()).copy();
-            Bitmap bitmap = novelInfo.getBitmap();
+//            Bitmap bitmap = novelInfo.getBitmap();
             Intent intent = new Intent(mContext, NovelDetailActivity.class);
             Bundle bundle = new Bundle();
             bundle.putSerializable("NovelInfo", novelInfo);
-            novelInfo.setBitmap(bitmap);
+//            novelInfo.setBitmap(bitmap);
             intent.putExtras(bundle);
             startActivity(intent);
         }

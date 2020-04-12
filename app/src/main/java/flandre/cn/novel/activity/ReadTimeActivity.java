@@ -60,7 +60,7 @@ public class ReadTimeActivity extends BaseActivity implements ReadTimeAdapter.On
         manager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(manager);
         recyclerView.addItemDecoration(new Decoration(this));
-        adapter = new ReadTimeAdapter(null, this);
+        adapter = new ReadTimeAdapter(null);
         adapter.setListener(this);
         recyclerView.setAdapter(adapter);
         recyclerView.setNestedScrollingEnabled(false);

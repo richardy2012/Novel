@@ -14,6 +14,7 @@ import flandre.cn.novel.fragment.AlarmTriggerDialogFragment;
 import flandre.cn.novel.info.NovelInfo;
 import flandre.cn.novel.info.NovelText;
 import flandre.cn.novel.info.NovelTextItem;
+import flandre.cn.novel.info.WrapperNovelText;
 import flandre.cn.novel.service.NovelService;
 import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.NovelConfigureManager;
@@ -177,9 +178,9 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
         String table = null;
         int position = message.arg1;
         NovelText novelText;
-        if (message.obj instanceof NovelText.WrapperNovelText) {
-            table = ((NovelText.WrapperNovelText) message.obj).getTable();
-            novelText = ((NovelText.WrapperNovelText) message.obj).getNovelText();
+        if (message.obj instanceof WrapperNovelText) {
+            table = ((WrapperNovelText) message.obj).getTable();
+            novelText = ((WrapperNovelText) message.obj).getNovelText();
         } else {
             novelText = (NovelText) message.obj;
         }

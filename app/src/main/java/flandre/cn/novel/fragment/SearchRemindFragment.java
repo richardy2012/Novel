@@ -180,7 +180,8 @@ public class SearchRemindFragment extends AttachFragment {
         public void onClick(View v) {
             int pos = (int) v.getTag();
             if (!((SearchActivity) mContext).getRefreshLayout().isRefreshing())
-                ((SearchActivity) mContext).getSearchView().setQuery(list.get(pos).getName(), ((SearchActivity) mContext).getSearchView().isSubmitButtonEnabled());
+                ((SearchActivity) mContext).getSearchView().setQuery(list.get(pos).getName(),
+                        ((SearchActivity) mContext).getSearchView().isSubmitButtonEnabled());
             else
                 Toast.makeText(mContext, "搜索紧啊，扑街！", Toast.LENGTH_SHORT).show();
         }

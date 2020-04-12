@@ -11,6 +11,8 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.widget.RemoteViews;
 import flandre.cn.novel.MusicAidlInterface;
 import flandre.cn.novel.R;
@@ -70,15 +72,19 @@ public class PlayMusicService extends Service {
     private boolean isShowNotification = false;  // 是否显示了通知栏
     private int mode = -1;  // 通知栏的当前状态
     private Receiver receiver = null;  // 广播的接收者
+    private boolean isContinuePlay = false;  // 电话结束后是否继续播放音乐
+    private PhoneListener phoneListener;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        // 设置音乐的数据
         mBinder = new ServiceStub(this);
         playList = new ArrayList<>();
         saveList = new ArrayList<>();
         musicPlay = new MusicPlay(this);
         loadData();
+        // 设置好通知栏和广播
         receiver = new Receiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(PlayMusicService.NOTIFICATION_NEXT);
@@ -89,6 +95,10 @@ public class PlayMusicService extends Service {
         registerReceiver(receiver, filter);
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (isShowNotification) setNotification();
+        // 设置好电话接收器
+        phoneListener = new PhoneListener();
+        TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        tmgr.listen(phoneListener, PhoneStateListener.LISTEN_CALL_STATE);
     }
 
     /**
@@ -558,6 +568,8 @@ public class PlayMusicService extends Service {
 
     @Override
     public void onDestroy() {
+        TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        tmgr.listen(phoneListener, 0);
         super.onDestroy();
         if (receiver != null)
             unregisterReceiver(receiver);
@@ -568,6 +580,30 @@ public class PlayMusicService extends Service {
         musicPlay.release();
         musicPlay.currentMediaPlayer = null;
         changeNotification(PlayMusicService.NOTIFICATION_CREATE);
+    }
+
+    class PhoneListener extends PhoneStateListener {
+        @Override
+        public void onCallStateChanged(int state, String phoneNumber) {
+            switch (state){
+                case TelephonyManager.CALL_STATE_RINGING:
+                    // 响铃时
+                case TelephonyManager.CALL_STATE_OFFHOOK:
+                    // 摘机时
+                    if (isPlaying()){
+                        isContinuePlay = true;
+                        pause();
+                    }
+                    break;
+                case TelephonyManager.CALL_STATE_IDLE:
+                    // 电话结束时
+                    if (isContinuePlay){
+                        play();
+                        isContinuePlay = false;
+                    }
+                    break;
+            }
+        }
     }
 
     private class Receiver extends BroadcastReceiver {

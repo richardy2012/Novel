@@ -3,6 +3,9 @@ package flandre.cn.novel.info;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * 音乐信息
+ */
 public class MusicInfo implements Parcelable {
     private long songId = -1;
     private int duration;

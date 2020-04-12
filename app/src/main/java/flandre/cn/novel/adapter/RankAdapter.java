@@ -1,6 +1,6 @@
 package flandre.cn.novel.adapter;
 
-import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +12,6 @@ import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.info.NovelInfo;
 
 import java.util.List;
-import java.util.Map;
 
 public class RankAdapter extends RecyclerView.Adapter<RankAdapter.Holder> implements View.OnClickListener{
     private List<NovelInfo> data;
@@ -39,15 +38,16 @@ public class RankAdapter extends RecyclerView.Adapter<RankAdapter.Holder> implem
         this.listen = listen;
     }
 
+    @NonNull
     @Override
-    public Holder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public Holder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.rank_list, viewGroup, false);
         view.setOnClickListener(this);
         return new Holder(view);
     }
 
     @Override
-    public void onBindViewHolder(Holder holder, int i) {
+    public void onBindViewHolder(@NonNull Holder holder, int i) {
         holder.itemView.setTag(i);
         NovelInfo novelInfo = data.get(i);
         if (novelInfo == null) return;

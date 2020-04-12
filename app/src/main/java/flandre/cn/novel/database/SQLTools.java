@@ -2,10 +2,8 @@ package flandre.cn.novel.database;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.Tools.NovelTools;
 import flandre.cn.novel.info.NovelDownloadInfo;
 import flandre.cn.novel.info.NovelInfo;
@@ -27,7 +25,6 @@ public class SQLTools {
         ContentValues values = new ContentValues();
         values.put("time", new Date().getTime());
         readableDatabase.update("novel", values, "id=?", new String[]{String.valueOf(id)});
-        readableDatabase.close();
     }
 
     /**

@@ -2,7 +2,6 @@ package flandre.cn.novel.serializable;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 public class SelectList<T> implements Serializable {
     private List<T> list;

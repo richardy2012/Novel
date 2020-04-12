@@ -6,6 +6,9 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
+/**
+ * 正常的翻页
+ */
 public class NormalPageView extends PageView {
     private int x, y;
 

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,7 +24,7 @@ import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.activity.NovelDetailActivity;
 import flandre.cn.novel.activity.TextActivity;
-import flandre.cn.novel.Tools.Item;
+import flandre.cn.novel.info.Item;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +83,7 @@ public class IndexDialogFragment extends AttachDialogFragment implements PopUpAd
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         //设置无标题
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         Window window = getDialog().getWindow();
@@ -119,7 +120,7 @@ public class IndexDialogFragment extends AttachDialogFragment implements PopUpAd
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         view.setBackgroundColor(NovelConfigureManager.getConfigure().getBackgroundTheme());
     }

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.view.*;
 import android.widget.*;
 import flandre.cn.novel.database.SQLTools;
@@ -42,7 +43,7 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.popup_fragment, container, false);
         download = view.findViewById(R.id.download_progress);
         setupTool(view);
@@ -148,7 +149,7 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
             public void onClick(View v) {
                 DownloadDialogFragment fragment = new DownloadDialogFragment();
                 fragment.setListener(TextPopupFragment.this);
-                fragment.show(getFragmentManager(), "dialog");
+                fragment.show(getChildFragmentManager(), "dialog");
             }
         });
 
