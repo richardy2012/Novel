@@ -76,8 +76,8 @@ public class Sourcewangshugu extends BaseCrawler {
         }
         NovelText novelText = new NovelText();
         novelText.setChapter(document.select("#amain > dl > dd:nth-child(2) > h1").get(0).text());
-        novelText.setText(document.select("#contents").html().replace("&nbsp;", " ")
-                .replace("\n<br> \n<br> ", "\n"));
+        novelText.setText(withBr(document, "#contents", " ", "")
+                .replace(BR_REPLACEMENT, "").replace("\n\n", "\n"));
         return novelText;
     }
 

@@ -75,7 +75,7 @@ public class Sourceaixiatxt extends BaseCrawler {
         }
         document.select("#center_tip").remove();
         NovelText novelText = new NovelText();
-        novelText.setText(document.select("#content1").html().replace("\n<br> \n<br>", "\n").replace("&nbsp;", " "));
+        novelText.setText(withBr(document, "#content1", " ", "").replace(BR_REPLACEMENT, ""));
         novelText.setChapter(document.select("#info > div > h1").text());
         return novelText;
     }

@@ -85,7 +85,7 @@ public class ReadTimeAdapter extends RecyclerView.Adapter<ReadTimeAdapter.ItemHo
             }
             holder.watchChapter.setText(wrapperNovelInfo.getNowChapter());
             holder.watchLately.setText(NovelTools.resolver(new Date().getTime() - info.getTime()) + "前");
-            holder.source.setText(NovelConfigureManager.novelSource.get(info.getSource()));
+            holder.source.setText(info.getSource() != null ? NovelConfigureManager.novelSource.get(info.getSource()) : "本地导入");
             holder.watchTime.setText(NovelTools.resolver(info.getRead()));
             holder.status.setText(info.getComplete() == 1 ? "已完结" : "连载中");
             setBottomItemTheme(holder);

@@ -177,7 +177,8 @@ public class Sourcefhxiaoshuo extends BaseCrawler {
 
                 getImage();
 
-                list.add(novelInfo);
+                if (rank != -1) list.set(rank, novelInfo);
+                else list.add(novelInfo);
             } catch (NullPointerException e) {
                 e.printStackTrace();
             }

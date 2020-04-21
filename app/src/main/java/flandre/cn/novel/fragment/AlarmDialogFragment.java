@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.NovelConfigureManager;
+import flandre.cn.novel.Tools.NovelTools;
 import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.database.SharedTools;
 import flandre.cn.novel.Tools.Decoration;
@@ -107,6 +108,7 @@ public class AlarmDialogFragment extends AttachDialogFragment {
                 case 6:
                     sharedTools = new SharedTools(mContext);
                     sharedTools.setAlarm(600 * pos * 1000);
+                    Toast.makeText(mContext, "闹钟将在" + NovelTools.resolver(600 * pos * 1000) + "后提示", Toast.LENGTH_SHORT).show();
                     break;
                 case 7:
                     Toast.makeText(mContext, "开发者认为你不需要这个功能", Toast.LENGTH_SHORT).show();

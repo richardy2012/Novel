@@ -91,13 +91,10 @@ public class Sourceymoxuan extends BaseCrawler {
             return run_text(URL, ++times);
         }
 
-        Element text = document.select("#content").get(0);
-        text.select("script").remove();
-
-        String data = text.html().replace("<br>", "\n").replace("\n\n", "\n");
+        document.select("#content script").remove();
 
         NovelText novelText = new NovelText();
-        novelText.setText(data);
+        novelText.setText(withBr(document, "#content").replace("\n\n", "\n"));
         novelText.setChapter(document.select("#a3 > header > h1").get(0).text());
 
         return novelText;
@@ -170,7 +167,7 @@ public class Sourceymoxuan extends BaseCrawler {
                 novelInfo.setAuthor(elements.select("p.detail.pt20 > i:nth-child(1) > a").text());
                 novelInfo.setComplete(elements.select("p.detail.pt20 > i:nth-child(3)").text().contains("完本") ? 1 : 0);
                 novelInfo.setChapter(elements.select("p").get(2).select("i > a").select("i > a").text());
-                novelInfo.setIntroduce(elements.select("p.desc").text());
+                novelInfo.setIntroduce(withBr(elements, "p.desc", "", "\n"));
                 novelInfo.setSource(Sourceymoxuan.class.getName());
                 novelInfo.setUrl("https:" + elements.select("footer > a").get(0).attr("href"));
 

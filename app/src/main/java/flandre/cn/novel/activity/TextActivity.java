@@ -486,6 +486,7 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
         if (alarm != AlarmDialogFragment.NO_ALARM_STATE)
             if (alarm - addTime <= 0) {
                 sharedTools.setAlarm(AlarmDialogFragment.NO_ALARM_STATE);
+                dialogFragment.setForce(NovelConfigureManager.getConfigure().isAlarmForce());
                 dialogFragment.show(getSupportFragmentManager(), "AlarmTrigger");
             } else sharedTools.setAlarm(alarm - addTime);
         sharedTools.setTodayRead(addTime);
@@ -526,7 +527,7 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
     public void changeTheme() {
         pageView.setTextSize(NovelConfigureManager.getConfigure().getTextSize());
         pageView.setTextColor(NovelConfigureManager.getConfigure().getTextColor());
-        pageView.setDescriptionColor(NovelConfigureManager.getConfigure().getIntroduceTheme());
+        pageView.setDescriptionColor(NovelConfigureManager.getConfigure().getChapterColor());
         pageView.setColor(NovelConfigureManager.getConfigure().getBackgroundColor());
         pageView.setAlwaysNext(NovelConfigureManager.getConfigure().isAlwaysNext());
         pageView.update();

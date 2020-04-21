@@ -30,9 +30,6 @@ public class MenuAdapter extends NovelAdapter<String> {
             viewHolder = (ViewHolder) view.getTag();
         }
         viewHolder.item.setText(map.get("chapter"));
-//        if (Integer.parseInt(map.get("id")) == NovelAttr.textActivity.getChapter()){
-//            viewHolder.item.setTextColor(Color.parseColor("#909090"));
-//        }
         return view;
     }
 

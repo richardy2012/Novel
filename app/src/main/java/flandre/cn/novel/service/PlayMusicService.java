@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.provider.MediaStore;
@@ -120,7 +121,6 @@ public class PlayMusicService extends Service {
 
     /**
      * 改变通知栏的状态
-     * @param mode
      */
     private void changeNotification(int mode) {
         switch (mode) {
@@ -612,6 +612,7 @@ public class PlayMusicService extends Service {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             assert action != null;
+            // 这里有个小bug, 当长事件挂后台时, 点击控件播放音乐时, 控件不会刷新
             switch (action) {
                 case PlayMusicService.NOTIFICATION_PLAY_PAUSE:
                     if (isPlaying()) pause();
