@@ -21,10 +21,10 @@ import java.util.concurrent.Executors;
 
 import static java.lang.Math.min;
 
-public class Sourcebiquta extends BaseCrawler {
+public class SourceBiquta extends BaseCrawler {
     private List<NovelInfo> list;
 
-    public Sourcebiquta(Activity activity, Handler handler) {
+    public SourceBiquta(Activity activity, Handler handler) {
         super(activity, handler);
         this.CHARSET = "UTF8";
         this.DOMAIN = "https://www.biquta.la/";
@@ -186,7 +186,7 @@ public class Sourcebiquta extends BaseCrawler {
                 novelInfo.setAuthor(data.select("p").get(0).text().substring(5));
                 novelInfo.setComplete(new Date().getTime() - ts > 14 * 60 * 60 * 1000 * 24 ? 1 : 0);
                 novelInfo.setIntroduce(doc.select("#intro").text());
-                novelInfo.setSource(Sourcebiquta.this.getClass().getName());
+                novelInfo.setSource(SourceBiquta.this.getClass().getName());
                 novelInfo.setUrl(doc.baseUri());
                 novelInfo.setChapter(data.select("p").get(3).select("a").text());
 

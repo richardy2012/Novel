@@ -38,7 +38,6 @@ public class NovelConfigure implements Serializable {
 
     private String nowPageView = NormalPageView.class.getName();  // 当前使用的翻页
     private boolean isAlwaysNext = false;  // 是否全屏点击下一页
-    private boolean isAlarmForce = false;  // 小说闹钟是否强迫休息
 
     public NovelConfigure(){
         // 加载夜间模式
@@ -56,15 +55,6 @@ public class NovelConfigure implements Serializable {
             novelConfigure.setNovelConfigure(this);
             novelConfigure.setMode(NovelConfigure.NIGHT);
         }
-    }
-
-    public boolean isAlarmForce() {
-        return isAlarmForce;
-    }
-
-    public void setAlarmForce(boolean alarmForce) {
-        isAlarmForce = alarmForce;
-        novelConfigure.isAlarmForce = alarmForce;
     }
 
     public NovelConfigure getNovelConfigure() {

@@ -1,12 +1,9 @@
 package flandre.cn.novel;
 
-import android.net.Uri;
 import android.service.autofill.FieldClassification;
 import android.speech.tts.TextToSpeech;
-import org.jsoup.Connection;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.net.*;
 import java.util.Date;
 import java.util.HashMap;
@@ -22,13 +19,13 @@ import java.util.regex.Pattern;
 public class ExampleUnitTest {
 
     @Test
-    public void addition_isCorrect() throws IOException {
-        URL url = new URL("https://www.kutun.net/book/122615/");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setDoOutput(false);
-        connection.connect();
-        connection.getInputStream();
+    public void addition_isCorrect() {
+        Pattern pattern = Pattern.compile("《(.*?)》");
+        Matcher matcher = pattern.matcher("《帝霸》全集下载");
+        matcher.find();
+        System.out.println(matcher.groupCount());
+        System.out.println(matcher.group(0));
+        System.out.println(matcher.group(1));
     }
 
 }

@@ -8,11 +8,11 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.view.*;
 import android.widget.*;
-import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.database.SQLTools;
 import flandre.cn.novel.info.NovelDownloadInfo;
 import flandre.cn.novel.info.NovelTextItem;
 import flandre.cn.novel.R;
+import flandre.cn.novel.Tools.NovelAttr;
 import flandre.cn.novel.Tools.NovelConfigure;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.activity.ConfigureThemeActivity;
@@ -29,7 +29,7 @@ import java.util.List;
  * 点击TextActivity中间时的弹出框
  * 2019.??
  */
-public class TextPopupFragment extends AttachFragment implements DownloadDialogFragment.onDownloadListener, View.OnClickListener{
+public class TextPopupFragment extends AttachFragment implements DownloadDialogFragment.onDownloadListener{
     private TextView textView;
     private TextView download;
     private ImageView imageView;
@@ -45,9 +45,6 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.popup_fragment, container, false);
-        // 消化好点击事件
-        view.findViewById(R.id.top).setOnClickListener(this);
-        view.findViewById(R.id.bottom).setOnClickListener(this);
         download = view.findViewById(R.id.download_progress);
         setupTool(view);
         setupSeekBar(view);
@@ -139,9 +136,7 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
                         imageView.setBackground(mContext.getResources().getDrawable(R.drawable.day));
                         textView.setText("日间");
                     }
-                    Intent intent = new Intent();
-                    intent.setAction(IndexActivity.CHANGE_THEME);
-                    mContext.sendBroadcast(intent);
+                    NovelAttr.changeThemeEnable = true;
                     ((TextActivity)mContext).changeTheme();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -201,10 +196,5 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
     public void onDestroy() {
         super.onDestroy();
         ((TextActivity)mContext).removeDownloadFinishListener(this);
-    }
-
-    @Override
-    public void onClick(View v) {
-
     }
 }

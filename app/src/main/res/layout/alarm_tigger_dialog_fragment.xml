@@ -35,9 +35,8 @@
             android:layout_marginBottom="40dp">
 
         <TextView
-                android:id="@+id/countdown"
                 android:layout_above="@id/bottom"
-                android:text="剩下 120 秒"
+                android:text="↑↑↑↑"
                 android:textColor="#AAFFFFFF"
                 android:textSize="50sp"
                 android:textAlignment="center"
@@ -50,6 +49,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="45sp"
                 android:textColor="#AAFFFFFF"
+                android:text="上滑关闭"
                 android:textAlignment="center"/>
     </LinearLayout>
 

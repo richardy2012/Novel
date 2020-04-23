@@ -37,16 +37,12 @@ public class NovelConfigureManager {
             put("source", Sourceaixiatxt.class.getName());
         }});
         add(new HashMap<String, String>(){{
-            put("name", "妙笔文学 www.mbtxt.cc");
-            put("source", Sourcembtxt.class.getName());
-        }});
-        add(new HashMap<String, String>() {{
-            put("name", "轻小说 www.linovelib.com");
-            put("source", Sourcelinovelib.class.getName());
-        }});
-        add(new HashMap<String, String>(){{
             put("name", "凤凰小说 www.fhxiaoshuo.org");
             put("source", Sourcefhxiaoshuo.class.getName());
+        }});
+        add(new HashMap<String, String>(){{
+            put("name", "妙笔文学 www.mbtxt.cc");
+            put("source", Sourcembtxt.class.getName());
         }});
         add(new HashMap<String, String>() {{
             put("name", "铅笔小说 www.x23qb.com(备用)");
@@ -54,19 +50,18 @@ public class NovelConfigureManager {
         }});
         add(new HashMap<String, String>() {{
             put("name", "笔趣塔 www.biquta.la(废弃)");
-            put("source", Sourcebiquta.class.getName());
+            put("source", SourceBiquta.class.getName());
         }});
     }};
 
     public static Map<String, String> novelSource = new HashMap<String, String>() {{
         put(Sourcex23qb.class.getName(), "铅笔小说(www.x23qb.com)");
         put(Sourceymoxuan.class.getName(), "衍墨轩(www.ymoxuan.com)");
-        put(Sourcebiquta.class.getName(), "笔趣塔(www.biquta.la)");
+        put(SourceBiquta.class.getName(), "笔趣塔(www.biquta.la)");
         put(Sourcewangshugu.class.getName(), "望书阁(www.wangshugu.com)");
         put(Sourcefhxiaoshuo.class.getName(), "凤凰小说(www.fhxiaoshuo.org)");
         put(Sourceaixiatxt.class.getName(), "手机小说(www.aixiatxt.com)");
         put(Sourceaixiatxt.class.getName(), "妙笔文学(www.mbtxt.cc)");
-        put(Sourceaixiatxt.class.getName(), "轻小说(www.linovelib.com)");
     }};
 
     private final static List<Map<String, String>> pageView = new ArrayList<Map<String, String>>() {{

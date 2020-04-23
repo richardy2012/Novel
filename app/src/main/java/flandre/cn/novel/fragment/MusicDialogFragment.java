@@ -66,7 +66,7 @@ public class MusicDialogFragment extends AttachDialogFragment {
     }
 
     private void setupView(View view) {
-        view.findViewById(R.id.top).setBackgroundColor(NovelConfigureManager.getConfigure().getBackgroundTheme());
+        view.setBackgroundColor(NovelConfigureManager.getConfigure().getBackgroundTheme());
         playList = view.findViewById(R.id.play_list);
         clear = view.findViewById(R.id.clear);
         status = view.findViewById(R.id.status);
@@ -78,7 +78,6 @@ public class MusicDialogFragment extends AttachDialogFragment {
         mAdapter = new Adapter(infos);
 
         RecyclerView recyclerView = view.findViewById(R.id.data);
-        recyclerView.setBackgroundColor(NovelConfigureManager.getConfigure().getBackgroundTheme());
         recyclerView.setLayoutManager(manager);
         recyclerView.addItemDecoration(decoration);
         recyclerView.setAdapter(mAdapter);

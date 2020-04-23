@@ -20,7 +20,8 @@
                 android:id="@+id/introduce"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#000"/>
+                android:textColor="#000"
+                android:text="文字颜色："/>
 
         <EditText
                 android:id="@+id/input"

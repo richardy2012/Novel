@@ -148,7 +148,6 @@ public class SharedTools {
 
     /**
      * 设置今天的观看时间
-     * 看上去没有问题实际上却有个bug, 有时明明不是新的一天却会重置todayRead
      *
      * @param addTime 今天观看时间的增加时长
      */
@@ -159,10 +158,9 @@ public class SharedTools {
         // 设置北京时区
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd");
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-
         int today = Integer.parseInt(simpleDateFormat.format(new Date().getTime()));
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        if (today - saveDay != 0) {
+        if (today != saveDay) {
             editor.putInt("Today", today);
             editor.putLong("TodayRead", addTime);
         } else {

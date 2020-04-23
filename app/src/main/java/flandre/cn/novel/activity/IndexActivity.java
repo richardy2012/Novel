@@ -1,9 +1,6 @@
 package flandre.cn.novel.activity;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.*;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -26,6 +23,7 @@ import flandre.cn.novel.parse.FileParse;
 import flandre.cn.novel.Tools.Decoration;
 import flandre.cn.novel.R;
 import flandre.cn.novel.database.SQLiteNovel;
+import flandre.cn.novel.Tools.NovelAttr;
 import flandre.cn.novel.info.Item;
 
 import java.io.*;
@@ -36,11 +34,6 @@ import java.util.*;
  * 2019.12.4
  */
 public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpClickListener, FileParse.OnfinishParse {
-    public static final String CHANGE_THEME = "flandre.cn.novel.changetheme";
-    public static final String LOAD_DATA = "flandre.cn.novel.loaddata";
-
-    private IndexReceiver receiver;
-
     // 底部的三个选择卡
     private TextView[] text;
     private LinearLayout[] select;
@@ -92,7 +85,6 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
         unpackSave(savedInstanceState);
         setupMusicService();
         addMusicListener(this);
-        setupReceiver();
 
         // 加载配置文件
         NovelConfigureManager.getConfigure(getApplicationContext());
@@ -142,20 +134,6 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
         }
     }
 
-    private void setupReceiver() {
-        receiver = new IndexReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(CHANGE_THEME);
-        filter.addAction(LOAD_DATA);
-        registerReceiver(receiver, filter);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(receiver);
-    }
-
     @Override
     public void onPlayMusic() {
         isPlaying = true;
@@ -202,11 +180,11 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
     private void setupPager(Bundle savedInstanceState) {
         pager.setOffscreenPageLimit(2);
         mainAdapter = new MainAdapter(getSupportFragmentManager());
-        if (savedInstanceState == null) {
+        if (savedInstanceState  == null) {
             bookFragment = new BookFragment();
             rankFragment = new RankFragment();
             userFragment = new UserFragment();
-        } else {
+        }else {
             bookFragment = (BookFragment) getSupportFragmentManager().findFragmentByTag(BookFragment.TAG);
             rankFragment = (RankFragment) getSupportFragmentManager().findFragmentByTag(RankFragment.TAG);
             userFragment = (UserFragment) getSupportFragmentManager().findFragmentByTag(UserFragment.TAG);
@@ -341,6 +319,14 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
     protected void onResume() {
         super.onResume();
         userFragment.changeTheme();
+        if (NovelAttr.changeThemeEnable) {
+            changeTheme();
+            NovelAttr.changeThemeEnable = false;
+        }
+        if (NovelAttr.loadDataEnable) {
+            bookFragment.loadData();
+            NovelAttr.loadDataEnable = false;
+        }
     }
 
     private void switchTabs(int position) {
@@ -488,8 +474,8 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
     private void changeTheme() {
         changePartly();
         addItem();
-        imageView.setBackground(getResources().getDrawable(NovelConfigureManager.getConfigure().getMode() ==
-                NovelConfigure.DAY ? R.drawable.novel_top_day : R.drawable.novel_top_night));
+        imageView.setBackground(getResources().getDrawable(NovelConfigureManager.getConfigure().getMode() == NovelConfigure.DAY
+                ? R.drawable.novel_top_day : R.drawable.novel_top_night));
         bookFragment.changeTheme();
         rankFragment.changeTheme();
         userFragment.changeTheme();
@@ -509,24 +495,6 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
 
     public UserFragment getUserFragment() {
         return userFragment;
-    }
-
-    class IndexReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            assert action != null;
-            switch (action) {
-                case CHANGE_THEME:
-                    changeTheme();
-                    break;
-                case LOAD_DATA:
-                    if (bookFragment != null)
-                        bookFragment.loadData();
-                    break;
-            }
-        }
     }
 
     class MainAdapter extends FragmentPagerAdapter {

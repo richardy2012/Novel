@@ -73,8 +73,8 @@ public class Sourcembtxt extends BaseCrawler {
         document.select("body > div.container > div.content > div.book.read > div.readcontent > div").remove();
         document.select("body > div.container > div.content > div.book.read > div.readcontent > p").remove();
         document.select("body > div.container > div.content > div.book.read > h1 > small").remove();
-        String text = withBr(document, "body > div.container > div.content > div.book.read > div.readcontent", " ", "")
-                .replace(BR_REPLACEMENT, "").replace("\n\n", "\n");
+        String text = document.select("body > div.container > div.content > div.book.read > div.readcontent").html();
+        text = text.replace("&nbsp;", " ").replace("<br>", "\n").replace("\n\n \n\n", "\n");
 
         if (document.select("#linkNext").text().equals("下一页")) {
             text += run_text(document.select("#linkNext").attr("href"), 1).getText();
@@ -82,7 +82,7 @@ public class Sourcembtxt extends BaseCrawler {
 
         NovelText novelText = new NovelText();
         novelText.setChapter(document.select("body > div.container > div.content > div.book.read > h1").text());
-        novelText.setText(text.replace("&n-->>bsp;", ""));
+        novelText.setText(text.replace("<br -->&gt;&gt; \n\n", ""));
         return novelText;
     }
 
@@ -98,13 +98,13 @@ public class Sourcembtxt extends BaseCrawler {
         Document document = null;
         switch (type) {
             case BaseCrawler.DAY_RANK:
-                document = crawlerGET(DOMAIN + "allvote.html");
+                document = crawlerGET("https://www.mbtxt.cc/allvote.html");
                 break;
             case BaseCrawler.MONTH_RANK:
-                document = crawlerGET(DOMAIN + "monthvote.html");
+                document = crawlerGET("https://www.mbtxt.cc/monthvote.html");
                 break;
             case BaseCrawler.TOTAL_RANK:
-                document = crawlerGET(DOMAIN + "weekvisit.html");
+                document = crawlerGET("https://www.mbtxt.cc/weekvisit.html");
                 break;
         }
         Elements elements = document.select("#fengtui > div.bookbox");

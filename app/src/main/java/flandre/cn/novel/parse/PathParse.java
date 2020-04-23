@@ -13,7 +13,6 @@ import android.provider.MediaStore;
 
 /**
  * 拿到文件路径
- *
  * @author 百度
  */
 public class PathParse {
@@ -28,19 +27,14 @@ public class PathParse {
         this.mContext = mContext;
     }
 
-    public PathParse parse(Intent data) {
+    public PathParse parse(Intent data){
         Uri uri = data.getData();
-        assert uri != null;
-        String path = uri.getPath();
-
         if ("file".equalsIgnoreCase(uri.getScheme())) {//使用第三方应用打开
-            this.path = uri.getPath();
-        } else if (Build.VERSION.SDK_INT >= 24 && path.startsWith("/external")) {
-            this.path = Environment.getExternalStorageDirectory().getAbsolutePath() + path.replace("/external", "");
+            path = uri.getPath();
         } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {//4.4以后
-            this.path = getPath(uri);
+            path = getPath(uri);
         } else {//4.4以下下系统调用方法
-            this.path = getRealPathFromURI(uri);
+            path = getRealPathFromURI(uri);
         }
         return this;
     }
