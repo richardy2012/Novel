@@ -1,6 +1,8 @@
 package flandre.cn.novel.activity;
 
+import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,7 +13,6 @@ import android.text.TextWatcher;
 import android.view.*;
 import android.widget.*;
 import flandre.cn.novel.R;
-import flandre.cn.novel.Tools.NovelAttr;
 import flandre.cn.novel.Tools.NovelConfigure;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.Tools.Decoration;
@@ -31,6 +32,7 @@ public class ConfigureThemeActivity extends BaseActivity {
     private String[] saveData;  // 保存的数据, 保存时把这的数据放入配置文件
     private int current;  // 当前选择的页面的索引, 保存时根据此设置配置文件
     private boolean alwaysNext;  // 是否全屏点击下一页
+    private boolean alarmForce;  // 小说闹钟是否强制
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,7 @@ public class ConfigureThemeActivity extends BaseActivity {
         };
 
         alwaysNext = configure.isAlwaysNext();
+        alarmForce = configure.isAlarmForce();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(configure.getMainTheme()));
@@ -59,7 +62,7 @@ public class ConfigureThemeActivity extends BaseActivity {
         NestedScrollView total = findViewById(R.id.total);
         total.setBackgroundColor(configure.getBackgroundTheme());
         LinearLayout backSet = findViewById(R.id.backSet);
-        backSet.setBackgroundColor((~configure.getBackgroundColor()) & 0x11FFFFFF | 0x11000000);
+        backSet.setBackgroundColor((~configure.getBackgroundTheme()) & 0x11FFFFFF | 0x11000000);
 
         ((TextView) findViewById(R.id.intr_1)).setTextColor(configure.getIntroduceTheme());
         ((TextView) findViewById(R.id.intr_2)).setTextColor(configure.getIntroduceTheme());
@@ -148,9 +151,12 @@ public class ConfigureThemeActivity extends BaseActivity {
             configure.setIntroduceTheme(saveData[8]);
             configure.setNowPageView(NovelConfigureManager.getPageView().get(current).get("source"));
             configure.setAlwaysNext(alwaysNext);
+            configure.setAlarmForce(alarmForce);
 
             NovelConfigureManager.saveConfigure(this.configure, this);
-            NovelAttr.changeThemeEnable = true;
+            Intent intent = new Intent();
+            intent.setAction(IndexActivity.CHANGE_THEME);
+            sendBroadcast(intent);
             setResult(0);
             finish();
         } catch (Exception e) {
@@ -168,14 +174,15 @@ public class ConfigureThemeActivity extends BaseActivity {
             this.size = size;
         }
 
+        @NonNull
         @Override
-        public Holder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        public Holder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
             View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.theme_list, viewGroup, false);
             return new Holder(view);
         }
 
         @Override
-        public void onBindViewHolder(Holder holder, int i) {
+        public void onBindViewHolder(@NonNull Holder holder, int i) {
             int pos = i + offset;
             Watcher watcher = new Watcher(pos);
 //            if (holder.editText.getTag() == null) {
@@ -244,14 +251,15 @@ public class ConfigureThemeActivity extends BaseActivity {
             this.list = NovelConfigureManager.getPageView();
         }
 
+        @NonNull
         @Override
-        public Holder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        public Holder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
             View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.source_list, viewGroup, false);
             return new Holder(view);
         }
 
         @Override
-        public void onBindViewHolder(Holder holder, int i) {
+        public void onBindViewHolder(@NonNull Holder holder, int i) {
             holder.itemView.setTag(i);
             holder.itemView.setOnClickListener(this);
             holder.name.setText(list.get(i).get("description"));
@@ -281,17 +289,19 @@ public class ConfigureThemeActivity extends BaseActivity {
 
     class OtherAdapter extends RecyclerView.Adapter<Holder> implements View.OnClickListener {
         List<String> list = new ArrayList<String>() {{
-            add("点击全屏翻下页");
+            add("全屏点击翻下页");
+            add("小说闹钟强制休息");
         }};
 
+        @NonNull
         @Override
-        public Holder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        public Holder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
             View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.source_list, viewGroup, false);
             return new Holder(view);
         }
 
         @Override
-        public void onBindViewHolder(Holder holder, int i) {
+        public void onBindViewHolder(@NonNull Holder holder, int i) {
             holder.itemView.setTag(i);
             holder.itemView.setOnClickListener(this);
             holder.name.setTextColor(configure.getNameTheme());
@@ -301,6 +311,10 @@ public class ConfigureThemeActivity extends BaseActivity {
             switch (i) {
                 case 0:
                     holder.choice.setVisibility(alwaysNext ? View.VISIBLE : View.GONE);
+                    break;
+                case 1:
+                    holder.choice.setVisibility(alarmForce ? View.VISIBLE : View.GONE);
+                    break;
             }
         }
 
@@ -314,6 +328,10 @@ public class ConfigureThemeActivity extends BaseActivity {
             switch ((int) v.getTag()) {
                 case 0:
                     v.findViewById(R.id.choice).setVisibility((alwaysNext = !alwaysNext) ? View.VISIBLE : View.GONE);
+                    break;
+                case 1:
+                    v.findViewById(R.id.choice).setVisibility((alarmForce = !alarmForce) ? View.VISIBLE : View.GONE);
+                    break;
             }
         }
     }

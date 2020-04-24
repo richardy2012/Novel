@@ -4,6 +4,12 @@
 
 ### 学习了Android时, 手很痒, 刚好又喜欢看小说, 所以就写了这个APP
 
+# 小说源
+
+### 爬取免费的小说网站
+
+### 网站的robots.txt都写着，爬，都可以爬！
+
 # 效果图
 ![](https://github.com/RmxhbmRyZQ/Novel/blob/master/images/index.png)
 ![](https://github.com/RmxhbmRyZQ/Novel/blob/master/images/left.png)

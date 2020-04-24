@@ -2,6 +2,7 @@ package flandre.cn.novel.activity;
 
 import android.content.*;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
@@ -34,6 +35,7 @@ public class DownloadManagerActivity extends BaseActivity {
     private Adapter adapter;
     private SQLiteNovel sqLiteNovel;
     private TextView textView;
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,7 @@ public class DownloadManagerActivity extends BaseActivity {
         setupMusicService();
         NovelConfigureManager.getConfigure(getApplicationContext());
         addDownloadFinishListener(this);
+        handler = new Handler(getMainLooper());
 
         sqLiteNovel = SQLiteNovel.getSqLiteNovel(getApplicationContext());
         setupNovelService();
@@ -94,7 +97,7 @@ public class DownloadManagerActivity extends BaseActivity {
                 break;
         if (pos >= adapter.infos.size()) return;
         NovelDownloadInfo downloadInfo = adapter.infos.get(pos);
-        // 如果下载到了下一个任务, 重新导入
+        // 如果下载下一个任务, 重新导入
         if (downloadInfo.getStatus() != SQLiteNovel.DOWNLOAD_PAUSE) {
             loadData();
             return;
@@ -111,8 +114,15 @@ public class DownloadManagerActivity extends BaseActivity {
             sqLiteNovel.getReadableDatabase().update("download", values, "id = ?", new String[]{String.valueOf(downloadId)});
         }
         // 这里有个小bug, 一直更新界面的话会消化不了用户的点击
-        adapter.notifyDataSetChanged();
-//        adapter.notifyItemChanged(pos);
+        // adapter.notifyDataSetChanged();
+        // 使用消息队列应该可以解决这个bug, 因为点击事件使用消息队列
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }
+        });
+        // adapter.notifyItemChanged(pos);
     }
 
     @Override
@@ -192,13 +202,13 @@ public class DownloadManagerActivity extends BaseActivity {
                     sqLiteNovel.getReadableDatabase().delete("download", "id = ?",
                             new String[]{String.valueOf(infos.get(pos).getId())});
                     infos.remove(pos);
-                    if (infos.size() == 0)textView.setVisibility(View.GONE);
+                    if (infos.size() == 0) textView.setVisibility(View.GONE);
                     notifyItemRemoved(pos);
                 }
             });
         }
 
-        private void changeStatus(View view){
+        private void changeStatus(View view) {
             int pos = ((Holder) view.getTag()).getAdapterPosition();
             if (pos < 0) return;
             NovelDownloadInfo downloadInfo = infos.get(pos);
@@ -242,7 +252,7 @@ public class DownloadManagerActivity extends BaseActivity {
             sqLiteNovel.getReadableDatabase().update("download", values, "id = ?",
                     new String[]{String.valueOf(downloadInfo.getId())});
             notifyDataSetChanged();
-//                    notifyItemChanged(pos);
+//             notifyItemChanged(pos);
         }
 
         @Override

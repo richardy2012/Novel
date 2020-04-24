@@ -45,7 +45,9 @@ public abstract class BaseCrawler {
     public static final int MIDDLE_THREAD_COUNT = 2;  // 允许一般的线程数量
     public static final int MIN_THREAD_COUNT = 1;  // 允许开的最小线程数
 
-    private static final int TIMEOUT = 30 * 1000;
+    public static final int TIMEOUT = 30 * 1000;
+
+    public static final String BR_REPLACEMENT = "0x0a";
 
     String CHARSET;  // 网页的编码
     String DOMAIN;  // 网页的域名
@@ -59,8 +61,8 @@ public abstract class BaseCrawler {
         this.handler = new WeakReference<>(handler);
     }
 
-    private void configureConn(HttpURLConnection connection) throws IOException {
-        connection.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 " +
+    void configureConn(HttpURLConnection connection) throws IOException {
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 " +
                 "(KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36");
 //        connection.addRequestProperty("Connection", "keep-alive");
         connection.addRequestProperty("Connection", "close");
@@ -91,6 +93,7 @@ public abstract class BaseCrawler {
             outputStream.close();
             if (connection.getResponseCode() == 301 || connection.getResponseCode() == 302) {
                 String location = connection.getHeaderField("Location");
+                if (location.startsWith("/")) location = DOMAIN + location.substring(1);
                 return crawlerPOST(location, data, true);
             }
             InputStream inputStream = connection.getInputStream();
@@ -231,6 +234,26 @@ public abstract class BaseCrawler {
             e.printStackTrace();
         }
         return elements;
+    }
+
+    String withBr(Elements element, String select){
+        return withBr(element, select, "", "");
+    }
+
+    String withBr(Elements elements, String select, String extra, String rep){
+        elements.select(select + " br").append(BR_REPLACEMENT);
+        elements.select(select + " p").append(BR_REPLACEMENT);
+        return elements.select(select).text().replace(BR_REPLACEMENT + extra, "\n" + rep);
+    }
+
+    String withBr(Element element, String select){
+        return withBr(element, select, "", "");
+    }
+
+    String withBr(Element element, String select, String extra, String rep){
+        element.select(select + " br").append(BR_REPLACEMENT);
+        element.select(select + " p").append(BR_REPLACEMENT);
+        return element.select(select).text().replace(BR_REPLACEMENT + extra, "\n" + rep);
     }
 
     /**

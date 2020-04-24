@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.provider.MediaStore;
@@ -64,20 +65,28 @@ public class PlayMusicService extends Service {
     private List<Long> saveList;  // 用于保存的歌曲ID
     private List<Long> playList;  // 用于播放的歌曲ID
     private Map<Long, MusicInfo> playSongs;  // 播放的歌曲
+
     private int playPosition = 0;  // 当前播放的位置
     private int playStatus = PlayMusicService.STATUS_ALL_LOOPING;  // 当前播放的状态
     private MusicPlay musicPlay;  // 音乐播放者
+
     private Notification mNotification;  // 通知栏
     private NotificationManager mNotificationManager;  // 通知栏管理
     private boolean isShowNotification = false;  // 是否显示了通知栏
+    private boolean notificationClickable = true;  // 防止瞎??乱点
     private int mode = -1;  // 通知栏的当前状态
+    private Handler handler;
+
     private Receiver receiver = null;  // 广播的接收者
+
     private boolean isContinuePlay = false;  // 电话结束后是否继续播放音乐
     private PhoneListener phoneListener;
+
 
     @Override
     public void onCreate() {
         super.onCreate();
+        handler = new Handler(getMainLooper());
         // 设置音乐的数据
         mBinder = new ServiceStub(this);
         playList = new ArrayList<>();
@@ -120,7 +129,6 @@ public class PlayMusicService extends Service {
 
     /**
      * 改变通知栏的状态
-     * @param mode
      */
     private void changeNotification(int mode) {
         switch (mode) {
@@ -186,7 +194,7 @@ public class PlayMusicService extends Service {
                 remoteViews.setImageViewResource(R.id.next, R.drawable.next_music_night);
                 remoteViews.setImageViewResource(R.id.last, R.drawable.last_music_night);
                 remoteViews.setImageViewResource(R.id.close, R.drawable.remove_night);
-            }else {
+            } else {
                 remoteViews.setTextColor(R.id.name, 0xAA000000);
                 remoteViews.setTextColor(R.id.singer, 0xAA000000);
                 remoteViews.setImageViewResource(R.id.control, isPlaying() ? R.drawable.pause_day : R.drawable.play_day);
@@ -222,7 +230,7 @@ public class PlayMusicService extends Service {
                 mNotification.contentView.setImageViewResource(R.id.next, R.drawable.next_music_night);
                 mNotification.contentView.setImageViewResource(R.id.last, R.drawable.last_music_night);
                 mNotification.contentView.setImageViewResource(R.id.close, R.drawable.remove_night);
-            }else {
+            } else {
                 mNotification.contentView.setTextColor(R.id.name, 0xAA000000);
                 mNotification.contentView.setTextColor(R.id.singer, 0xAA000000);
                 mNotification.contentView.setImageViewResource(R.id.control, isPlaying() ? R.drawable.pause_day : R.drawable.play_day);
@@ -243,6 +251,7 @@ public class PlayMusicService extends Service {
      * 保存当前的音乐数据
      */
     private void saveData() {
+        // 这里有个小bug, 保存经常没有保存听歌记录就退出
         String saveList = null;
         // 把数组转换成字符串
         // [12314, 43548, 787952] => 12314 43548 787952
@@ -585,19 +594,19 @@ public class PlayMusicService extends Service {
     class PhoneListener extends PhoneStateListener {
         @Override
         public void onCallStateChanged(int state, String phoneNumber) {
-            switch (state){
+            switch (state) {
                 case TelephonyManager.CALL_STATE_RINGING:
                     // 响铃时
                 case TelephonyManager.CALL_STATE_OFFHOOK:
                     // 摘机时
-                    if (isPlaying()){
+                    if (isPlaying()) {
                         isContinuePlay = true;
                         pause();
                     }
                     break;
                 case TelephonyManager.CALL_STATE_IDLE:
                     // 电话结束时
-                    if (isContinuePlay){
+                    if (isContinuePlay) {
                         play();
                         isContinuePlay = false;
                     }
@@ -610,29 +619,39 @@ public class PlayMusicService extends Service {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
+            if (!notificationClickable) return;
+            notificationClickable = false;
+            final String action = intent.getAction();
             assert action != null;
-            switch (action) {
-                case PlayMusicService.NOTIFICATION_PLAY_PAUSE:
-                    if (isPlaying()) pause();
-                    else play();
-                    break;
-                case PlayMusicService.NOTIFICATION_NEXT:
-                    nextMusic();
-                    break;
-                case PlayMusicService.NOTIFICATION_LAST:
-                    lastMusic();
-                    break;
-                case PlayMusicService.NOTIFICATION_CLOSE:
-                    pause();
-                    PlayMusicService.this.changeNotification(PlayMusicService.NOTIFICATION_CANCEL);
-                    break;
-                case PlayMusicService.NOTIFICATION_CHANGE:
-                    SharedTools sharedTools = new SharedTools(PlayMusicService.this);
-                    sharedTools.changeNotificationDarkTheme();
-                    PlayMusicService.this.changeNotification(PlayMusicService.NOTIFICATION_UPDATE);
-                    break;
-            }
+            // 这里有个小bug, 当长事件挂后台时, 点击控件播放音乐时, 控件不会刷新
+            // 在某次听网易云时发现它的通知难控件的改变与点击存在延迟, 试了一下, 发现真的可以, bug off
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    notificationClickable = true;
+                    switch (action) {
+                        case PlayMusicService.NOTIFICATION_PLAY_PAUSE:
+                            if (isPlaying()) pause();
+                            else play();
+                            break;
+                        case PlayMusicService.NOTIFICATION_NEXT:
+                            nextMusic();
+                            break;
+                        case PlayMusicService.NOTIFICATION_LAST:
+                            lastMusic();
+                            break;
+                        case PlayMusicService.NOTIFICATION_CLOSE:
+                            pause();
+                            PlayMusicService.this.changeNotification(PlayMusicService.NOTIFICATION_CANCEL);
+                            break;
+                        case PlayMusicService.NOTIFICATION_CHANGE:
+                            SharedTools sharedTools = new SharedTools(PlayMusicService.this);
+                            sharedTools.changeNotificationDarkTheme();
+                            PlayMusicService.this.changeNotification(PlayMusicService.NOTIFICATION_UPDATE);
+                            break;
+                    }
+                }
+            }, 70);
         }
     }
 
@@ -653,7 +672,7 @@ public class PlayMusicService extends Service {
             return prepare(currentMediaPlayer);
         }
 
-        private void release(){
+        private void release() {
             currentMediaPlayer.release();
         }
 

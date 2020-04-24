@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.view.*;
+import android.widget.TextView;
 import flandre.cn.novel.R;
 
 /**
@@ -18,13 +19,12 @@ public class AlarmTriggerDialogFragment extends AttachDialogFragment implements 
     private float y;
     private boolean isTouch = false;
     private boolean force = false;
+    private int restTime = 120;
+    private TextView bottom;
+    private TextView countdown;
 
-    public static AlarmTriggerDialogFragment newInstance(boolean force){
-        AlarmTriggerDialogFragment alarmTiggerDialogFragment = new AlarmTriggerDialogFragment();
-        Bundle bundle = new Bundle();
-        bundle.putBoolean("force", false);
-        alarmTiggerDialogFragment.setArguments(bundle);
-        return alarmTiggerDialogFragment;
+    public void setForce(boolean force) {
+        this.force = force;
     }
 
     @Override
@@ -32,8 +32,7 @@ public class AlarmTriggerDialogFragment extends AttachDialogFragment implements 
         super.onCreate(savedInstanceState);
         handler = new Handler(mContext.getMainLooper());
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.AlarmTriggerDialog);
-        if (getArguments() != null)
-            force = getArguments().getBoolean("force");
+        setCancelable(false);
     }
 
     @Nullable
@@ -41,15 +40,29 @@ public class AlarmTriggerDialogFragment extends AttachDialogFragment implements 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.alarm_tigger_dialog_fragment, container, false);
         this.view = view.findViewById(R.id.move);
+        bottom = view.findViewById(R.id.bottom);
+        countdown = view.findViewById(R.id.countdown);
         view.setPadding(0, 0, 0, 0);
-        if (!force) view.setOnTouchListener(this);
-        else handler.postDelayed(new Runnable() {
+        view.setOnTouchListener(this);
+        if (force) countdown();
+        return view;
+    }
+
+    private void countdown() {
+        handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                dismiss();
+                if (--restTime == 0) {
+                    force = false;
+                    restTime = 120;
+                    countdown.setText("↑↑↑↑");
+                    bottom.setText("上滑关闭");
+                } else {
+                    countdown.setText("剩下 " + restTime + " 秒");
+                    countdown();
+                }
             }
-        }, 1000 * 120);
-        return view;
+        }, 1000);
     }
 
     @Override
@@ -74,6 +87,7 @@ public class AlarmTriggerDialogFragment extends AttachDialogFragment implements 
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        if (force) return true;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 y = event.getY();

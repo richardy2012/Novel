@@ -90,8 +90,7 @@ public class Sourcefhxiaoshuo extends BaseCrawler {
 
         document.select("#TXT > div").remove();
         document.select("#TXT > font").remove();
-        String text = document.select("#TXT").get(0).html().substring(9).replace("<br>",
-                "\n").replace("\n\n\n\n", "\n    ");
+        String text = withBr(document, "#TXT").replace("\n \n", "\n");
         NovelText novelText = new NovelText();
         novelText.setText(text);
         novelText.setChapter(document.select(".zhangjieming > h1").get(0).text());
@@ -170,14 +169,16 @@ public class Sourcefhxiaoshuo extends BaseCrawler {
                 novelInfo.setName(doc.select("#info > h1").get(0).text());
                 novelInfo.setAuthor(doc.select("#info > p").get(0).text().substring(7));
                 novelInfo.setChapter(doc.select("#info > font > p > a").get(0).text());
-                novelInfo.setIntroduce(doc.select("#intro > .introtxt").get(0).text().substring(6));
+                String introduce = doc.select("#intro > .introtxt").get(0).text().substring(5);
+                novelInfo.setIntroduce(introduce.equals("") ? "没有简介" : introduce);
                 novelInfo.setUrl(doc.baseUri());
                 novelInfo.setComplete(0);
                 novelInfo.setSource(Sourcefhxiaoshuo.class.getName());
 
                 getImage();
 
-                list.add(novelInfo);
+                if (rank != -1) list.set(rank, novelInfo);
+                else list.add(novelInfo);
             } catch (NullPointerException e) {
                 e.printStackTrace();
             }

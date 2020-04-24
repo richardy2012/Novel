@@ -1,6 +1,7 @@
 package flandre.cn.novel.activity;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
@@ -11,7 +12,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.*;
 import android.widget.*;
 import flandre.cn.novel.R;
-import flandre.cn.novel.Tools.NovelAttr;
 import flandre.cn.novel.Tools.NovelConfigure;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.adapter.BookManagerAdapter;
@@ -139,7 +139,6 @@ public class BookManageActivity extends BaseActivity implements View.OnClickList
                 }
                 position.clear();
                 loadData();
-                NovelAttr.loadDataEnable = true;
                 break;
             case 1:
             case 2:
@@ -148,9 +147,11 @@ public class BookManageActivity extends BaseActivity implements View.OnClickList
                 for (String i : position)
                     sqLiteNovel.getReadableDatabase().update("novel", values, "id = ?", new String[]{i});
                 loadData();
-                NovelAttr.loadDataEnable = true;
                 break;
         }
+        Intent intent = new Intent();
+        intent.setAction(IndexActivity.LOAD_DATA);
+        sendBroadcast(intent);
         // 还原界面
         manage = true;
         select_all = false;

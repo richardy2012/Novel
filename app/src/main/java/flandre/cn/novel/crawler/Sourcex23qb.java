@@ -88,7 +88,6 @@ public class Sourcex23qb extends BaseCrawler {
         document.select("#TextContent > script").remove();
         document.select("#TextContent > center").remove();
         document.select("#TextContent > a").remove();
-//        String text = document.select("#TextContent").html().replace("<br>", "\n").replace("&nbsp;", " ").replace("\n\n \n\n", "\n");
         String text = document.select("#TextContent").text().replace("     ", "\n     ");
 
 
