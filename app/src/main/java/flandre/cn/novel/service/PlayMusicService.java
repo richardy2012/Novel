@@ -507,7 +507,6 @@ public class PlayMusicService extends Service {
     private void play() {
         if (saveList.size() == 0) return;
         musicPlay.start();
-        setNotification();
         Intent intent = new Intent();
         intent.setAction(PlayMusicService.MUSIC_PLAY);
         sendBroadcast(intent);
@@ -518,7 +517,6 @@ public class PlayMusicService extends Service {
      */
     private void pause() {
         musicPlay.pause();
-        setNotification();
         Intent intent = new Intent();
         intent.setAction(PlayMusicService.MUSIC_PAUSE);
         sendBroadcast(intent);
@@ -557,7 +555,6 @@ public class PlayMusicService extends Service {
     private void nextMusic() {
         if (saveList.size() == 0) return;
         musicPlay.next();
-        setNotification();
         Intent intent = new Intent();
         intent.setAction(PlayMusicService.MUSIC_NEXT);
         sendBroadcast(intent);
@@ -569,7 +566,6 @@ public class PlayMusicService extends Service {
     private void lastMusic() {
         if (saveList.size() == 0) return;
         musicPlay.last();
-        setNotification();
         Intent intent = new Intent();
         intent.setAction(PlayMusicService.MUSIC_LAST);
         sendBroadcast(intent);
@@ -620,38 +616,44 @@ public class PlayMusicService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (!notificationClickable) return;
-            notificationClickable = false;
-            final String action = intent.getAction();
+            String action = intent.getAction();
             assert action != null;
             // 这里有个小bug, 当长事件挂后台时, 点击控件播放音乐时, 控件不会刷新
-            // 在某次听网易云时发现它的通知难控件的改变与点击存在延迟, 试了一下, 发现真的可以, bug off
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    notificationClickable = true;
-                    switch (action) {
-                        case PlayMusicService.NOTIFICATION_PLAY_PAUSE:
-                            if (isPlaying()) pause();
-                            else play();
-                            break;
-                        case PlayMusicService.NOTIFICATION_NEXT:
-                            nextMusic();
-                            break;
-                        case PlayMusicService.NOTIFICATION_LAST:
-                            lastMusic();
-                            break;
-                        case PlayMusicService.NOTIFICATION_CLOSE:
-                            pause();
-                            PlayMusicService.this.changeNotification(PlayMusicService.NOTIFICATION_CANCEL);
-                            break;
-                        case PlayMusicService.NOTIFICATION_CHANGE:
-                            SharedTools sharedTools = new SharedTools(PlayMusicService.this);
-                            sharedTools.changeNotificationDarkTheme();
-                            PlayMusicService.this.changeNotification(PlayMusicService.NOTIFICATION_UPDATE);
-                            break;
+            // 后面测试了一下直接给switch搞一个postDelayed, 发现即使delay了1000都不行
+            // 突然发现我连点播放3次, 也会改变通知栏, 恍然大悟, 应该先播放音乐, 然后在delay, bug off
+            switch (action) {
+                case PlayMusicService.NOTIFICATION_PLAY_PAUSE:
+                    if (isPlaying()) pause();
+                    else play();
+                    break;
+                case PlayMusicService.NOTIFICATION_NEXT:
+                    nextMusic();
+                    break;
+                case PlayMusicService.NOTIFICATION_LAST:
+                    lastMusic();
+                    break;
+                case PlayMusicService.NOTIFICATION_CLOSE:
+                    pause();
+                    PlayMusicService.this.changeNotification(PlayMusicService.NOTIFICATION_CANCEL);
+                    break;
+                case PlayMusicService.NOTIFICATION_CHANGE:
+                    // 修改主题
+                    SharedTools sharedTools = new SharedTools(PlayMusicService.this);
+                    sharedTools.changeNotificationDarkTheme();
+                    PlayMusicService.this.changeNotification(PlayMusicService.NOTIFICATION_UPDATE);
+                    break;
+            }
+            // cancel时就不需要delay了
+            if (!action.equals(PlayMusicService.NOTIFICATION_CLOSE)){
+                notificationClickable = false;
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        notificationClickable = true;
+                        setNotification();
                     }
-                }
-            }, 70);
+                }, 70);
+            }
         }
     }
 
@@ -843,11 +845,13 @@ public class PlayMusicService extends Service {
         @Override
         public void play() throws RemoteException {
             mService.get().play();
+            mService.get().setNotification();
         }
 
         @Override
         public void pause() throws RemoteException {
             mService.get().pause();
+            mService.get().setNotification();
         }
 
         @Override
@@ -868,11 +872,13 @@ public class PlayMusicService extends Service {
         @Override
         public void nextMusic() throws RemoteException {
             mService.get().nextMusic();
+            mService.get().setNotification();
         }
 
         @Override
         public void lastMusic() throws RemoteException {
             mService.get().lastMusic();
+            mService.get().setNotification();
         }
 
         @Override
