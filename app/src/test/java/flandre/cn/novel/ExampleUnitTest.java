@@ -8,9 +8,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,12 +21,13 @@ public class ExampleUnitTest {
 
     @Test
     public void addition_isCorrect() throws IOException {
-        URL url = new URL("https://www.kutun.net/book/122615/");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setDoOutput(false);
-        connection.connect();
-        connection.getInputStream();
+        List<Long> longs = new ArrayList<>();
+        longs.add(123l);
+        longs.add(122l);
+        longs.add(112l);
+        longs.add(152l);
+        Collections.shuffle(longs);
+        System.out.println(longs);
     }
 
 }

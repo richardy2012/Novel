@@ -244,11 +244,6 @@ public abstract class BaseActivity extends AppCompatActivity implements Download
         unregisterReceiver(receiver);
         unBindNovelService();
         if (isMusicBind) {
-            try {
-                musicService.saveData();
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
             unbindService(musicSConnection);
             isMusicBind = false;
         }

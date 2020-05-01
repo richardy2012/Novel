@@ -12,7 +12,16 @@ public class MusicInfo implements Parcelable {
     private String data;
     private String name;
     private String singer;
+    private String sort;
     private boolean isPlaying = false;
+
+    public String getSort() {
+        return sort;
+    }
+
+    public void setSort(String sort) {
+        this.sort = sort;
+    }
 
     public boolean isPlaying() {
         return isPlaying;

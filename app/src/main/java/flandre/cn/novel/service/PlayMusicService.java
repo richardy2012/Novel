@@ -260,8 +260,7 @@ public class PlayMusicService extends Service {
             for (long l : this.saveList) {
                 builder.append(l).append(" ");
             }
-            builder.substring(0, builder.length() - 2);
-            saveList = builder.toString();
+            saveList = builder.toString().substring(0, builder.length() - 1);
         }
         // 保存当前信息
         MusicSaveData musicSaveData = new MusicSaveData(saveList, playList.get(playPosition), playStatus, musicPlay.getCurrentPosition(), isShowNotification);
@@ -278,7 +277,7 @@ public class PlayMusicService extends Service {
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         ContentResolver cr = getContentResolver();
         Cursor cursor = cr.query(uri, music_pos, "title != '' and _size > 1048576 and duration > 60000",
-                null, "title_key");
+                null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
         while (cursor.moveToNext()) {
             if (!cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).endsWith("mp3")) continue;
             MusicInfo musicInfo = new MusicInfo();
@@ -405,7 +404,7 @@ public class PlayMusicService extends Service {
     private void deletePlayQueue(long id) {
         if (id == playList.get(playPosition)) {
             if (saveList.size() == 1) {
-                musicPlay.pause();
+                if (isPlaying()) musicPlay.pause();
                 changeNotification(PlayMusicService.NOTIFICATION_CANCEL);
                 Intent intent = new Intent();
                 intent.setAction(PlayMusicService.CLEAR_PLAY_LIST);
@@ -555,6 +554,7 @@ public class PlayMusicService extends Service {
     private void nextMusic() {
         if (saveList.size() == 0) return;
         musicPlay.next();
+        saveData();
         Intent intent = new Intent();
         intent.setAction(PlayMusicService.MUSIC_NEXT);
         sendBroadcast(intent);
@@ -566,6 +566,7 @@ public class PlayMusicService extends Service {
     private void lastMusic() {
         if (saveList.size() == 0) return;
         musicPlay.last();
+        saveData();
         Intent intent = new Intent();
         intent.setAction(PlayMusicService.MUSIC_LAST);
         sendBroadcast(intent);
@@ -644,7 +645,7 @@ public class PlayMusicService extends Service {
                     break;
             }
             // cancel时就不需要delay了
-            if (!action.equals(PlayMusicService.NOTIFICATION_CLOSE)){
+            if (!action.equals(PlayMusicService.NOTIFICATION_CLOSE)) {
                 notificationClickable = false;
                 handler.postDelayed(new Runnable() {
                     @Override
@@ -758,6 +759,7 @@ public class PlayMusicService extends Service {
             if (prepare(currentMediaPlayer)) {
                 currentMediaPlayer.start();
                 mService.get().setNotification();
+                mService.get().saveData();
                 Intent intent = new Intent();
                 intent.setAction(PlayMusicService.MUSIC_NEXT);
                 mService.get().sendBroadcast(intent);

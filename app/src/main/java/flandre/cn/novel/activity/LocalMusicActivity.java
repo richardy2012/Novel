@@ -2,7 +2,6 @@ package flandre.cn.novel.activity;
 
 import android.Manifest;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,10 +19,8 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.*;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
+import com.github.promeg.pinyinhelper.Pinyin;
 import flandre.cn.novel.MusicAidlInterface;
 import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.NovelConfigure;
@@ -35,11 +32,9 @@ import flandre.cn.novel.fragment.MusicDialogFragment;
 import flandre.cn.novel.info.MusicInfo;
 import flandre.cn.novel.Tools.Decoration;
 import flandre.cn.novel.service.PlayMusicService;
+import flandre.cn.novel.view.SlideBar;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static flandre.cn.novel.Tools.PermissionManager.*;
 import static flandre.cn.novel.service.PlayMusicService.music_pos;
@@ -54,8 +49,15 @@ public class LocalMusicActivity extends BaseActivity {
     private Map<Long, MusicInfo> musicData;  // 所有的歌曲
     private MusicControlerFragment musicControlerFragment;  // 歌曲的控制组件
     private long nowSongId = -1;  // 当前播放的歌曲ID
+    private Map<String, Integer> musicPosition;
     private RelativeLayout relativeLayout;
     private TextView permission;
+    private SlideBar slideBar;
+    private LinearLayoutManager mManager;
+
+    private boolean checkEnable = false;
+    private LinearLayout checkControl;
+    private View sep;
 
     public MusicAidlInterface getMusicService() {
         return musicService;
@@ -134,6 +136,7 @@ public class LocalMusicActivity extends BaseActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         relativeLayout = findViewById(R.id.total);
         relativeLayout.setBackgroundColor(NovelConfigureManager.getConfigure().getBackgroundTheme());
+        slideBar = findViewById(R.id.slideBar);
         permission = findViewById(R.id.permission);
         findViewById(R.id.control).setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -153,26 +156,85 @@ public class LocalMusicActivity extends BaseActivity {
         }
         mDialogFragment = new MusicDialogFragment();
 
+        slideBar.setTouchLetterListener(new SlideBar.OnTouchLetterListener() {
+            @Override
+            public void onTouchLetter(String letter) {
+                if (musicPosition.get(letter) != null) {
+                    int i = musicPosition.get(letter);
+                    mManager.scrollToPositionWithOffset(i, 0);
+                }
+            }
+        });
+        TextView showLetter = findViewById(R.id.showLetter);
+        showLetter.setTextColor(NovelConfigureManager.getConfigure().getIntroduceTheme());
+        slideBar.setShowLetter(showLetter);
         setupRecycle();
+        setupCheckBox();
         addMusicListener(this);
         checkPermission();
     }
 
     private void setupRecycle() {
-        LinearLayoutManager manager = new LinearLayoutManager(this);
-        manager.setOrientation(LinearLayoutManager.VERTICAL);
-        RecyclerView recyclerView = findViewById(R.id.music);
-        recyclerView.setLayoutManager(manager);
-        recyclerView.addItemDecoration(new Decoration(this));
-        recyclerView.setHasFixedSize(false);
+        mManager = new LinearLayoutManager(this);
+        mManager.setOrientation(LinearLayoutManager.VERTICAL);
+        RecyclerView mRecyclerView = findViewById(R.id.music);
+        mRecyclerView.setLayoutManager(mManager);
+        mRecyclerView.addItemDecoration(new Decoration(this));
+        mRecyclerView.setHasFixedSize(false);
         mAdapter = new Adapter(null);
-        recyclerView.setAdapter(mAdapter);
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    slideBar.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+    }
+
+    private void setupCheckBox() {
+        checkControl = findViewById(R.id.checkControl);
+        ImageView image = findViewById(R.id.image);
+        final TextView addNext = findViewById(R.id.addNext);
+        TextView cancel = findViewById(R.id.cancel);
+        sep = findViewById(R.id.sep);
+
+        image.setImageResource(NovelConfigureManager.getConfigure().getMode() == NovelConfigure.DAY ?
+                R.drawable.play_day : R.drawable.play_night);
+        addNext.setTextColor(NovelConfigureManager.getConfigure().getNameTheme());
+        cancel.setTextColor(NovelConfigureManager.getConfigure().getAuthorTheme());
+        sep.setBackgroundColor(NovelConfigureManager.getConfigure().getIntroduceTheme() & 0x22FFFFFF | 0x22000000);
+
+        addNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addCheckBox();
+            }
+        });
+
+        image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addCheckBox();
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cancelCheckBox();
+            }
+        });
     }
 
     /**
      * 加载音乐数据
      */
     private void loadData() {
+        musicPosition = new HashMap<>();
         musicData = new HashMap<>();
         List<MusicInfo> list = new ArrayList<>();
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -187,10 +249,17 @@ public class LocalMusicActivity extends BaseActivity {
             musicInfo.setName(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
             musicInfo.setSinger(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
             musicInfo.setData(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)));
+            musicInfo.setSort(Pinyin.toPinyin(musicInfo.getName().charAt(0)).substring(0, 1).toUpperCase());
             list.add(musicInfo);
             musicData.put(musicInfo.getSongId(), musicInfo);
         }
         cursor.close();
+        Collections.sort(list, new MusicComparator());
+        for (int i = 0; i < list.size(); i++) {
+            // 整理每个字母对应的位置
+            if (musicPosition.get(list.get(i).getSort()) == null)
+                musicPosition.put(list.get(i).getSort(), i);
+        }
         mAdapter.updateData(list);
     }
 
@@ -252,8 +321,7 @@ public class LocalMusicActivity extends BaseActivity {
         return true;
     }
 
-    @Override
-    public void onNextSong() {
+    private void setNowPlay() {
         if (nowSongId != -1 && musicService != null) {
             try {
                 MusicInfo musicInfo = musicService.getPlayInfo();
@@ -268,6 +336,16 @@ public class LocalMusicActivity extends BaseActivity {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void onNextSong() {
+        setNowPlay();
+    }
+
+    @Override
+    public void onLastSong() {
+        setNowPlay();
     }
 
     @Override
@@ -299,12 +377,35 @@ public class LocalMusicActivity extends BaseActivity {
         mDialogFragment.adapterUpdate();
     }
 
+    private void cancelCheckBox() {
+        checkEnable = false;
+        mAdapter.checkPosition.clear();
+        mAdapter.update();
+        sep.setVisibility(View.GONE);
+        checkControl.setVisibility(View.GONE);
+    }
+
+    private void addCheckBox() {
+        try {
+            for (Integer i : mAdapter.checkPosition) {
+                MusicInfo musicInfo = mAdapter.data.get(i);
+                if (!musicService.addPlayQueue(musicInfo.getSongId())) {
+                    musicService.addPlayInfo(musicInfo.getSongId(), musicInfo);
+                }
+            }
+            cancelCheckBox();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void onBackPressed() {
+        if (checkEnable) {
+            cancelCheckBox();
+            return;
+        }
         super.onBackPressed();
-//        Intent intent = getParentActivityIntent();
-//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//        startActivity(intent);
     }
 
     @Override
@@ -333,14 +434,19 @@ public class LocalMusicActivity extends BaseActivity {
 
     class Adapter extends RecyclerView.Adapter<Adapter.Holder> {
         List<MusicInfo> data;
+        private List<Integer> checkPosition = new ArrayList<>();
 
-        public Adapter(List<MusicInfo> data) {
+        Adapter(List<MusicInfo> data) {
             this.data = data;
         }
 
-        public void updateData(List<MusicInfo> data) {
+        void updateData(List<MusicInfo> data) {
             this.data = data;
             this.notifyDataSetChanged();
+        }
+
+        void update() {
+            notifyDataSetChanged();
         }
 
         @NonNull
@@ -357,12 +463,27 @@ public class LocalMusicActivity extends BaseActivity {
             holder.control.setTag(holder);
             holder.name.setText(musicInfo.getName());
             holder.singer.setText(musicInfo.getSinger());
-            holder.control.setImageResource(NovelConfigureManager.getConfigure().getMode() == NovelConfigure.DAY ?
-                    R.drawable.more_day : R.drawable.more_night);
             holder.name.setTextColor(NovelConfigureManager.getConfigure().getNameTheme());
             holder.singer.setTextColor(NovelConfigureManager.getConfigure().getAuthorTheme());
-            holder.itemView.findViewById(R.id.isPlaying).setBackgroundColor(NovelConfigureManager.getConfigure().getMainTheme());
-            holder.itemView.findViewById(R.id.isPlaying).setVisibility(musicInfo.isPlaying() ? View.VISIBLE : View.GONE);
+            View view = holder.itemView.findViewById(R.id.isPlaying);
+            view.setBackgroundColor(NovelConfigureManager.getConfigure().getMainTheme());
+            view.setVisibility(musicInfo.isPlaying() ? View.VISIBLE : View.GONE);
+            if (checkEnable) {
+                holder.control.setVisibility(View.GONE);
+                holder.check.setVisibility(View.VISIBLE);
+                holder.check.setChecked(checkPosition.contains(i));
+                if (NovelConfigureManager.getConfigure().getMode() == NovelConfigure.DAY) {
+                    holder.check.setBackground(getResources().getDrawable(R.drawable.check_select_day));
+                } else {
+                    holder.check.setBackground(getResources().getDrawable(R.drawable.check_select_night));
+                }
+            } else {
+                holder.check.setChecked(false);
+                holder.control.setVisibility(View.VISIBLE);
+                holder.check.setVisibility(View.GONE);
+                holder.control.setImageResource(NovelConfigureManager.getConfigure().getMode() == NovelConfigure.DAY ?
+                        R.drawable.more_day : R.drawable.more_night);
+            }
             setListener(holder);
         }
 
@@ -370,6 +491,15 @@ public class LocalMusicActivity extends BaseActivity {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (checkEnable) {
+                        Holder holder = ((Holder) v.getTag());
+                        boolean check = holder.check.isChecked();
+                        if (check)
+                            checkPosition.remove((Integer) holder.getAdapterPosition());
+                        else checkPosition.add(holder.getAdapterPosition());
+                        holder.check.setChecked(!check);
+                        return;
+                    }
                     int position = ((Holder) v.getTag()).getAdapterPosition();
                     if (position < 0 || position >= data.size()) return;
                     long[] queue = new long[data.size()];
@@ -397,7 +527,7 @@ public class LocalMusicActivity extends BaseActivity {
                     AlertDialog.Builder musicDialog = new AlertDialog.Builder(LocalMusicActivity.this);
                     final MusicInfo musicInfo = data.get(position);
                     musicDialog.setTitle(musicInfo.getName());
-                    String[] items = new String[]{"下一首播放", "删除(包括本地)"};
+                    String[] items = new String[]{"下一首播放", "删除(播放列表)", "选择歌曲"};
                     musicDialog.setItems(items, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -414,16 +544,39 @@ public class LocalMusicActivity extends BaseActivity {
                                 case 1:
                                     try {
                                         musicService.deletePlayQueue(musicInfo.getSongId());
-                                        Uri uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, musicInfo.getSongId());
-                                        getContentResolver().delete(uri, null, null);
+//                                        Uri uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, musicInfo.getSongId());
+//                                        getContentResolver().delete(uri, null, null);
+                                        Toast.makeText(LocalMusicActivity.this, "已从播放列表里删除", Toast.LENGTH_SHORT).show();
                                     } catch (RemoteException e) {
                                         e.printStackTrace();
                                     }
+                                    break;
+                                case 2:
+                                    if (checkEnable) break;
+                                    checkControl.setVisibility(View.VISIBLE);
+                                    sep.setVisibility(View.VISIBLE);
+                                    checkPosition.add(mAdapter.data.indexOf(musicInfo));
+                                    checkEnable = true;
+                                    mAdapter.update();
                                     break;
                             }
                         }
                     });
                     musicDialog.show();
+                }
+            });
+
+            holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (checkEnable) return true;
+                    checkControl.setVisibility(View.VISIBLE);
+                    sep.setVisibility(View.VISIBLE);
+                    Holder holder = ((Holder) v.getTag());
+                    checkPosition.add(holder.getAdapterPosition());
+                    checkEnable = true;
+                    mAdapter.update();
+                    return true;
                 }
             });
         }
@@ -438,13 +591,35 @@ public class LocalMusicActivity extends BaseActivity {
             TextView name;
             TextView singer;
             ImageView control;
+            CheckBox check;
 
-            public Holder(@NonNull View itemView) {
+            Holder(@NonNull View itemView) {
                 super(itemView);
                 name = itemView.findViewById(R.id.name);
                 singer = itemView.findViewById(R.id.singer);
                 control = itemView.findViewById(R.id.control);
+                check = itemView.findViewById(R.id.check);
             }
+        }
+    }
+
+    class MusicComparator implements Comparator<MusicInfo> {
+
+        @Override
+        public int compare(MusicInfo o1, MusicInfo o2) {
+            String sort1 = o1.getSort();
+            String sort2 = o2.getSort();
+            if (isNone(sort1) && isNone(sort2))
+                return 0;
+            if (isNone(sort1))
+                return -1;
+            if (isNone(sort2))
+                return 1;
+            return sort1.compareTo(sort2);
+        }
+
+        boolean isNone(String sort) {
+            return sort.trim().equals("");
         }
     }
 }
