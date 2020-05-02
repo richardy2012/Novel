@@ -30,6 +30,8 @@ interface MusicAidlInterface {
 
     long[] getPlayQueue();
 
+    int getPlayQueueSize();
+
     void setPlayOrder(int status);
 
     int getPlayOrder();

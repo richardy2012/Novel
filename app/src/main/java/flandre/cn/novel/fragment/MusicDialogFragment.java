@@ -85,7 +85,7 @@ public class MusicDialogFragment extends AttachDialogFragment {
         recyclerView.setHasFixedSize(false);
     }
 
-    public void adapterUpdate(){
+    public void adapterUpdate() {
         if (mAdapter != null) mAdapter.notifyDataSetChanged();
     }
 
@@ -96,7 +96,7 @@ public class MusicDialogFragment extends AttachDialogFragment {
         clear.setText("清空");
         if (infos != null) playList.setText("播放列表 ( " + infos.size() + " ) ");
         try {
-            int order = ((LocalMusicActivity)mContext).getMusicService().getPlayOrder();
+            int order = ((LocalMusicActivity) mContext).getMusicService().getPlayOrder();
             status.setTag(order);
             status.setText(PlayMusicService.STATUS[order]);
         } catch (RemoteException e) {
@@ -121,7 +121,7 @@ public class MusicDialogFragment extends AttachDialogFragment {
                         break;
                 }
                 try {
-                    ((LocalMusicActivity)mContext).getMusicService().setPlayOrder(order);
+                    ((LocalMusicActivity) mContext).getMusicService().setPlayOrder(order);
                     status.setTag(order);
                     status.setText(PlayMusicService.STATUS[order]);
                 } catch (RemoteException e) {
@@ -134,7 +134,7 @@ public class MusicDialogFragment extends AttachDialogFragment {
             @Override
             public void onClick(View v) {
                 try {
-                    ((LocalMusicActivity)mContext).getMusicService().deleteAllPlayQueue();
+                    ((LocalMusicActivity) mContext).getMusicService().deleteAllPlayQueue();
                     mAdapter.list.clear();
                     mAdapter.notifyDataSetChanged();
                     dismiss();
@@ -190,7 +190,7 @@ public class MusicDialogFragment extends AttachDialogFragment {
                     int pos = holder.getAdapterPosition();
                     if (pos < 0 || pos >= list.size()) return;
                     try {
-                        ((LocalMusicActivity)mContext).getMusicService().playTarget(list.get(pos).getSongId());
+                        ((LocalMusicActivity) mContext).getMusicService().playTarget(list.get(pos).getSongId());
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -203,11 +203,12 @@ public class MusicDialogFragment extends AttachDialogFragment {
                     int pos = holder.getAdapterPosition();
                     if (pos < 0 || pos >= list.size()) return;
                     try {
-                        ((LocalMusicActivity)mContext).getMusicService().deletePlayQueue(list.get(pos).getSongId());
+                        ((LocalMusicActivity) mContext).getMusicService().deletePlayQueue(list.get(pos).getSongId());
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
                     list.remove(pos);
+                    playList.setText("播放列表 ( " + infos.size() + " ) ");
                     notifyItemRemoved(pos);
                 }
             });

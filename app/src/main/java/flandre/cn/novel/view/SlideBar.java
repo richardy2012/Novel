@@ -21,12 +21,12 @@ public class SlideBar extends View {
             "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V",
             "W", "X", "Y", "Z", "#"};
     private Paint mPaint;
-    private int mTextPadding;
-    private int mTextHeight;
-    private int mTop;
-    private int mCount = -1;
+    private int mTextPadding;  // 文字间距
+    private int mTextHeight;  // 文字完整高度
+    private int mTop;  // 顶部位置
+    private int mCount = -1;  // 当前点击的字母位置
     private OnTouchLetterListener mTouchLetterListener;
-    private TextView mShowLetter;
+    private TextView mShowLetter;  // 显示当前点击字母的View
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
@@ -104,14 +104,13 @@ public class SlideBar extends View {
             if (top < y) {
                 count++;
                 top += mTextHeight;
-            } else {
-                break;
-            }
+            } else break;
         }
-        if (mCount != count && mShowLetter != null) {
+        if (mCount == count) return true;
+        if (mShowLetter != null) {
             mShowLetter.setText(LETTER[count]);
         }
-        if (mCount != count && mTouchLetterListener != null) {
+        if (mTouchLetterListener != null) {
             mCount = count;
             mTouchLetterListener.onTouchLetter(LETTER[mCount]);
         }

@@ -321,6 +321,9 @@ public class LocalMusicActivity extends BaseActivity {
         return true;
     }
 
+    /**
+     * 设置播放歌曲的左边有一个距行分隔条
+     */
     private void setNowPlay() {
         if (nowSongId != -1 && musicService != null) {
             try {
@@ -377,6 +380,9 @@ public class LocalMusicActivity extends BaseActivity {
         mDialogFragment.adapterUpdate();
     }
 
+    /**
+     * 取消选择状态
+     */
     private void cancelCheckBox() {
         checkEnable = false;
         mAdapter.checkPosition.clear();
@@ -385,7 +391,14 @@ public class LocalMusicActivity extends BaseActivity {
         checkControl.setVisibility(View.GONE);
     }
 
+    /**
+     * 把选择的歌曲添加到播放列表
+     */
     private void addCheckBox() {
+        if (mAdapter.checkPosition.size() == 0) {
+            cancelCheckBox();
+            return;
+        }
         try {
             for (Integer i : mAdapter.checkPosition) {
                 MusicInfo musicInfo = mAdapter.data.get(i);
@@ -393,6 +406,7 @@ public class LocalMusicActivity extends BaseActivity {
                     musicService.addPlayInfo(musicInfo.getSongId(), musicInfo);
                 }
             }
+            musicService.saveData();
             cancelCheckBox();
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -434,7 +448,7 @@ public class LocalMusicActivity extends BaseActivity {
 
     class Adapter extends RecyclerView.Adapter<Adapter.Holder> {
         List<MusicInfo> data;
-        private List<Integer> checkPosition = new ArrayList<>();
+        private List<Integer> checkPosition = new ArrayList<>();  // 当前checkbox的选择情况
 
         Adapter(List<MusicInfo> data) {
             this.data = data;
@@ -491,6 +505,7 @@ public class LocalMusicActivity extends BaseActivity {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    // 如果是选择的歌曲的话, 点击选择(取消)歌曲
                     if (checkEnable) {
                         Holder holder = ((Holder) v.getTag());
                         boolean check = holder.check.isChecked();
@@ -500,6 +515,7 @@ public class LocalMusicActivity extends BaseActivity {
                         holder.check.setChecked(!check);
                         return;
                     }
+                    // 把所有的歌曲放入播放列表, 播放点击的歌曲
                     int position = ((Holder) v.getTag()).getAdapterPosition();
                     if (position < 0 || position >= data.size()) return;
                     long[] queue = new long[data.size()];
@@ -522,6 +538,7 @@ public class LocalMusicActivity extends BaseActivity {
             holder.control.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    // 点击右侧的控制点时, 显示选项
                     int position = ((Holder) v.getTag()).getAdapterPosition();
                     if (position < 0 || position >= data.size()) return;
                     AlertDialog.Builder musicDialog = new AlertDialog.Builder(LocalMusicActivity.this);
@@ -533,15 +550,21 @@ public class LocalMusicActivity extends BaseActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which) {
                                 case 0:
+                                    // 放入播放列表
                                     try {
                                         if (!musicService.addPlayQueue(musicInfo.getSongId())) {
                                             musicService.addPlayInfo(musicInfo.getSongId(), musicInfo);
+                                        }
+                                        // 第一个会自带保存功能所以不需要我们保存
+                                        if (musicService.getPlayQueueSize() != 1){
+                                            musicService.saveData();
                                         }
                                     } catch (RemoteException e) {
                                         e.printStackTrace();
                                     }
                                     break;
                                 case 1:
+                                    // 从播放列表删除
                                     try {
                                         musicService.deletePlayQueue(musicInfo.getSongId());
 //                                        Uri uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, musicInfo.getSongId());
@@ -552,6 +575,7 @@ public class LocalMusicActivity extends BaseActivity {
                                     }
                                     break;
                                 case 2:
+                                    // 选择歌曲
                                     if (checkEnable) break;
                                     checkControl.setVisibility(View.VISIBLE);
                                     sep.setVisibility(View.VISIBLE);
@@ -569,7 +593,8 @@ public class LocalMusicActivity extends BaseActivity {
             holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if (checkEnable) return true;
+                    // 已经是选择模式的话就没必要进入了
+                    if (checkEnable) return false;
                     checkControl.setVisibility(View.VISIBLE);
                     sep.setVisibility(View.VISIBLE);
                     Holder holder = ((Holder) v.getTag());

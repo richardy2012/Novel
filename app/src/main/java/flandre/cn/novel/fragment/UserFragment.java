@@ -124,6 +124,7 @@ public class UserFragment extends AttachFragment implements UserAdapter.OnItemCl
         todayIntro.setTextColor(NovelConfigureManager.getConfigure().getNameTheme());
         alarmIntro.setTextColor(NovelConfigureManager.getConfigure().getNameTheme());
         SharedTools sharedTools = new SharedTools(mContext);
+        sharedTools.setTodayRead(0);
         long alarm = sharedTools.getAlarm();
         alarmRest.setText(NovelTools.resolver(alarm == AlarmDialogFragment.NO_ALARM_STATE ? 0 : alarm));
         alarmRest.setTextColor(NovelConfigureManager.getConfigure().getNameTheme());

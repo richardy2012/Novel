@@ -114,6 +114,7 @@ public class PlayMusicService extends Service {
      * 设置通知栏
      */
     private void setNotification() {
+        isShowNotification = true;
         switch (mode) {
             case PlayMusicService.NOTIFICATION_WAIT:
             case PlayMusicService.NOTIFICATION_CANCEL:
@@ -124,7 +125,6 @@ public class PlayMusicService extends Service {
                 changeNotification(PlayMusicService.NOTIFICATION_UPDATE);
                 break;
         }
-        isShowNotification = true;
     }
 
     /**
@@ -143,6 +143,7 @@ public class PlayMusicService extends Service {
 //                mNotificationManager.cancel(NOTIFICATION_ID);
                 stopForeground(true);
                 isShowNotification = false;
+                saveData();
                 break;
         }
         this.mode = mode;
@@ -249,8 +250,10 @@ public class PlayMusicService extends Service {
 
     /**
      * 保存当前的音乐数据
+     * 原本打算再onDestroy保存就可以了, 结果发现有时候onDestroy不会调用
+     * 所以在播放, 以及切换歌曲, 移除歌曲, 增加歌曲时调用
      */
-    private void saveData() {
+    private synchronized void saveData() {
         // 这里有个小bug, 保存经常没有保存听歌记录就退出
         String saveList = null;
         // 把数组转换成字符串
@@ -263,7 +266,8 @@ public class PlayMusicService extends Service {
             saveList = builder.toString().substring(0, builder.length() - 1);
         }
         // 保存当前信息
-        MusicSaveData musicSaveData = new MusicSaveData(saveList, playList.get(playPosition), playStatus, musicPlay.getCurrentPosition(), isShowNotification);
+        MusicSaveData musicSaveData = new MusicSaveData(saveList, playList.size() > 0 ? playList.get(playPosition) : 0,
+                playStatus, musicPlay.getCurrentPosition(), isShowNotification);
         SharedTools sharedTools = new SharedTools(this);
         sharedTools.saveMusic(musicSaveData);
     }
@@ -298,9 +302,9 @@ public class PlayMusicService extends Service {
                 for (String list : saveList) {
                     this.saveList.add(Long.valueOf(list));
                 }
+                playStatus = musicSaveData.getPlayStatus();
                 upsetOrder();
                 playPosition = (musicSaveData.getSongId() != -1 ? playList.indexOf(musicSaveData.getSongId()) : 0);
-                playStatus = musicSaveData.getPlayStatus();
                 musicPlay.preparePlayer();
                 musicPlay.setCurrentPosition(musicSaveData.getCurrent());
                 isShowNotification = musicSaveData.isShowNotification();
@@ -381,6 +385,8 @@ public class PlayMusicService extends Service {
 
     /**
      * 添加一首歌到播放列表
+     *
+     * @return 是否存在该歌曲的信息
      */
     private boolean addPlayQueue(long id) {
         if (!playList.contains(id)) {
@@ -398,11 +404,18 @@ public class PlayMusicService extends Service {
         return true;
     }
 
+    private int getPlayQueueSize(){
+        return saveList.size();
+    }
+
     /**
      * 从播放列表删除一首歌
      */
     private void deletePlayQueue(long id) {
-        if (id == playList.get(playPosition)) {
+        if (saveList.size() == 0 || !saveList.contains(id)) return;
+        long nowPlayId = playList.get(playPosition);
+        boolean isNowPlaySong = id == playList.get(playPosition);
+        if (isNowPlaySong) {
             if (saveList.size() == 1) {
                 if (isPlaying()) musicPlay.pause();
                 changeNotification(PlayMusicService.NOTIFICATION_CANCEL);
@@ -418,16 +431,22 @@ public class PlayMusicService extends Service {
         }
         saveList.remove(id);
         playList.remove(id);
+        if (!isNowPlaySong){
+            playPosition = playList.indexOf(nowPlayId);
+        }
+        saveData();
     }
 
     /**
      * 清空播放列表
      */
     private void deleteAllPlayQueue() {
+        if (saveList.size() == 0) return;
         saveList.clear();
         playList.clear();
         musicPlay.pause();
         changeNotification(PlayMusicService.NOTIFICATION_CANCEL);
+        saveData();
         Intent intent = new Intent();
         intent.setAction(PlayMusicService.CLEAR_PLAY_LIST);
         sendBroadcast(intent);
@@ -494,6 +513,7 @@ public class PlayMusicService extends Service {
         if (musicPlay.preparePlayer()) {
             musicPlay.start();
             setNotification();
+            saveData();
             Intent intent = new Intent();
             intent.setAction(PlayMusicService.MUSIC_PLAY);
             sendBroadcast(intent);
@@ -802,6 +822,11 @@ public class PlayMusicService extends Service {
         @Override
         public long[] setPlayQueue(long[] queue) throws RemoteException {
             return mService.get().setPlayQueue(queue);
+        }
+
+        @Override
+        public int getPlayQueueSize(){
+            return mService.get().getPlayQueueSize();
         }
 
         @Override
