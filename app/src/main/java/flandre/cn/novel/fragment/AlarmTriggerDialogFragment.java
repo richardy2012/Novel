@@ -22,6 +22,33 @@ public class AlarmTriggerDialogFragment extends AttachDialogFragment implements 
     private int restTime = 120;
     private TextView bottom;
     private TextView countdown;
+    private boolean mIsPaddingResume = false;
+
+    private Runnable mTimeCount = new Runnable() {
+        @Override
+        public void run() {
+            if (--restTime == 0) {
+                force = false;
+                restTime = 120;
+                countdown.setText("↑↑↑↑");
+                bottom.setText("上滑关闭");
+            } else {
+                countdown.setText("剩下 " + restTime + " 秒");
+                countdown();
+            }
+        }
+    };
+
+    private Runnable mPaddingResume = new Runnable() {
+        @Override
+        public void run() {
+            if (y > 0 && !isTouch) {
+                y = y - 0x10;
+                view.setPadding(0, 0, 0, (int) y);
+                handler.postDelayed(mPaddingResume, 30);
+            }
+        }
+    };
 
     public void setForce(boolean force) {
         this.force = force;
@@ -44,25 +71,11 @@ public class AlarmTriggerDialogFragment extends AttachDialogFragment implements 
         countdown = view.findViewById(R.id.countdown);
         view.setPadding(0, 0, 0, 0);
         view.setOnTouchListener(this);
-        if (force) countdown();
         return view;
     }
 
     private void countdown() {
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (--restTime == 0) {
-                    force = false;
-                    restTime = 120;
-                    countdown.setText("↑↑↑↑");
-                    bottom.setText("上滑关闭");
-                } else {
-                    countdown.setText("剩下 " + restTime + " 秒");
-                    countdown();
-                }
-            }
-        }, 1000);
+        handler.postDelayed(mTimeCount, 1000);
     }
 
     @Override
@@ -72,17 +85,29 @@ public class AlarmTriggerDialogFragment extends AttachDialogFragment implements 
         getDialog().setCanceledOnTouchOutside(false);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (force) countdown();
+        if (mIsPaddingResume) paddingResume();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (force) handler.removeCallbacks(mTimeCount);
+        if (mIsPaddingResume) handler.removeCallbacks(mPaddingResume);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mIsPaddingResume) handler.removeCallbacks(mPaddingResume);
+    }
+
     private void paddingResume() {
-        if (y > 0 && !isTouch) {
-            y = y - 0x10;
-            view.setPadding(0, 0, 0, (int) y);
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    paddingResume();
-                }
-            }, 30);
-        }
+        mIsPaddingResume = true;
+        handler.post(mPaddingResume);
     }
 
     @Override

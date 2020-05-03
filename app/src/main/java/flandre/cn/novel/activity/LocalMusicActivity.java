@@ -255,10 +255,15 @@ public class LocalMusicActivity extends BaseActivity {
         }
         cursor.close();
         Collections.sort(list, new MusicComparator());
+        // 整理每个字母对应的位置
         for (int i = 0; i < list.size(); i++) {
-            // 整理每个字母对应的位置
-            if (musicPosition.get(list.get(i).getSort()) == null)
-                musicPosition.put(list.get(i).getSort(), i);
+            String sort = list.get(i).getSort();
+            int sortInt = sort.charAt(0);
+            // 如果是数字则赋值为~
+            if ((sortInt ^ 0b00110000) <= 9) sort = SlideBar.LETTER[0];
+            else if (sortInt < 'A' || sortInt > 'Z') sort = SlideBar.LETTER[SlideBar.LETTER.length - 1];
+            if (musicPosition.get(sort) == null)
+                musicPosition.put(sort, i);
         }
         mAdapter.updateData(list);
     }

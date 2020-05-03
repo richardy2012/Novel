@@ -3,6 +3,7 @@ package flandre.cn.novel;
 import android.net.Uri;
 import android.service.autofill.FieldClassification;
 import android.speech.tts.TextToSpeech;
+import com.github.promeg.pinyinhelper.Pinyin;
 import org.jsoup.Connection;
 import org.junit.Test;
 
@@ -21,13 +22,7 @@ public class ExampleUnitTest {
 
     @Test
     public void addition_isCorrect() throws IOException {
-        List<Long> longs = new ArrayList<>();
-        longs.add(123l);
-        longs.add(122l);
-        longs.add(112l);
-        longs.add(152l);
-        Collections.shuffle(longs);
-        System.out.println(longs);
+        System.out.println((int)Pinyin.toPinyin('に').charAt(0));
     }
 
 }

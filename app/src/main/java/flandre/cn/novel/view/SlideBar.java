@@ -17,7 +17,9 @@ import flandre.cn.novel.R;
  * 2020.5.1
  */
 public class SlideBar extends View {
-    private final static String[] LETTER = {"A", "B", "C", "D", "E", "F", "G", "H", "I",
+    public static final String ALL_LETTER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    public static final String ALL_NUMBER = "0123456789";
+    public final static String[] LETTER = {"~", "A", "B", "C", "D", "E", "F", "G", "H", "I",
             "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V",
             "W", "X", "Y", "Z", "#"};
     private Paint mPaint;
@@ -59,9 +61,9 @@ public class SlideBar extends View {
                 widthMeasureSpec = getPaddingRight() + (int) mPaint.measureText("W") + widthMode;
             }
             if (heightMode == MeasureSpec.AT_MOST) {
-                // 高等于 宽 + (文字高 + 文字间隔) * 27
+                // 高等于 宽 + (文字高 + 文字间隔) * LETTER.length
                 int textHeight = mTextPadding * 2 + (int) mPaint.getTextSize();
-                heightMeasureSpec = textHeight * 27 + heightMode + MeasureSpec.getSize(widthMeasureSpec);
+                heightMeasureSpec = textHeight * LETTER.length + heightMode + MeasureSpec.getSize(widthMeasureSpec);
             }
             setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
         } else {
@@ -100,7 +102,7 @@ public class SlideBar extends View {
         int y = (int) event.getY();
         int top = mTop;
         int count;
-        for (count = 0; count < 26; ) {
+        for (count = 0; count < LETTER.length - 1; ) {
             if (top < y) {
                 count++;
                 top += mTextHeight;
