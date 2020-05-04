@@ -40,6 +40,7 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
     private TextView download;
     private ImageView imageView;
     private SQLiteNovel sqLiteNovel;
+    private Adapter adapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,7 +69,7 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
         manager.setOrientation(LinearLayoutManager.HORIZONTAL);
         recyclerView.setLayoutManager(manager);
         NovelConfigure configure = NovelConfigureManager.getConfigure();
-        Adapter adapter = new Adapter(configure.getNovelThemes(), configure.getNovelThemePosition());
+        adapter = new Adapter(configure.getNovelThemes(), configure.getNovelThemePosition());
         recyclerView.setAdapter(adapter);
     }
 
@@ -160,6 +161,8 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
                     intent.setAction(IndexActivity.CHANGE_THEME);
                     mContext.sendBroadcast(intent);
                     ((TextActivity) mContext).changeTheme();
+                    adapter.setNowChoice(NovelConfigureManager.getConfigure().getNovelThemePosition());
+                    adapter.notifyDataSetChanged();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -229,9 +232,17 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
         private NovelConfigure.NovelTheme[] novelThemes;
         private int nowChoice;
 
+        public void setNowChoice(int nowChoice) {
+            this.nowChoice = nowChoice;
+        }
+
         public Adapter(NovelConfigure.NovelTheme[] novelThemes, int nowChoice) {
             this.novelThemes = novelThemes;
             this.nowChoice = nowChoice;
+        }
+
+        public void update(){
+            notifyDataSetChanged();
         }
 
         @NonNull
