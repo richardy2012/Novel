@@ -17,45 +17,73 @@ import java.util.Map;
 public class NovelConfigure implements Serializable {
     public static final int DAY = 0;  // 日间模式
     public static final int NIGHT = 1;  // 夜间模式
-
-    private String textColor = "#000000";  // 文字颜色
-    private String backgroundColor = "#FFF4E8CD";  // 背景颜色
-    private String chapterColor = "#AA000000";  // 章节颜色
     private int textSize = 20;  // 文字大小
-    private String mainTheme = "#4376AC";  // actionBar颜色
-    private String backgroundTheme = "#FFFFFF";  // 背景颜色
-    private String nameTheme = "#000000";  // 书名颜色
-    private String authorTheme = "#AA000000";  // 作者颜色
-    private String introduceTheme = "#66000000";  // 介绍颜色
+
+    private static final int NOVEL_THEME_COUNT = 7;
+
+    private NovelTheme[] novelThemes;
+
+    private static final int MAIN_THEME_COUNT = 2;
+    private int mainThemePosition = 0;
+    private MainTheme[] mainTheme;
 
     private String nowSourceKey = "望书阁 www.wangshugu.com";  // 当前使用源名
     private String nowSourceValue = Sourcewangshugu.class.getName();  // 当前使用源类
-
-    private int mode = NovelConfigure.DAY;  // 当前的模式
-    private NovelConfigure novelConfigure;  // 另一套配置
-
-    private static boolean first = true;  // 是否第一次加载对象
 
     private String nowPageView = NormalPageView.class.getName();  // 当前使用的翻页
     private boolean isAlwaysNext = false;  // 是否全屏点击下一页
     private boolean isAlarmForce = false;  // 小说闹钟是否强迫休息
 
-    public NovelConfigure(){
-        // 加载夜间模式
-        if (first) {
-            first = false;
-            novelConfigure = new NovelConfigure();
-            novelConfigure.setTextColor("#AAFFFFFF");
-            novelConfigure.setBackgroundColor("#000000");
-            novelConfigure.setChapterColor("#88FFFFFF");
-            novelConfigure.setMainTheme("#000000");
-            novelConfigure.setBackgroundTheme("#DD000000");
-            novelConfigure.setNameTheme("#AAFFFFFF");
-            novelConfigure.setAuthorTheme("#88FFFFFF");
-            novelConfigure.setIntroduceTheme("#77FFFFFF");
-            novelConfigure.setNovelConfigure(this);
-            novelConfigure.setMode(NovelConfigure.NIGHT);
-        }
+    public NovelConfigure() {
+        mainTheme = new MainTheme[MAIN_THEME_COUNT];
+        // 日间主题
+        MainTheme mainDay = new MainTheme();
+        mainDay.mainTheme = "#4376AC";
+        mainDay.backgroundTheme = "#FFFFFF";
+        mainDay.nameTheme = "#000000";
+        mainDay.authorTheme = "#AA000000";
+        mainDay.introduceTheme = "#66000000";
+        mainDay.mode = DAY;
+        mainDay.novelThemePosition = 0;
+        mainTheme[DAY] = mainDay;
+        // 夜间主题
+        MainTheme mainNight = new MainTheme();
+        mainNight.mainTheme = "#000000";
+        mainNight.backgroundTheme = "#DD000000";
+        mainNight.nameTheme = "#AAFFFFFF";
+        mainNight.authorTheme = "#88FFFFFF";
+        mainNight.introduceTheme = "#77FFFFFF";
+        mainNight.mode = NIGHT;
+        mainNight.novelThemePosition = 6;
+        mainTheme[NIGHT] = mainNight;
+
+        novelThemes = new NovelTheme[NOVEL_THEME_COUNT];
+        // 默认背景
+        NovelTheme day = new NovelTheme("#000000", "#F6F1E7", "#AA000000");
+        novelThemes[0] = day;
+        // 黄色背景
+        NovelTheme yellow = new NovelTheme(day);
+        yellow.backgroundColor = "#F4EAC8";
+        novelThemes[1] = yellow;
+        // 绿色背景
+        NovelTheme green = new NovelTheme(day);
+        green.backgroundColor = "#E0ECE0";
+        novelThemes[2] = green;
+        // 蓝色背景
+        NovelTheme blue = new NovelTheme(day);
+        blue.backgroundColor = "#DFECF0";
+        novelThemes[3] = blue;
+        // 粉红背景
+        NovelTheme pink = new NovelTheme(day);
+        pink.backgroundColor = "#F4E3E3";
+        novelThemes[4] = pink;
+        // 灰色背景
+        NovelTheme prey = new NovelTheme(day);
+        prey.backgroundColor = "#DBDBDB";
+        novelThemes[5] = prey;
+        // 黑色背景
+        NovelTheme black = new NovelTheme("#AAFFFFFF", "#000000", "#88FFFFFF");
+        novelThemes[6] = black;
     }
 
     public boolean isAlarmForce() {
@@ -64,118 +92,113 @@ public class NovelConfigure implements Serializable {
 
     public void setAlarmForce(boolean alarmForce) {
         isAlarmForce = alarmForce;
-        novelConfigure.isAlarmForce = alarmForce;
-    }
-
-    public NovelConfigure getNovelConfigure() {
-        return novelConfigure;
-    }
-
-    private void setNovelConfigure(NovelConfigure novelConfigure) {
-        this.novelConfigure = novelConfigure;
     }
 
     public int getMode() {
-        return mode;
+        return mainTheme[mainThemePosition].mode;
     }
 
-    private void setMode(int mode) {
-        this.mode = mode;
+    public NovelTheme[] getNovelThemes() {
+        return novelThemes;
     }
 
     public int getMainTheme() {
-        return Color.parseColor(mainTheme);
+        return Color.parseColor(mainTheme[mainThemePosition].mainTheme);
     }
 
     public int getNameTheme() {
-        return Color.parseColor(nameTheme);
+        return Color.parseColor(mainTheme[mainThemePosition].nameTheme);
     }
 
     public void setNameTheme(String nameTheme) {
         Color.parseColor(nameTheme);
-        this.nameTheme = nameTheme;
+        this.mainTheme[mainThemePosition].nameTheme = nameTheme;
     }
 
     public int getAuthorTheme() {
-        return Color.parseColor(authorTheme);
+        return Color.parseColor(mainTheme[mainThemePosition].authorTheme);
     }
 
     public void setAuthorTheme(String authorTheme) {
         Color.parseColor(authorTheme);
-        this.authorTheme = authorTheme;
+        this.mainTheme[mainThemePosition].authorTheme = authorTheme;
     }
 
     public int getIntroduceTheme() {
-        return Color.parseColor(introduceTheme);
+        return Color.parseColor(mainTheme[mainThemePosition].introduceTheme);
     }
 
     public void setIntroduceTheme(String introduceTheme) {
         Color.parseColor(introduceTheme);
-        this.introduceTheme = introduceTheme;
+        this.mainTheme[mainThemePosition].introduceTheme = introduceTheme;
     }
 
     public void setMainTheme(String mainTheme) {
         Color.parseColor(mainTheme);
-        this.mainTheme = mainTheme;
+        this.mainTheme[mainThemePosition].mainTheme = mainTheme;
     }
 
     public int getBackgroundTheme() {
-        return Color.parseColor(backgroundTheme);
+        return Color.parseColor(mainTheme[mainThemePosition].backgroundTheme);
     }
 
     public void setBackgroundTheme(String backgroundTheme) {
         Color.parseColor(backgroundTheme);
-        this.backgroundTheme = backgroundTheme;
+        this.mainTheme[mainThemePosition].backgroundTheme = backgroundTheme;
     }
 
     public String getBaseNameTheme() {
-        return nameTheme;
+        return mainTheme[mainThemePosition].nameTheme;
     }
 
     public String getBaseAuthorTheme() {
-        return authorTheme;
+        return mainTheme[mainThemePosition].authorTheme;
     }
 
     public String getBaseIntroduceTheme() {
-        return introduceTheme;
+        return mainTheme[mainThemePosition].introduceTheme;
     }
 
     public String getBaseTextColor() {
-        return textColor;
+        return novelThemes[mainTheme[mainThemePosition].novelThemePosition].textColor;
     }
 
     public String getBaseMainTheme() {
-        return mainTheme;
+        return mainTheme[mainThemePosition].mainTheme;
     }
 
     public String getBaseBackgroundTheme() {
-        return backgroundTheme;
+        return mainTheme[mainThemePosition].backgroundTheme;
     }
 
     public String getBaseBackgroundColor() {
-        return backgroundColor;
+        return novelThemes[mainTheme[mainThemePosition].novelThemePosition].backgroundColor;
     }
 
     public String getBaseChapterColor() {
-        return chapterColor;
+        return novelThemes[mainTheme[mainThemePosition].novelThemePosition].chapterColor;
     }
 
     public int getTextColor() {
-        return Color.parseColor(textColor);
+        return Color.parseColor(novelThemes[mainTheme[mainThemePosition].novelThemePosition].textColor);
     }
 
     public void setTextColor(String textColor) {
         Color.parseColor(textColor);
-        this.textColor = textColor;
+        novelThemes[mainTheme[mainThemePosition].novelThemePosition].textColor = textColor;
     }
 
     public int getBackgroundColor() {
-        return Color.parseColor(backgroundColor);
+        return Color.parseColor(novelThemes[mainTheme[mainThemePosition].novelThemePosition].backgroundColor);
     }
 
     public void setBackgroundColor(String backgroundColor) {
         Color.parseColor(backgroundColor);
-        this.backgroundColor = backgroundColor;
+        novelThemes[mainTheme[mainThemePosition].novelThemePosition].backgroundColor = backgroundColor;
+    }
+
+    public void setMainThemePosition(int mainThemePosition) {
+        this.mainThemePosition = mainThemePosition;
     }
 
     public int getTextSize() {
@@ -184,7 +207,6 @@ public class NovelConfigure implements Serializable {
 
     public void setTextSize(int textSize) {
         this.textSize = textSize;
-        novelConfigure.textSize = textSize;
     }
 
     public String getNowSourceKey() {
@@ -204,12 +226,12 @@ public class NovelConfigure implements Serializable {
     }
 
     public int getChapterColor() {
-        return Color.parseColor(chapterColor);
+        return Color.parseColor(novelThemes[mainTheme[mainThemePosition].novelThemePosition].chapterColor);
     }
 
     public void setChapterColor(String chapterColor) {
         Color.parseColor(chapterColor);
-        this.chapterColor = chapterColor;
+        novelThemes[mainTheme[mainThemePosition].novelThemePosition].chapterColor = chapterColor;
     }
 
     public String getNowPageView() {
@@ -218,7 +240,6 @@ public class NovelConfigure implements Serializable {
 
     public void setNowPageView(String nowPageView) {
         this.nowPageView = nowPageView;
-        novelConfigure.nowPageView = nowPageView;
     }
 
     public boolean isAlwaysNext() {
@@ -227,6 +248,41 @@ public class NovelConfigure implements Serializable {
 
     public void setAlwaysNext(boolean alwaysNext) {
         isAlwaysNext = alwaysNext;
-        novelConfigure.isAlwaysNext = alwaysNext;
+    }
+
+    public void setNovelThemePosition(int novelThemePosition){
+        mainTheme[mainThemePosition].novelThemePosition = novelThemePosition;
+    }
+
+    public int getNovelThemePosition(){
+        return mainTheme[mainThemePosition].novelThemePosition;
+    }
+
+    public static class NovelTheme implements Serializable{
+        public String textColor;  // 文字颜色
+        public String backgroundColor;  // 背景颜色
+        public String chapterColor;  // 章节颜色
+
+        NovelTheme(String textColor, String backgroundColor, String chapterColor) {
+            this.textColor = textColor;
+            this.backgroundColor = backgroundColor;
+            this.chapterColor = chapterColor;
+        }
+
+        NovelTheme(NovelTheme src) {
+            this.textColor = src.textColor;
+            this.backgroundColor = src.backgroundColor;
+            this.chapterColor = src.chapterColor;
+        }
+    }
+
+    public static class MainTheme implements Serializable{
+        private String mainTheme;  // actionBar颜色
+        private String backgroundTheme;  // 背景颜色
+        private String nameTheme;  // 书名颜色
+        private String authorTheme;  // 作者颜色
+        private String introduceTheme;  // 介绍颜色
+        private int mode;  // 当前的模式
+        private int novelThemePosition;  // 当前文章页面主题
     }
 }

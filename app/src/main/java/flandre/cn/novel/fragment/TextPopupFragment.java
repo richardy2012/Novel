@@ -2,12 +2,17 @@ package flandre.cn.novel.fragment;
 
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.*;
 import android.widget.*;
+import flandre.cn.novel.Tools.DisplayUtil;
 import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.database.SQLTools;
 import flandre.cn.novel.info.NovelDownloadInfo;
@@ -20,6 +25,7 @@ import flandre.cn.novel.activity.MenuActivity;
 import flandre.cn.novel.activity.TextActivity;
 import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.serializable.SelectList;
+import flandre.cn.novel.view.CircleView;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -29,7 +35,7 @@ import java.util.List;
  * 点击TextActivity中间时的弹出框
  * 2019.??
  */
-public class TextPopupFragment extends AttachFragment implements DownloadDialogFragment.onDownloadListener, View.OnClickListener{
+public class TextPopupFragment extends AttachFragment implements DownloadDialogFragment.onDownloadListener, View.OnClickListener {
     private TextView textView;
     private TextView download;
     private ImageView imageView;
@@ -39,7 +45,7 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sqLiteNovel = SQLiteNovel.getSqLiteNovel(mContext.getApplicationContext());
-        ((TextActivity)mContext).addDownloadFinishListener(this);
+        ((TextActivity) mContext).addDownloadFinishListener(this);
     }
 
     @Override
@@ -52,7 +58,18 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
         setupTool(view);
         setupSeekBar(view);
         setupButton(view);
+        setupRecycleView(view);
         return view;
+    }
+
+    private void setupRecycleView(View view) {
+        RecyclerView recyclerView = view.findViewById(R.id.themeChoice);
+        LinearLayoutManager manager = new LinearLayoutManager(mContext);
+        manager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        recyclerView.setLayoutManager(manager);
+        NovelConfigure configure = NovelConfigureManager.getConfigure();
+        Adapter adapter = new Adapter(configure.getNovelThemes(), configure.getNovelThemePosition());
+        recyclerView.setAdapter(adapter);
     }
 
     private void setupTool(View view) {
@@ -61,7 +78,7 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((TextActivity)mContext).finish();
+                ((TextActivity) mContext).finish();
             }
         });
         list.setOnClickListener(new View.OnClickListener() {
@@ -69,19 +86,19 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, MenuActivity.class);
                 Bundle bundle = new Bundle();
-                if (((TextActivity)mContext).getTable() == null) {
+                if (((TextActivity) mContext).getTable() == null) {
                     List<String> list = new ArrayList<>();
-                    for (NovelTextItem textItem : ((TextActivity)mContext).list) {
+                    for (NovelTextItem textItem : ((TextActivity) mContext).list) {
                         list.add(textItem.getChapter());
                     }
                     SelectList<String> selectList = new SelectList<>();
                     selectList.setList(list);
                     bundle.putSerializable("list", selectList);
                 }
-                bundle.putString("table", ((TextActivity)mContext).getTable());
-                bundle.putInt("chapter", ((TextActivity)mContext).getChapter());
+                bundle.putString("table", ((TextActivity) mContext).getTable());
+                bundle.putInt("chapter", ((TextActivity) mContext).getChapter());
                 intent.putExtras(bundle);
-                ((TextActivity)mContext).startActivityForResult(intent, ((TextActivity)mContext).MENU_ACTIVITY_RETURN);
+                ((TextActivity) mContext).startActivityForResult(intent, ((TextActivity) mContext).MENU_ACTIVITY_RETURN);
             }
         });
     }
@@ -100,7 +117,7 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Window window = ((TextActivity)mContext).getWindow();
+                Window window = ((TextActivity) mContext).getWindow();
                 WindowManager.LayoutParams lp = window.getAttributes();
                 lp.screenBrightness = progress / 255.0f;
                 window.setAttributes(lp);
@@ -142,7 +159,7 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
                     Intent intent = new Intent();
                     intent.setAction(IndexActivity.CHANGE_THEME);
                     mContext.sendBroadcast(intent);
-                    ((TextActivity)mContext).changeTheme();
+                    ((TextActivity) mContext).changeTheme();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -168,8 +185,8 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
 
     @Override
     public void onDownload(View v, int type) {
-        if (((TextActivity)mContext).getTable() != null)
-            if (((TextActivity)mContext).getService().download(String.valueOf(((TextActivity)mContext).getNovelInfo().getId()), type))
+        if (((TextActivity) mContext).getTable() != null)
+            if (((TextActivity) mContext).getService().download(String.valueOf(((TextActivity) mContext).getNovelInfo().getId()), type))
                 Toast.makeText(mContext, "开始下载", Toast.LENGTH_SHORT).show();
             else
                 Toast.makeText(mContext, "加入下载队列", Toast.LENGTH_SHORT).show();
@@ -190,8 +207,8 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
     }
 
     public void downloadUI(int downloadFinish, int downloadCount) {
-        if (((TextActivity)mContext).getService() != null) {
-            String text = "正在下载 " + ((TextActivity)mContext).getService().getDownloadTable() + "(" + downloadFinish + "/" + downloadCount + ")";
+        if (((TextActivity) mContext).getService() != null) {
+            String text = "正在下载 " + ((TextActivity) mContext).getService().getDownloadTable() + "(" + downloadFinish + "/" + downloadCount + ")";
             download.setText(text);
             download.setVisibility(View.VISIBLE);
         }
@@ -200,11 +217,67 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ((TextActivity)mContext).removeDownloadFinishListener(this);
+        ((TextActivity) mContext).removeDownloadFinishListener(this);
     }
 
     @Override
     public void onClick(View v) {
 
+    }
+
+    class Adapter extends RecyclerView.Adapter<Adapter.Holder> {
+        private NovelConfigure.NovelTheme[] novelThemes;
+        private int nowChoice;
+
+        public Adapter(NovelConfigure.NovelTheme[] novelThemes, int nowChoice) {
+            this.novelThemes = novelThemes;
+            this.nowChoice = nowChoice;
+        }
+
+        @NonNull
+        @Override
+        public Holder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+            CircleView view = new CircleView(mContext);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            view.setLength(DisplayUtil.dip2px(mContext, 35));
+            view.setPadding(DisplayUtil.dip2px(mContext, 10));
+            view.setLayoutParams(params);
+            return new Holder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull Holder holder, int i) {
+            NovelConfigure.NovelTheme theme = novelThemes[i];
+            CircleView circleView = (CircleView) holder.itemView;
+            circleView.setTag(i);
+            circleView.setColor(Color.parseColor(theme.backgroundColor));
+            circleView.setSelected(i == nowChoice);
+            circleView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    NovelConfigureManager.getConfigure().setNovelThemePosition((Integer) v.getTag());
+                    ((TextActivity) mContext).changeTheme();
+                    nowChoice = (int) v.getTag();
+                    try {
+                        NovelConfigureManager.saveConfigure(mContext);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    notifyDataSetChanged();
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return novelThemes.length;
+        }
+
+        class Holder extends RecyclerView.ViewHolder {
+
+            public Holder(@NonNull View itemView) {
+                super(itemView);
+            }
+        }
     }
 }

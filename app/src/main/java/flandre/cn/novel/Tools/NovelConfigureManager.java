@@ -24,7 +24,7 @@ public class NovelConfigureManager {
 
     // 所有源, 添加源时要修改ConfigureSourceActivity.Adapter.holders大小
     private final static List<Map<String, String>> source = new ArrayList<Map<String, String>>() {{
-        add(new HashMap<String, String>(){{
+        add(new HashMap<String, String>() {{
             put("name", "望书阁 www.wangshugu.com");
             put("source", Sourcewangshugu.class.getName());
         }});
@@ -36,7 +36,7 @@ public class NovelConfigureManager {
             put("name", "手机小说 www.aixiatxt.com");
             put("source", Sourceaixiatxt.class.getName());
         }});
-        add(new HashMap<String, String>(){{
+        add(new HashMap<String, String>() {{
             put("name", "妙笔文学 www.mbtxt.cc");
             put("source", Sourcembtxt.class.getName());
         }});
@@ -44,7 +44,7 @@ public class NovelConfigureManager {
             put("name", "轻小说 www.linovelib.com");
             put("source", Sourcelinovelib.class.getName());
         }});
-        add(new HashMap<String, String>(){{
+        add(new HashMap<String, String>() {{
             put("name", "凤凰小说 www.fhxiaoshuo.org");
             put("source", Sourcefhxiaoshuo.class.getName());
         }});
@@ -108,7 +108,13 @@ public class NovelConfigureManager {
     }
 
     public static void changeConfigure() {
-        NovelConfigureManager.novelConfigure = NovelConfigureManager.novelConfigure.getNovelConfigure();
+        int mode = NovelConfigureManager.novelConfigure.getMode();
+        if (mode == NovelConfigure.DAY) {
+            NovelConfigureManager.novelConfigure.setMainThemePosition(NovelConfigure.NIGHT);
+            NovelConfigureManager.novelConfigure.setNovelThemePosition(6);
+        } else {
+            NovelConfigureManager.novelConfigure.setMainThemePosition(NovelConfigure.DAY);
+        }
     }
 
     public static void setContext(Context context) {
@@ -125,6 +131,10 @@ public class NovelConfigureManager {
         outputStream.writeObject(configure);
         outputStream.flush();
         outputStream.close();
+    }
+
+    public static void saveConfigure(Context context) throws IOException {
+        saveConfigure(NovelConfigureManager.novelConfigure, context);
     }
 
     /**

@@ -482,7 +482,10 @@ public class PlayMusicService extends Service {
      */
     private void setPlayOrder(int status) {
         playStatus = status;
+        if (saveList.size() == 0)return;
+        long playSongId = playList.get(playPosition);
         upsetOrder();
+        playPosition = playList.indexOf(playSongId);
     }
 
     /**

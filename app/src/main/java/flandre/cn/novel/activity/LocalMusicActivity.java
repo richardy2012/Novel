@@ -138,6 +138,7 @@ public class LocalMusicActivity extends BaseActivity {
         relativeLayout.setBackgroundColor(NovelConfigureManager.getConfigure().getBackgroundTheme());
         slideBar = findViewById(R.id.slideBar);
         permission = findViewById(R.id.permission);
+        permission.setTextColor(NovelConfigureManager.getConfigure().getAuthorTheme());
         findViewById(R.id.control).setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {

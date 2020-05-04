@@ -469,11 +469,7 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
      * 用户具有两套主题, 一套是默认的主题, 一套是夜间的主题
      */
     private void changeConfigure() {
-        String name = NovelConfigureManager.getConfigure().getNowSourceKey();
-        String source = NovelConfigureManager.getConfigure().getNowSourceValue();
         NovelConfigureManager.changeConfigure();
-        NovelConfigureManager.getConfigure().setNowSourceKey(name);
-        NovelConfigureManager.getConfigure().setNowSourceValue(source);
         try {
             NovelConfigureManager.saveConfigure(NovelConfigureManager.getConfigure(), this);
         } catch (IOException e) {
