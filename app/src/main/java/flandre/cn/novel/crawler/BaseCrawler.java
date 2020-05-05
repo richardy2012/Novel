@@ -236,6 +236,10 @@ public abstract class BaseCrawler {
         return elements;
     }
 
+    /**
+     * 把Br转换成空格
+     * @return 转换后的文本
+     */
     String withBr(Elements element, String select){
         return withBr(element, select, "", "");
     }
@@ -298,6 +302,9 @@ public abstract class BaseCrawler {
         return new TextTask(this, URL, i, table);
     }
 
+    /**
+     * 开个新线程爬文本
+     */
     static class TextTask extends AsyncTask<Void, Void, Void> {
         private BaseCrawler mCrawler;
         private String URL;

@@ -1,10 +1,13 @@
 package flandre.cn.novel.info;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import flandre.cn.novel.R;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -182,6 +185,19 @@ public class NovelInfo implements Serializable, Cloneable {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         image = baos.toByteArray();
+    }
+
+    public void setBitmap(String bitmapPath, Context context){
+        setBitmap(getBitmap(bitmapPath, context));
+    }
+
+    public static Bitmap getBitmap(String bitmapPath, Context context){
+        File file = new File(bitmapPath);
+        Bitmap bitmap;
+        if (file.exists())
+            bitmap = BitmapFactory.decodeFile(bitmapPath);
+        else bitmap= BitmapFactory.decodeResource(context.getResources(), R.drawable.not_found);
+        return bitmap;
     }
 
     public Bitmap getBitmap() {

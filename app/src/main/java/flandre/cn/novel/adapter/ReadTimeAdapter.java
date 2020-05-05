@@ -1,5 +1,6 @@
 package flandre.cn.novel.adapter;
 
+import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -24,13 +25,15 @@ import java.util.Map;
 public class ReadTimeAdapter extends RecyclerView.Adapter<ReadTimeAdapter.ItemHolder> implements View.OnClickListener {
     public List<WrapperNovelInfo> data;
     private OnItemClick listener;
+    private Context context;
 
     public void setListener(OnItemClick listener) {
         this.listener = listener;
     }
 
-    public ReadTimeAdapter(List<WrapperNovelInfo> data) {
+    public ReadTimeAdapter(List<WrapperNovelInfo> data, Context context) {
         this.data = data;
+        this.context = context;
     }
 
     public void update(List<WrapperNovelInfo> list) {
@@ -66,7 +69,7 @@ public class ReadTimeAdapter extends RecyclerView.Adapter<ReadTimeAdapter.ItemHo
         double percent = (double) wrapperNovelInfo.getChapter() / (double) wrapperNovelInfo.getCount() * 100;
         holder.progress.setProgress((int) percent);
         holder.percent.setText(new BigDecimal(percent).setScale(1, BigDecimal.ROUND_HALF_UP) + "%");
-        holder.image.setImageBitmap(BitmapFactory.decodeFile(info.getImagePath()));
+        holder.image.setImageBitmap(NovelInfo.getBitmap(info.getImagePath(), context));
         setTopItemTheme(holder);
         if (!wrapperNovelInfo.isShowDetailInfo()) holder.bottom.setVisibility(View.GONE);
         else {

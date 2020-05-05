@@ -27,6 +27,10 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
+/**
+ * 本地音乐播放服务
+ * 2020.4.5
+ */
 public class PlayMusicService extends Service {
     // 音乐控件被点击
     public static final String PROGRESS_CHANGE = "flandre.cn.novel.progresschange";

@@ -58,10 +58,6 @@
                     android:value=".activity.IndexActivity"/>
         </activity>
         <activity
-                android:name=".activity.MenuActivity"
-                android:theme="@style/AppTheme">
-        </activity>
-        <activity
                 android:name=".activity.ConfigureThemeActivity"
                 android:label="设置">
             <meta-data

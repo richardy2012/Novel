@@ -3,6 +3,7 @@ package flandre.cn.novel.activity;
 import android.app.Activity;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -90,16 +91,17 @@ public class ConfigureSourceActivity extends BaseActivity {
     }
 
     class Adapter extends RecyclerView.Adapter<Adapter.Holder> implements View.OnClickListener {
-        Holder[] holders = new Holder[NovelConfigureManager.getSource().size()];  // 每个源的Item, 添加一个源要修改这个的大小
+        Holder[] holders = new Holder[NovelConfigureManager.getSource().size()];
 
+        @NonNull
         @Override
-        public Holder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        public Holder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
             View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.source_list, viewGroup, false);
             return new Holder(view);
         }
 
         @Override
-        public void onBindViewHolder(Holder holder, int i) {
+        public void onBindViewHolder(@NonNull Holder holder, int i) {
             String name = NovelConfigureManager.getSource().get(i).get("name");
             holder.textView.setText(name);
             holder.textView.setTextColor(configure.getNameTheme());

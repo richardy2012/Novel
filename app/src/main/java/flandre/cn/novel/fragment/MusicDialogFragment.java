@@ -105,6 +105,7 @@ public class MusicDialogFragment extends AttachDialogFragment {
     }
 
     private void setListener() {
+        // 修改播放顺序
         status.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -130,6 +131,7 @@ public class MusicDialogFragment extends AttachDialogFragment {
             }
         });
 
+        // 清空播放列表
         clear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -184,6 +186,7 @@ public class MusicDialogFragment extends AttachDialogFragment {
             holder.itemView.findViewById(R.id.isPlaying).setVisibility(musicInfo.isPlaying() ? View.VISIBLE : View.GONE);
             holder.itemView.findViewById(R.id.isPlaying).setBackgroundColor(NovelConfigureManager.getConfigure().getMainTheme());
 
+            // 播放点击的歌曲
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -197,6 +200,7 @@ public class MusicDialogFragment extends AttachDialogFragment {
                 }
             });
 
+            // 从播放列表中移除一首歌曲
             holder.control.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

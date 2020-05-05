@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -16,20 +15,15 @@ import flandre.cn.novel.Tools.DisplayUtil;
 import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.database.SQLTools;
 import flandre.cn.novel.info.NovelDownloadInfo;
-import flandre.cn.novel.info.NovelTextItem;
 import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.NovelConfigure;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.activity.ConfigureThemeActivity;
-import flandre.cn.novel.activity.MenuActivity;
 import flandre.cn.novel.activity.TextActivity;
 import flandre.cn.novel.database.SQLiteNovel;
-import flandre.cn.novel.serializable.SelectList;
 import flandre.cn.novel.view.CircleView;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 点击TextActivity中间时的弹出框
@@ -85,21 +79,7 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
         list.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(mContext, MenuActivity.class);
-                Bundle bundle = new Bundle();
-                if (((TextActivity) mContext).getTable() == null) {
-                    List<String> list = new ArrayList<>();
-                    for (NovelTextItem textItem : ((TextActivity) mContext).list) {
-                        list.add(textItem.getChapter());
-                    }
-                    SelectList<String> selectList = new SelectList<>();
-                    selectList.setList(list);
-                    bundle.putSerializable("list", selectList);
-                }
-                bundle.putString("table", ((TextActivity) mContext).getTable());
-                bundle.putInt("chapter", ((TextActivity) mContext).getChapter());
-                intent.putExtras(bundle);
-                ((TextActivity) mContext).startActivityForResult(intent, ((TextActivity) mContext).MENU_ACTIVITY_RETURN);
+                new ChapterChoiceDialogFragment().show(getChildFragmentManager(), "ChapterChoiceDialogFragment");
             }
         });
     }

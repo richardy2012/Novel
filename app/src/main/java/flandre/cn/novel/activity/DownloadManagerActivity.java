@@ -208,6 +208,9 @@ public class DownloadManagerActivity extends BaseActivity {
             });
         }
 
+        /**
+         * 改变点击的下载状态
+         */
         private void changeStatus(View view) {
             int pos = ((Holder) view.getTag()).getAdapterPosition();
             if (pos < 0) return;

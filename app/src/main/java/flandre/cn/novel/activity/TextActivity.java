@@ -68,8 +68,6 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
     private boolean loadIsAdd = false;  // 加载对话框是否加载
     private boolean showLoad = true;  // 是否展示加载对话框(true时, 在合适的时候展示)
 
-    public final int MENU_ACTIVITY_RETURN = 0x1;
-
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message message) {
@@ -458,20 +456,14 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
         pageView.setTime(new Date().getTime());
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case MENU_ACTIVITY_RETURN:
-                popup.setVisibility(View.GONE);
-                if (resultCode != 0) {
-                    Message message = new Message();
-                    message.obj = resultCode;
-                    message.what = 0x303;
-                    handler.sendMessage(message);
-                }
-                break;
+    public void choiceChapter(int i){
+        popup.setVisibility(View.GONE);
+        if (i != 0) {
+            Message message = new Message();
+            message.obj = i;
+            message.what = 0x303;
+            handler.sendMessage(message);
         }
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     /**

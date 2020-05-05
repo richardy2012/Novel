@@ -5,9 +5,8 @@ import java.io.Serializable;
 /**
  * 小说文本信息
  */
-public class NovelText implements Serializable {
+public class NovelText extends NovelChapter implements Serializable {
     private String text;
-    private String chapter;
 
     public String getText() {
         return text;
@@ -15,13 +14,5 @@ public class NovelText implements Serializable {
 
     public void setText(String text) {
         this.text = text;
-    }
-
-    public String getChapter() {
-        return chapter;
-    }
-
-    public void setChapter(String chapter) {
-        this.chapter = chapter;
     }
 }

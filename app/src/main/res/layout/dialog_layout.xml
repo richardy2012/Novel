@@ -26,7 +26,7 @@
                     android:id="@+id/name"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:text="书本：英雄联盟之绝世无双"
+                    android:singleLine="true"
                     android:textSize="@dimen/dialogTextSize"
                     />
 
@@ -34,7 +34,7 @@
                     android:id="@+id/author"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:text="作者：心动可乐"
+                    android:singleLine="true"
                     android:textSize="@dimen/dialogTextSize"
                     />
         </LinearLayout>

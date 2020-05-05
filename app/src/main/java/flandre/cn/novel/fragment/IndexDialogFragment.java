@@ -179,7 +179,7 @@ public class IndexDialogFragment extends AttachDialogFragment implements PopUpAd
         novelInfo.setUrl(cursor.getString(0));
         cursor.close();
 
-        novelInfo.setBitmap(BitmapFactory.decodeFile(novelInfo.getImagePath()));
+        novelInfo.setBitmap(novelInfo.getImagePath(), mContext);
 
         bundle.putSerializable("NovelInfo", novelInfo);
 

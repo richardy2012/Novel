@@ -211,7 +211,7 @@ public class BookManageActivity extends BaseActivity implements View.OnClickList
             NovelInfo novelInfo = data.get(i);
             holder.name.setText(novelInfo.getName());
             holder.author.setText(novelInfo.getAuthor());
-            holder.image.setImageBitmap(BitmapFactory.decodeFile(novelInfo.getImagePath()));
+            holder.image.setImageBitmap(NovelInfo.getBitmap(novelInfo.getImagePath(), BookManageActivity.this));
             holder.checkBox.setTag(i);
             holder.name.setTextColor(NovelConfigureManager.getConfigure().getNameTheme());
             holder.author.setTextColor(NovelConfigureManager.getConfigure().getAuthorTheme());

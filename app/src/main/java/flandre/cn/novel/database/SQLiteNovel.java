@@ -24,6 +24,10 @@ public class SQLiteNovel extends SQLiteOpenHelper {
         return sqLiteNovel;
     }
 
+    public static SQLiteNovel getSqLiteNovel(){
+        return sqLiteNovel;
+    }
+
     public static SQLiteNovel newInstance(Context context, String name, int version) {
         if (sqLiteNovel == null) {
             sqLiteNovel = new SQLiteNovel(context, name, null, version);

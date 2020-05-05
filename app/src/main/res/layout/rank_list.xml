@@ -44,6 +44,7 @@
                 android:textSize="18sp"
                 android:layout_marginTop="3dp"
                 android:textColor="#aa000000"
+                android:singleLine="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 

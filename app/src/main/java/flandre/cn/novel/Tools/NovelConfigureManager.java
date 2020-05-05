@@ -18,11 +18,13 @@ import java.util.List;
 import java.util.Map;
 
 public class NovelConfigureManager {
-    private static NovelConfigure novelConfigure;
-    private static WeakReference<Context> context;
-    private static Constructor<?> constructor;
+    private static NovelConfigure novelConfigure;  // 配置类
+    private static WeakReference<Context> context;  // ApplicationContext
+    private static Constructor<?> constructor;  // 网络连接的构造函数对象
 
-    // 所有源, 添加源时要修改ConfigureSourceActivity.Adapter.holders大小
+    /**
+     * 所有的小说源
+     */
     private final static List<Map<String, String>> source = new ArrayList<Map<String, String>>() {{
         add(new HashMap<String, String>() {{
             put("name", "望书阁 www.wangshugu.com");
@@ -58,6 +60,9 @@ public class NovelConfigureManager {
         }});
     }};
 
+    /**
+     * 源类名与小说网站名的映射
+     */
     public static Map<String, String> novelSource = new HashMap<String, String>() {{
         put(Sourcex23qb.class.getName(), "铅笔小说(www.x23qb.com)");
         put(Sourceymoxuan.class.getName(), "衍墨轩(www.ymoxuan.com)");
@@ -69,6 +74,9 @@ public class NovelConfigureManager {
         put(Sourceaixiatxt.class.getName(), "轻小说(www.linovelib.com)");
     }};
 
+    /**
+     * 所有的翻页动画
+     */
     private final static List<Map<String, String>> pageView = new ArrayList<Map<String, String>>() {{
         add(new HashMap<String, String>() {{
             put("description", "普通翻页(无动画)");
@@ -107,11 +115,14 @@ public class NovelConfigureManager {
         return novelConfigure;
     }
 
+    /**
+     * 改变当前的主题
+     */
     public static void changeConfigure() {
         int mode = NovelConfigureManager.novelConfigure.getMode();
         if (mode == NovelConfigure.DAY) {
             NovelConfigureManager.novelConfigure.setMainThemePosition(NovelConfigure.NIGHT);
-            NovelConfigureManager.novelConfigure.setNovelThemePosition(6);
+            NovelConfigureManager.novelConfigure.setNovelThemePosition(NovelConfigure.BLACK);
         } else {
             NovelConfigureManager.novelConfigure.setMainThemePosition(NovelConfigure.DAY);
         }
@@ -121,20 +132,26 @@ public class NovelConfigureManager {
         NovelConfigureManager.context = new WeakReference<>(context);
     }
 
+    /**
+     * 保存当前的配置类
+     */
     public static void saveConfigure(NovelConfigure configure, Context context) throws IOException {
         File file = context.getFilesDir();
         File con = new File(file, NovelTools.md5("Novel") + ".cfg");
-
-        OutputStream stream = new FileOutputStream(con);
-        ObjectOutputStream outputStream = new ObjectOutputStream(stream);
-
-        outputStream.writeObject(configure);
-        outputStream.flush();
-        outputStream.close();
+        writeObject(con, configure);
     }
 
     public static void saveConfigure(Context context) throws IOException {
         saveConfigure(NovelConfigureManager.novelConfigure, context);
+    }
+
+    private static void writeObject(File file, Serializable o) throws IOException {
+        OutputStream stream = new FileOutputStream(file);
+        ObjectOutputStream outputStream = new ObjectOutputStream(stream);
+
+        outputStream.writeObject(o);
+        outputStream.flush();
+        outputStream.close();
     }
 
     /**
@@ -157,14 +174,9 @@ public class NovelConfigureManager {
             }
 
             try {
-                OutputStream stream = new FileOutputStream(configure);
-                ObjectOutputStream outputStream = new ObjectOutputStream(stream);
-                outputStream.writeObject(novelConfigure);
-                outputStream.flush();
-                outputStream.close();
+                writeObject(configure, novelConfigure);
             } catch (Exception e) {
                 e.printStackTrace();
-                boolean isOk = file.delete();
             }
         } else {
             try {
@@ -186,6 +198,9 @@ public class NovelConfigureManager {
         }
     }
 
+    /**
+     * 拿到当前的页面View
+     */
     public static PageView getPageView(Context context) {
         try {
             Constructor constructor = Class.forName(NovelConfigureManager.novelConfigure.getNowPageView()).getConstructor(Context.class);

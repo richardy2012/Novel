@@ -5,17 +5,8 @@ import java.io.Serializable;
 /**
  * 小说文本网址
  */
-public class NovelTextItem implements Serializable {
-    private String chapter;
+public class NovelTextItem extends NovelChapter implements Serializable {
     private String url;
-
-    public String getChapter() {
-        return chapter;
-    }
-
-    public void setChapter(String chapter) {
-        this.chapter = chapter;
-    }
 
     public String getUrl() {
         return url;

@@ -66,6 +66,7 @@ public class MusicControlerFragment extends AttachFragment {
         view.setBackgroundColor(NovelConfigureManager.getConfigure().getMainTheme());
         progress = view.findViewById(R.id.progress);
         name = view.findViewById(R.id.name);
+        name.requestFocus();
         singer = view.findViewById(R.id.singer);
         last = view.findViewById(R.id.last);
         controler = view.findViewById(R.id.control);

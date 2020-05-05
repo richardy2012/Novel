@@ -188,7 +188,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
         public void onBindViewHolder(@NonNull Holder viewHolder, int i) {
             NovelInfo novelInfo = data.get(i);
             viewHolder.itemView.setTag(i);
-            viewHolder.image.setImageBitmap(BitmapFactory.decodeFile(novelInfo.getImagePath()));
+            viewHolder.image.setImageBitmap(NovelInfo.getBitmap(novelInfo.getImagePath(), mContext));
             viewHolder.title.setText(novelInfo.getName());
             viewHolder.chapter.setText(novelInfo.getChapter());
             viewHolder.title.setTextColor(NovelConfigureManager.getConfigure().getNameTheme());
