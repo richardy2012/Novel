@@ -108,7 +108,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
     }
 
     @Override
-    public void onUpdateFinish(int updateFinish, int updateCount) {
+    public void onUpdateFinish(int updateFinish, int updateCount, int id) {
         if (updateFinish == updateCount) {
             refresh.setRefreshing(false);
             Toast.makeText(mContext, "更新完毕", Toast.LENGTH_SHORT).show();

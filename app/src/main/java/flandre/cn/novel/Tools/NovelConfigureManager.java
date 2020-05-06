@@ -4,9 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import flandre.cn.novel.crawler.*;
-import flandre.cn.novel.view.NormalPageView;
-import flandre.cn.novel.view.PageView;
-import flandre.cn.novel.view.SmoothPageView;
+import flandre.cn.novel.view.*;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -83,8 +81,16 @@ public class NovelConfigureManager {
             put("source", NormalPageView.class.getName());
         }});
         add(new HashMap<String, String>() {{
-            put("description", "仿真翻页(平移动画)");
-            put("source", SmoothPageView.class.getName());
+            put("description", "仿真翻页(左右层叠)");
+            put("source", CascadeSmoothPageView.class.getName());
+        }});
+        add(new HashMap<String, String>(){{
+            put("description", "仿真翻页(左右平移)");
+            put("source", TranslationSmoothPageView.class.getName());
+        }});
+        add(new HashMap<String, String>(){{
+            put("description", "仿真翻页(上下滚动)");
+            put("source", ScrollPageView.class.getName());
         }});
     }};
 

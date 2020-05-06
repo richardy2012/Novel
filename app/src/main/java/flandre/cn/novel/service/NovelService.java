@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Math.log;
 import static java.lang.Math.min;
 
 /**
@@ -39,6 +40,10 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
     public static final int DOWNLOAD_ALL = -1;  // 下载全部
     private static final long SEPARATOR = 500;  // 下载时切换状态的间隔
 
+    private static final int ON_UPDATE_START = 0;
+    private static final int ON_UPDATE_FAIL = 1;
+    private static final int ON_UPDATE_FINISH = 2;
+
     private IBinder mBinder;
 
     private boolean downloadEnable = true;  // 下载是否可用
@@ -49,7 +54,9 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
     private int updateCount;  // 更新的数量
     private boolean updateEnable = true;  // 更新是否可用
     private int updateFinish;  // 更新已完成的数量
-    private UpdateNovel updateNovel;
+    private List<UpdateNovel> updateNovel = new ArrayList<>();
+    private List<Integer> containId = new ArrayList<>();
+
     private Handler handler;
     private SQLiteNovel sqLiteNovel;
 
@@ -373,14 +380,43 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
         sendBroadcast(intent);
     }
 
+    private void onUpdate(int mode, int... values) {
+        for (UpdateNovel updateNovel : updateNovel) {
+            switch (mode) {
+                case ON_UPDATE_START:
+                    updateNovel.onUpdateStart();
+                    break;
+                case ON_UPDATE_FAIL:
+                    updateNovel.onUpdateFail();
+                    break;
+                case ON_UPDATE_FINISH:
+                    updateNovel.onUpdateFinish(values[0], values[1], values[2]);
+                    break;
+            }
+        }
+    }
+
+    public boolean isContainId(int id){
+        return containId.contains(id);
+    }
+
+    public boolean addUpdateListener(UpdateNovel updateNovel) {
+        if (!updateEnable) this.updateNovel.add(updateNovel);
+        return !updateEnable;
+    }
+
     public void update(int pos, UpdateNovel updateNovel) {
         if (updateEnable) {
+            this.updateNovel.clear();
+            containId.clear();
             updateEnable = false;
-            this.updateNovel = updateNovel;
-            if (updateNovel != null) updateNovel.onUpdateStart();
+            if (updateNovel != null) {
+                this.updateNovel.add(updateNovel);
+            }
+            onUpdate(ON_UPDATE_START);
             startUpdate(pos);
         } else {
-            if (updateNovel != null) updateNovel.onUpdateFail();
+            onUpdate(ON_UPDATE_FAIL);
         }
     }
 
@@ -407,8 +443,8 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
         if (!cursor.moveToNext()) {
             cursor.close();
             // 数据库里没有小说, 发出更新完成
-            if (updateNovel != null)
-                handler.post(new UpdateRunnable(-1, -1));
+            if (updateNovel.size() != 0)
+                handler.post(new UpdateRunnable(-1, -1, -1));
             updateEnable = true;
             return;
         }
@@ -456,7 +492,7 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
             map.put("id", String.valueOf(id));
             map.put("newId", String.valueOf(newId));
             updateList.add(map);
-
+            containId.add(id);
         } while (cursor.moveToNext());
 
         // 最大开4个线程去更新
@@ -485,8 +521,7 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
 
         // 如果没有小说需要更新
         if (updateCount == 0) {
-            if (updateNovel != null)
-                handler.post(new UpdateRunnable(-1, -1));
+            onUpdate(ON_UPDATE_FINISH, -1, -1);
             updateEnable = true;
         }
 
@@ -498,7 +533,7 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
         // 没有新小说,或发生错误跳过
         if (list == null || list.size() == 0) {
             updateFinish++;
-            if (updateNovel != null) handler.post(new UpdateRunnable(updateFinish, updateCount));
+            if (updateNovel.size() != 0) handler.post(new UpdateRunnable(updateFinish, updateCount, id));
             if (updateFinish == updateCount) {
                 updateEnable = true;
             }
@@ -527,7 +562,7 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
         cur.close();
 
         updateFinish++;
-        if (updateNovel != null) handler.post(new UpdateRunnable(updateFinish, updateCount));
+        if (updateNovel.size() != 0) handler.post(new UpdateRunnable(updateFinish, updateCount, id));
         if (updateFinish == updateCount) {
             updateEnable = true;
         }
@@ -536,15 +571,17 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
     class UpdateRunnable implements Runnable {
         private int updateFinish;
         private int updateCount;
+        private int id;
 
-        UpdateRunnable(int updateFinish, int updateCount) {
+        UpdateRunnable(int updateFinish, int updateCount, int id) {
             this.updateFinish = updateFinish;
             this.updateCount = updateCount;
+            this.id = id;
         }
 
         @Override
         public void run() {
-            updateNovel.onUpdateFinish(updateFinish, updateCount);
+            onUpdate(ON_UPDATE_FINISH, updateFinish, updateCount, id);
         }
     }
 
@@ -552,12 +589,12 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
         /**
          * 小说开始更新时调用
          */
-        public void onUpdateStart();
+        public abstract void onUpdateStart();
 
         /**
          * 当更新不可用时调用
          */
-        public void onUpdateFail();
+        public abstract void onUpdateFail();
 
         /**
          * 每更新好一本小说时调用
@@ -565,6 +602,6 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
          * @param updateFinish 已经更新的数量
          * @param updateCount  总共要更新的数量
          */
-        public void onUpdateFinish(int updateFinish, int updateCount);
+        public abstract void onUpdateFinish(int updateFinish, int updateCount, int id);
     }
 }

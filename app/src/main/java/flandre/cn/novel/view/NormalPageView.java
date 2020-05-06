@@ -8,10 +8,9 @@ import android.view.MotionEvent;
 
 /**
  * 正常的翻页
+ * 2020.4
  */
 public class NormalPageView extends PageView {
-    private int x, y;
-
     public NormalPageView(Context context) {
         this(context, null);
     }

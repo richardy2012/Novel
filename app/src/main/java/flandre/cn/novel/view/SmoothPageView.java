@@ -8,18 +8,21 @@ import android.view.MotionEvent;
 
 import java.util.ArrayList;
 
-public class SmoothPageView extends PageView {
-    private static final int NORMAL_DRAW = 0;  // 普通作画
-    private static final int SMOOTH_LAST_DRAW = 1;  // 上一个页面作画
-    private static final int SMOOTH_NEXT_DRAW = 2;  // 下一个页面作画
+/**
+ * 平移翻译
+ * 2020.5.6
+ */
+public abstract class SmoothPageView extends PageView {
+    static final int NORMAL_DRAW = 0;  // 普通作画
+    static final int SMOOTH_LAST_DRAW = 1;  // 上一个页面作画
+    static final int SMOOTH_NEXT_DRAW = 2;  // 下一个页面作画
 
     private static final long POST_DELAY = 20;  // post延迟时间(毫秒)
     private static final int DISTANCE = 8;  // 每次移动的距离(width/this)
 
-    private int drawMode = NORMAL_DRAW;  // 作画的模式
+    int drawMode = NORMAL_DRAW;  // 作画的模式
 
-    private int left;  // bitmap的x坐标
-    private int x, y;
+    int left;  // bitmap的x坐标
     private ArrayList<Bitmap> mBitmap = new ArrayList<>();
     private ArrayList<Canvas> mCanvas = new ArrayList<>();
 
@@ -33,6 +36,10 @@ public class SmoothPageView extends PageView {
 
     public SmoothPageView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+    }
+
+    public ArrayList<Bitmap> getBitmap() {
+        return mBitmap;
     }
 
     @Override
@@ -107,7 +114,7 @@ public class SmoothPageView extends PageView {
      *
      * @param x 当前手指的坐标
      */
-    private void smooth(int x) {
+    private void smooth(int x){
         if (x - this.x > 0) {
             left = Math.abs(x - this.x) - width;
             drawMode = SMOOTH_LAST_DRAW;
@@ -118,23 +125,7 @@ public class SmoothPageView extends PageView {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        switch (drawMode) {
-            case NORMAL_DRAW:
-                canvas.drawBitmap(mBitmap.get(1), 0, 0, null);
-                break;
-            case SMOOTH_LAST_DRAW:
-                canvas.drawBitmap(mBitmap.get(1), 0, 0, null);
-                canvas.drawBitmap(mBitmap.get(0), left, 0, null);
-//                canvas.drawLine(left + width, 0, left + width, height, getPaint());
-                break;
-            case SMOOTH_NEXT_DRAW:
-                canvas.drawBitmap(mBitmap.get(2), 0, 0, null);
-                canvas.drawBitmap(mBitmap.get(1), left, 0, null);
-//                canvas.drawLine(left + width, 0, left + width, height, getPaint());
-                break;
-        }
-    }
+    protected abstract void onDraw(Canvas canvas);
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -200,7 +191,7 @@ public class SmoothPageView extends PageView {
     public void nextPage() {
         // 开启翻页动画, 不给用户移动, 直到动画结束
         pageEnable = false;
-        handler.postDelayed(new Runnable() {
+        postDelayed(new Runnable() {
             @Override
             public void run() {
                 moveNext();
@@ -214,7 +205,7 @@ public class SmoothPageView extends PageView {
             // 当left<-width时表示页面已经翻走了, 可以结束动画进行收尾工作
             if (left > -width) {
                 left -= width / DISTANCE;
-                handler.postDelayed(new Runnable() {
+                postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         moveNext();
@@ -230,7 +221,7 @@ public class SmoothPageView extends PageView {
             // 如果时最后一页, 把页面翻回来
             if (left < 0) {
                 left += width / DISTANCE;
-                handler.postDelayed(new Runnable() {
+                postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         moveNext();
@@ -278,7 +269,7 @@ public class SmoothPageView extends PageView {
     public void lastPage() {
         // 进行翻页动画
         pageEnable = false;
-        handler.postDelayed(new Runnable() {
+        postDelayed(new Runnable() {
             @Override
             public void run() {
                 moveLast();
@@ -291,7 +282,7 @@ public class SmoothPageView extends PageView {
         if (now > 0) {
             if (left < 0) {
                 left += width / DISTANCE;
-                handler.postDelayed(new Runnable() {
+                postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         moveLast();
@@ -305,7 +296,7 @@ public class SmoothPageView extends PageView {
         } else {
             if (left > -width) {
                 left -= width / DISTANCE;
-                handler.postDelayed(new Runnable() {
+                postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         moveLast();

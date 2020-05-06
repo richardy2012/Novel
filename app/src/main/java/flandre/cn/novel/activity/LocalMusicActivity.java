@@ -193,7 +193,6 @@ public class LocalMusicActivity extends BaseActivity {
                 }
             }
         });
-
     }
 
     private void setupCheckBox() {
@@ -243,7 +242,7 @@ public class LocalMusicActivity extends BaseActivity {
         Cursor cursor = cr.query(uri, music_pos, "title != '' and _size > 1048576 and duration > 60000",
                 null, "title_key");
         while (cursor.moveToNext()) {
-            if (!cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).endsWith("mp3")) continue;
+            if (!cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).toLowerCase().trim().endsWith("mp3")) continue;
             MusicInfo musicInfo = new MusicInfo();
             musicInfo.setSongId(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID)));
             musicInfo.setDuration(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));

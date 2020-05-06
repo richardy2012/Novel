@@ -18,6 +18,7 @@ import static flandre.cn.novel.activity.TextActivity.BufferChapterCount;
 
 /**
  * 翻页的基类, 处理数据
+ * 2020.4
  */
 public abstract class PageView extends View {
     public static final int REDIRECT = 0;  // 跳转
@@ -34,7 +35,7 @@ public abstract class PageView extends View {
     private int watch;  // 观看的位置
     private long time;
 
-    private ArrayList<ArrayList<String>> textPosition;  // 文本的位置信息
+    ArrayList<ArrayList<String>> textPosition;  // 文本的位置信息
     private PageTurn pageTurn = null;  // 页面变化时的接口
     private Context mContext;
 
@@ -44,9 +45,9 @@ public abstract class PageView extends View {
     NovelText[] drawText;  // 当前的文本缓冲
     Integer[] listPosition = new Integer[BufferChapterCount];  // 每个文本的结尾位置
     int now;  // 当前观看的位置
-    private int position;  // 当前观看的文本位置
+    int position;  // 当前观看的文本位置
     int color = 0xffffffff;  // 背景颜色
-    private int pageCount;  // 一共有多少页面
+    int pageCount;  // 一共有多少行
     private int size;  // 文字大小
     private int rowSpace;  // 行距
     private int paddingTop = 0;
@@ -55,16 +56,15 @@ public abstract class PageView extends View {
     private int paddingRight = 0;
     protected int chapter;  // 当前章节, 有翻页动画需要用到, 在翻页前需要初始化
     protected int lastChapter;  // 最后章节, 在翻页前需要初始化
-    protected Handler handler;  // 延时器
     int mode;  // pageEnable是false时的跳转模式
     int width, height;
 
     boolean alwaysNext = false;  // 是否全屏点击下一页
+    int x, y;
 
     public PageView(Context context) {
         this(context, null);
         mContext = context;
-        handler = new Handler(mContext.getMainLooper());
         initPaint();
     }
 
@@ -83,7 +83,7 @@ public abstract class PageView extends View {
     private void initPaint() {
         textPaint = new Paint();
         textPaint.setStyle(Paint.Style.FILL);
-        textPaint.setStrokeWidth(2);  // 画笔的粗细
+        textPaint.setStrokeWidth(5);  // 画笔的粗细
         textPaint.setTextSize(size);
         textPaint.setTextAlign(Paint.Align.LEFT);
 
@@ -203,6 +203,10 @@ public abstract class PageView extends View {
         }
     }
 
+    public PageTurn getPageTurn() {
+        return pageTurn;
+    }
+
     /**
      * 设置文字颜色
      */
@@ -257,6 +261,10 @@ public abstract class PageView extends View {
 
     public void setPageEnable(boolean pageEnable) {
         this.pageEnable = pageEnable;
+    }
+
+    public int getRowHeight(){
+        return size + rowSpace;
     }
 
     /**
@@ -345,15 +353,33 @@ public abstract class PageView extends View {
     void drawText(Canvas canvas, int tp, int position) {
         if (drawText == null) return;
         String text = drawText[position].getText();
-        String chapter = drawText[position].getChapter();
-        canvas.drawText(chapter, marginLeft, marginTop + topLength, descriptionPaint);
-        canvas.drawText(calcWatch(tp, position), marginLeft, height - marginTop, descriptionPaint);
+        drawChapter(canvas, tp);
         ArrayList<String> strings = textPosition.get(tp);
         for (int i = 1; i <= strings.size(); i++) {
             String[] mark = strings.get(i - 1).split(":");
-            canvas.drawText(text, Integer.valueOf(mark[0]), Integer.valueOf(mark[1]), leftPadding +
-                    paddingLeft, paddingTop + i * (size + rowSpace) - rowSpace, textPaint);
+            canvas.drawText(text, Integer.valueOf(mark[0]), Integer.valueOf(mark[1]), getLeftPadding(), getCowPosition(i), textPaint);
         }
+    }
+
+    /**
+     * 绘制章节等信息
+     */
+    void drawChapter(Canvas canvas, int tp){
+        Paint paint = new Paint();
+        paint.setColor(color);
+        canvas.drawRect(0, 0, width, paddingTop, paint);
+        canvas.drawRect(0, height - paddingBottom, width, height, paint);
+        String chapter = drawText[position].getChapter();
+        canvas.drawText(chapter, marginLeft, marginTop + topLength, descriptionPaint);
+        canvas.drawText(calcWatch(tp, position), marginLeft, height - marginTop, descriptionPaint);
+    }
+
+    public int getLeftPadding(){
+        return leftPadding + paddingLeft;
+    }
+
+    public int getCowPosition(int i){
+        return paddingTop + i * (size + rowSpace) - rowSpace;
     }
 
     protected void next() {

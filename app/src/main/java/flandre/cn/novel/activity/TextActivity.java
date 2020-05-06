@@ -318,7 +318,27 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
             } else {
                 // 表为空时从网上爬取目录进行填充
                 emptyTable = true;
-                crawler.list(novelInfo.getUrl());
+                // 当服务已经加载好了
+                if (mService != null) {
+                    // 如果更新的小说是自己...., 不是 直接加载目录
+                    if (mService.isContainId(novelInfo.getId())) {
+                        if (isUpdateFinish()) {
+                            // 为了避免更新全部后, 收藏一本新的然后直接观看会死循环的情况, 要先判断里面是否有数据
+                            Cursor count = sqLiteNovel.getReadableDatabase().query(table, null, null,
+                                    null, null, null, null);
+                            // 有数据直接加载文本, 否则先加载目录
+                            if (count.getCount() != 0) {
+                                emptyTable = false;
+                                handler.sendEmptyMessage(0x300);
+                            } else {
+                                crawler.list(novelInfo.getUrl());
+                            }
+                            count.close();
+                        }
+                    } else {
+                        crawler.list(novelInfo.getUrl());
+                    }
+                }
             }
             cursor.close();
         }
@@ -328,6 +348,8 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text);
+        setupNovelService();
+        setupMusicService();
 
         // getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         sqLiteNovel = SQLiteNovel.getSqLiteNovel(getApplicationContext());
@@ -341,8 +363,6 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
 
         redirect = true;
         setUpText(savedInstanceState);
-        setupNovelService();
-        setupMusicService();
     }
 
     private void unpack(Bundle savedInstanceState) {
@@ -358,6 +378,7 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
             table = novelInfo.getTable();
         } else {
             novelInfo = new NovelInfo();
+            novelInfo.setId(-1);
             novelInfo.setName(name);
             novelInfo.setAuthor(author);
             novelInfo.setSource(bundle.getString("source"));
@@ -375,14 +396,14 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
         RelativeLayout relativeLayout = findViewById(R.id.viewPage);
         pageView = NovelConfigureManager.getPageView(this);
         pageView.setOnPageTurnListener(this);
-        pageView.setPadding(26, 20, 29, 20);
+        pageView.setPadding(26, 20, 23, 20);
         relativeLayout.addView(pageView);
         if (savedInstanceState == null) {
             fragment = new TextPopupFragment();
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.add(R.id.popup, fragment, "TextPopupFragment");
             transaction.commit();
-        }else {
+        } else {
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragment = (TextPopupFragment) getSupportFragmentManager().findFragmentByTag("TextPopupFragment");
             fragmentTransaction.attach(fragment);
@@ -441,11 +462,51 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
             }
             pageView.setWatch(Integer.parseInt(split[1]));
 
-            Message message = new Message();
-            message.what = 0x300;
-            handler.sendMessage(message);
+            handler.sendEmptyMessage(0x300);
         }
         pageView.setChapter(chapter);
+    }
+
+    /**
+     * 返回当前小说是否更新完
+     */
+    private boolean isUpdateFinish() {
+        return !mService.addUpdateListener(new NovelService.UpdateNovel() {
+            @Override
+            public void onUpdateStart() {
+
+            }
+
+            @Override
+            public void onUpdateFail() {
+
+            }
+
+            @Override
+            public void onUpdateFinish(int updateFinish, int updateCount, int id) {
+                if (id == novelInfo.getId()) {
+                    emptyTable = false;
+                    handler.sendEmptyMessage(0x300);
+                }
+            }
+        });
+    }
+
+    @Override
+    void onServiceConnected(int service) {
+        // 成功把代码写的自己也看不懂, 这串代码是为了防止, 更新小说时瞬间点进来观看, 会把章节成倍放入数据库(应该没人会这么做)
+        // 当小说服务连接时是空表时, 不是空表表示表不为空, 或者还没运行到加载文本的代码(转到加载文本时再处理)
+        if (service == NOVEL_SERVICE_CONNECTED && emptyTable) {
+            emptyTable = false;
+            // 如果更新的小说是自己, 且已经更新完了, 那么发送信息去加载文本
+            // 如果还没有更新完, 就添加监听器, 等它更新完再发送信息去加载文本
+            if (mService.isContainId(novelInfo.getId())) {
+                if (isUpdateFinish()) handler.sendEmptyMessage(0x300);
+            } else {
+                // 当更新的小说不是自己, 运行原来的程序
+                handler.sendEmptyMessage(0x300);
+            }
+        }
     }
 
     @Override
@@ -456,7 +517,7 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
         pageView.setTime(new Date().getTime());
     }
 
-    public void choiceChapter(int i){
+    public void choiceChapter(int i) {
         popup.setVisibility(View.GONE);
         if (i != 0) {
             Message message = new Message();

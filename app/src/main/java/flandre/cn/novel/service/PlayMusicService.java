@@ -287,7 +287,7 @@ public class PlayMusicService extends Service {
         Cursor cursor = cr.query(uri, music_pos, "title != '' and _size > 1048576 and duration > 60000",
                 null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
         while (cursor.moveToNext()) {
-            if (!cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).endsWith("mp3")) continue;
+            if (!cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).toLowerCase().trim().endsWith("mp3")) continue;
             MusicInfo musicInfo = new MusicInfo();
             musicInfo.setDuration(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
             musicInfo.setSongId(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID)));
