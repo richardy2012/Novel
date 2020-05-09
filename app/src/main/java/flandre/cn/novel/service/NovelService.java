@@ -315,7 +315,7 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
             downloadInfo.setFinish(0);
             continueDownload();
         }
-        if (novelText == null) return;
+        if (novelText == null || novelText.getText().equals("")) return;
         ContentValues values = new ContentValues();
         values.put("text", novelText.getText().replace("\'", "\""));
         sqLiteNovel.getReadableDatabase().update(table, values, "id = ?", new String[]{String.valueOf(id)});

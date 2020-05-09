@@ -2,25 +2,19 @@ package flandre.cn.novel.activity;
 
 import android.Manifest;
 import android.content.Intent;
-import android.os.Build;
+import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import flandre.cn.novel.R;
-import flandre.cn.novel.Tools.NovelConfigure;
-import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.Tools.PermissionManager;
 import flandre.cn.novel.database.SharedTools;
 import flandre.cn.novel.parse.PathParse;
 
-import static flandre.cn.novel.Tools.PermissionManager.CODE_INFO;
-import static flandre.cn.novel.Tools.PermissionManager.INTERNET_CODE;
+import static flandre.cn.novel.Tools.PermissionManager.*;
 
 /**
  * 开始的广告界面
@@ -28,6 +22,7 @@ import static flandre.cn.novel.Tools.PermissionManager.INTERNET_CODE;
  */
 public class MainActivity extends AppCompatActivity {
     private RelativeLayout layoutSplash;
+    private boolean close = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,38 +54,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            final PermissionManager manager = new PermissionManager(this);
-            // 先设置是否有权限播放音乐
-            SharedTools sharedTools = new SharedTools(this);
-            if (manager.checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE))
-                sharedTools.setMusicEnable(true);
-            else sharedTools.setMusicEnable(false);
-
-            // 含有权限直接可以加载数据
-            if (manager.checkPermission(Manifest.permission.INTERNET)) startActivity();
-                // 没有权限时, 如果是第二次描述权限的作用再申请, 第一次直接申请
-                // 第二次被拒绝时就不能再申请权限了
-            else if (manager.shouldShowRequestPermissionRationale(Manifest.permission.INTERNET)) {
-                Snackbar snackbar = Snackbar.make(layoutSplash, CODE_INFO.get(INTERNET_CODE),
-                        Snackbar.LENGTH_INDEFINITE)
-                        .setAction(android.R.string.ok, new View.OnClickListener() {  // 点击确定时询问
-                            @Override
-                            public void onClick(View view) {
-                                manager.askPermission(Manifest.permission.INTERNET, INTERNET_CODE);
-                            }
-                        });
-                View view = snackbar.getView();
-                NovelConfigure configure = NovelConfigureManager.getConfigure(getApplicationContext());
-                view.setBackgroundColor(configure.getMainTheme());
-                ((TextView) view.findViewById(R.id.snackbar_text)).setTextColor(configure.getAuthorTheme());
-                ((TextView) view.findViewById(R.id.snackbar_action)).setTextColor(configure.getAuthorTheme());
-                snackbar.show();
-            } else manager.askPermission(Manifest.permission.INTERNET, INTERNET_CODE);
-        } else startActivity();
+        PermissionManager manager = new PermissionManager(this);
+        // 先设置是否有权限播放音乐
+        SharedTools sharedTools = new SharedTools(this);
+        if (manager.checkOrRequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE_CODE, this, layoutSplash)) {
+            sharedTools.setMusicEnable(true);
+            if (manager.checkOrRequestPermission(Manifest.permission.INTERNET, INTERNET_CODE, this, layoutSplash))
+                startActivity();
+        }else sharedTools.setMusicEnable(false);
     }
 
     private void startActivity() {
+        close = true;
         Intent intent = new Intent(MainActivity.this, IndexActivity.class);
         receiveOut(intent);
         startActivity(intent);
@@ -110,8 +85,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 //        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == INTERNET_CODE) {
-            startActivity();
+        switch (requestCode){
+            case INTERNET_CODE:
+                startActivity();
+                break;
+            case READ_EXTERNAL_STORAGE_CODE:
+                SharedTools sharedTools = new SharedTools(this);
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    sharedTools.setMusicEnable(true);
+                }
+                PermissionManager manager = new PermissionManager(this);
+                // 检查连接网络权限
+                if (manager.checkOrRequestPermission(Manifest.permission.INTERNET, INTERNET_CODE, this, layoutSplash))
+                    startActivity();
+                break;
         }
     }
 
@@ -119,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         // 跳转页面后把本页面关闭
-        finish();
+        if (close)
+            finish();
     }
 }

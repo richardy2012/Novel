@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
 
     <application
             android:allowBackup="true"
@@ -15,6 +16,16 @@
             android:supportsRtl="true"
             android:theme="@style/HasActionBar"
             android:usesCleartextTraffic="true">
+        <provider
+                android:name="android.support.v4.content.FileProvider"
+                android:authorities="flandre.cn.novel.fileProvider"
+                android:exported="false"
+                android:grantUriPermissions="true">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/provider_paths"/>
+        </provider>
+
         <activity
                 android:name=".activity.MainActivity"
                 android:theme="@style/MainTheme">
@@ -25,12 +36,8 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
-
                 <category android:name="android.intent.category.DEFAULT"/>
-
                 <data android:mimeType="text/plain"/>
-                <!-- android:host="*" -->
-                <!-- android:scheme="file" -->
             </intent-filter>
         </activity>
         <activity

@@ -22,7 +22,6 @@ import flandre.cn.novel.service.NovelService;
 import flandre.cn.novel.Tools.NovelConfigure;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.adapter.PopUpAdapter;
-import flandre.cn.novel.parse.FileParse;
 import flandre.cn.novel.Tools.Decoration;
 import flandre.cn.novel.R;
 import flandre.cn.novel.database.SQLiteNovel;
@@ -35,7 +34,7 @@ import java.util.*;
  * Index页面
  * 2019.12.4
  */
-public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpClickListener, FileParse.OnfinishParse {
+public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpClickListener {
     public static final String CHANGE_THEME = "flandre.cn.novel.changetheme";
     public static final String LOAD_DATA = "flandre.cn.novel.loaddata";
 
@@ -50,7 +49,7 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
     private DrawerLayout drawerLayout;
     private LinearLayout popLeft;  // 侧面弹出菜单
     private Toolbar bar;
-    private GridLayout gridLayout;
+    private LinearLayout gridLayout;
     private BookFragment bookFragment;
     private RankFragment rankFragment;
     private UserFragment userFragment;
@@ -112,12 +111,14 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
         setupPopLeft();
         changePartly();
         setupNovelService();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                receiveOut();
-            }
-        }, 500);
+
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null && bundle.get("path") != null) {
+            Bundle path = new Bundle();
+            String s = (String) bundle.get("path");
+            path.putString("path", s);
+            bookFragment.setArguments(path);
+        }
     }
 
     private void setupHandler() {
@@ -316,25 +317,6 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
         bar.setBackgroundColor(NovelConfigureManager.getConfigure().getMainTheme());
         popLeft.setBackgroundColor(NovelConfigureManager.getConfigure().getBackgroundTheme());
         gridLayout.setBackgroundColor(NovelConfigureManager.getConfigure().getMainTheme());
-    }
-
-    private void receiveOut() {
-        Bundle bundle = getIntent().getExtras();
-        if (bundle != null && bundle.get("path") != null) {
-            FileParse fileParse = new FileParse((String) bundle.get("path"), SQLiteNovel.getSqLiteNovel(this.getApplicationContext()), this);
-            fileParse.setOnfinishParse(this);
-            try {
-                fileParse.parseFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    public void onFinishParse(int mode) {
-        if (mode == FileParse.OK)
-            this.getBookFragment().loadData();
     }
 
     @Override

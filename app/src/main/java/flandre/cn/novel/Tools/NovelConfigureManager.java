@@ -68,8 +68,8 @@ public class NovelConfigureManager {
         put(Sourcewangshugu.class.getName(), "望书阁(www.wangshugu.com)");
         put(Sourcefhxiaoshuo.class.getName(), "凤凰小说(www.fhxiaoshuo.org)");
         put(Sourceaixiatxt.class.getName(), "手机小说(www.aixiatxt.com)");
-        put(Sourceaixiatxt.class.getName(), "妙笔文学(www.mbtxt.cc)");
-        put(Sourceaixiatxt.class.getName(), "轻小说(www.linovelib.com)");
+        put(Sourcembtxt.class.getName(), "妙笔文学(www.mbtxt.cc)");
+        put(Sourcelinovelib.class.getName(), "轻小说(www.linovelib.com)");
     }};
 
     /**

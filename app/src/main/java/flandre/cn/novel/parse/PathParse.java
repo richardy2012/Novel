@@ -33,13 +33,13 @@ public class PathParse {
         assert uri != null;
         String path = uri.getPath();
 
-        if ("file".equalsIgnoreCase(uri.getScheme())) {//使用第三方应用打开
+        if ("file".equalsIgnoreCase(uri.getScheme())) {  // 使用第三方应用打开
             this.path = uri.getPath();
         } else if (Build.VERSION.SDK_INT >= 24 && path.startsWith("/external")) {
             this.path = Environment.getExternalStorageDirectory().getAbsolutePath() + path.replace("/external", "");
-        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {//4.4以后
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {  // 4.4以后
             this.path = getPath(uri);
-        } else {//4.4以下下系统调用方法
+        } else {  // 4.4以下下系统调用方法
             this.path = getRealPathFromURI(uri);
         }
         return this;
@@ -50,7 +50,6 @@ public class PathParse {
         String[] proj = {MediaStore.Images.Media.DATA};
         Cursor cursor = mContext.getContentResolver().query(contentUri, proj, null, null, null);
         if (null != cursor && cursor.moveToFirst()) {
-            ;
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             res = cursor.getString(column_index);
             cursor.close();
@@ -74,9 +73,9 @@ public class PathParse {
                 final String[] split = docId.split(":");
                 final String type = split[0];
 
-                if ("primary".equalsIgnoreCase(type)) {
+//                if ("primary".equalsIgnoreCase(type)) {
                     return Environment.getExternalStorageDirectory() + "/" + split[1];
-                }
+//                }
             }
             // DownloadsProvider
             else if (isDownloadsDocument(uri)) {

@@ -124,7 +124,18 @@ public class Sourcewangshugu extends BaseCrawler {
         return list;
     }
 
-    class MapThread extends BaseCrawler.BaseThread {
+    @Override
+    public BaseThread getNovelInfo(String addr, NovelInfo novelInfo) {
+        addr = addr.substring(0, addr.length() - 1);
+        int last = addr.lastIndexOf("/");
+        String num = addr.substring(last + 1);
+        addr = addr.substring(0, last);
+        addr = addr.substring(0, addr.length() - 1);
+        addr = addr.substring(0, addr.lastIndexOf("/")) + "/book" + num + ".html";
+        return new MapThread(novelInfo, null, addr);
+    }
+
+    public class MapThread extends BaseCrawler.BaseThread {
 
         MapThread(NovelInfo novelInfo, String imgUrl, String detailUrl) {
             super(novelInfo, imgUrl, detailUrl);
@@ -149,6 +160,7 @@ public class Sourcewangshugu extends BaseCrawler {
                     imgUrl = doc.select("#content > dd:nth-child(3) > div:nth-child(1) > a > img").attr("src");
                 }
                 getImage();
+                if (list == null) return;
                 if (rank != -1) list.set(rank, novelInfo);  // 因为是排行榜, 所以要确保位置不变
                 else list.add(novelInfo);
             } catch (NullPointerException e) {

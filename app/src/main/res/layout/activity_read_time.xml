@@ -19,17 +19,17 @@
                 android:layout_height="140dp"
                 android:background="@drawable/read_ex_night"/>
 
-        <GridLayout
+        <LinearLayout
                 android:id="@+id/image_bottom"
                 android:layout_below="@id/read_top"
                 android:padding="5dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:columnCount="3">
+                android:orientation="horizontal">
 
             <LinearLayout
-                    android:layout_columnWeight="1"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center">
@@ -51,8 +51,8 @@
             </LinearLayout>
 
             <LinearLayout
-                    android:layout_columnWeight="1"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center">
@@ -74,8 +74,8 @@
             </LinearLayout>
 
             <LinearLayout
-                    android:layout_columnWeight="1"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center">
@@ -96,7 +96,7 @@
 
             </LinearLayout>
 
-        </GridLayout>
+        </LinearLayout>
 
         <View
                 android:id="@+id/sep"
@@ -105,13 +105,21 @@
                 android:layout_height="10dp"/>
 
         <android.support.v7.widget.RecyclerView
-                android:id="@+id/introduce"
                 android:layout_below="@id/sep"
+                android:id="@+id/introduce"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
         </android.support.v7.widget.RecyclerView>
 
+        <ImageView
+                android:layout_marginTop="80dp"
+                android:id="@+id/loading"
+                android:layout_below="@id/sep"
+                android:layout_gravity="center_horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:src="@drawable/loading_day"/>
     </RelativeLayout>
 
 </android.support.v4.widget.NestedScrollView>

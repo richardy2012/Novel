@@ -4,13 +4,14 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import flandre.cn.novel.Tools.NovelTools;
 import flandre.cn.novel.info.NovelDownloadInfo;
 import flandre.cn.novel.info.NovelInfo;
 import flandre.cn.novel.info.WrapperNovelInfo;
 import flandre.cn.novel.service.NovelService;
 
-import java.io.File;
+import java.io.*;
 import java.util.*;
 
 public class SQLTools {
@@ -141,8 +142,10 @@ public class SQLTools {
     public static int getNovelId(SQLiteNovel sqLiteNovel, String name, String author) {
         Cursor cursor = sqLiteNovel.getReadableDatabase().query("novel", new String[]{"id"}, "name = ? and author = ?",
                 new String[]{name, author}, null, null, null);
-        cursor.moveToNext();
-        int id = cursor.getInt(0);
+        int id;
+        if (cursor.moveToNext())
+            id = cursor.getInt(0);
+        else id = -1;
         cursor.close();
         return id;
     }
@@ -317,5 +320,61 @@ public class SQLTools {
         contentValues.put("introduce", novelInfo.getIntroduce());
         contentValues.put("time", novelInfo.getTime());
         return sqLiteNovel.getReadableDatabase().insert("novel", null, contentValues);
+    }
+
+    /**
+     * 把一个小说的信息加载到数据库
+     * @param novelInfo 小说的信息
+     * @param sqLiteNovel 数据库对象
+     * @param context 上下文
+     */
+    public static void saveInSQLite(NovelInfo novelInfo, SQLiteNovel sqLiteNovel, Context context){
+        // 把数据保存起来
+        Bitmap bitmap = novelInfo.getBitmap();
+        File imagePath = getImagePath(context, novelInfo);
+        // 保存图片到本地
+        try {
+            OutputStream stream = new FileOutputStream(imagePath);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            byte[] data = outputStream.toByteArray();
+            stream.write(data);
+            stream.flush();
+            stream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // 在novel里面添加收藏的记录
+        novelInfo.setTime(new Date().getTime());
+        novelInfo.setWatch("1:1");
+        novelInfo.setImagePath(imagePath.getAbsolutePath());
+        long novel_id = SQLTools.insertNovel(sqLiteNovel, novelInfo);
+        novelInfo.setId((int) novel_id);
+        // 在nc里面记录表名
+        ContentValues values = new ContentValues();
+        String table = "FL" + NovelTools.md5(novelInfo.getName() + novelInfo.getAuthor());
+        values.put("novel_id", novel_id);
+        values.put("name", novelInfo.getUrl());
+        values.put("md5", table);
+        novelInfo.setTable(table);
+        long NC_id = sqLiteNovel.getReadableDatabase().insert("nc", null, values);
+        // 创建存文本的表
+        sqLiteNovel.getReadableDatabase().execSQL(
+                "create table " + table + "(" +
+                        "id INTEGER primary key AUTOINCREMENT," +
+                        "chapter varchar(255)," +
+                        "url varcahr(255)," +
+                        "text text)"
+        );
+    }
+
+    public static File getImagePath(Context context, NovelInfo novelInfo) {
+        String image = new File(novelInfo.getImagePath()).getName();
+
+        File file = new File(context.getExternalFilesDir(null), "img");
+        if (!file.exists()) file.mkdir();
+        return new File(file, image);
     }
 }

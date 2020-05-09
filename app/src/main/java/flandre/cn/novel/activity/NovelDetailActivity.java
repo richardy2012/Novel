@@ -1,14 +1,10 @@
 package flandre.cn.novel.activity;
 
-import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.*;
@@ -17,11 +13,9 @@ import flandre.cn.novel.Tools.NovelConfigure;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.database.SQLTools;
 import flandre.cn.novel.database.SQLiteNovel;
-import flandre.cn.novel.Tools.NovelTools;
 import flandre.cn.novel.info.NovelInfo;
 
-import java.io.*;
-import java.util.Date;
+import static flandre.cn.novel.database.SQLTools.saveInSQLite;
 
 /**
  * 查看详细界面
@@ -110,45 +104,7 @@ public class NovelDetailActivity extends BaseActivity implements View.OnClickLis
             Toast.makeText(this, "请再次使用本地导入", Toast.LENGTH_SHORT).show();
             return;
         }
-        // 把数据保存起来
-        Bitmap bitmap = novelInfo.getBitmap();
-        File imagePath = getImagePath();
-        // 保存图片到本地
-        try {
-            OutputStream stream = new FileOutputStream(imagePath);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-            byte[] data = outputStream.toByteArray();
-            stream.write(data);
-            stream.flush();
-            stream.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // 在novel里面添加收藏的记录
-        novelInfo.setTime(new Date().getTime());
-        novelInfo.setWatch("1:1");
-        novelInfo.setImagePath(imagePath.getAbsolutePath());
-        long novel_id = SQLTools.insertNovel(sqLiteNovel, novelInfo);
-        novelInfo.setId((int) novel_id);
-        // 在nc里面记录表名
-        ContentValues values = new ContentValues();
-        String table = "FL" + NovelTools.md5(novelInfo.getName() + novelInfo.getAuthor());
-        values.put("novel_id", novel_id);
-        values.put("name", novelInfo.getUrl());
-        values.put("md5", table);
-        novelInfo.setTable(table);
-        long NC_id = sqLiteNovel.getReadableDatabase().insert("nc", null, values);
-        // 创建存文本的表
-        sqLiteNovel.getReadableDatabase().execSQL(
-                "create table " + table + "(" +
-                        "id INTEGER primary key AUTOINCREMENT," +
-                        "chapter varchar(255)," +
-                        "url varcahr(255)," +
-                        "text text)"
-        );
+        saveInSQLite(novelInfo, sqLiteNovel, this);
         textView.setText(getResources().getText(R.string.cancel));
         readView.setText(getResources().getText(R.string.ctn));
     }
@@ -160,14 +116,6 @@ public class NovelDetailActivity extends BaseActivity implements View.OnClickLis
         novelInfo.setTable(null);
         textView.setText(getResources().getText(R.string.star));
         readView.setText(getResources().getText(R.string.read));
-    }
-
-    private File getImagePath() {
-        String image = new File(novelInfo.getImagePath()).getName();
-
-        File file = new File(getExternalFilesDir(null), "img");
-        if (!file.exists()) file.mkdir();
-        return new File(file, image);
     }
 
     private View.OnClickListener starListener = new View.OnClickListener() {

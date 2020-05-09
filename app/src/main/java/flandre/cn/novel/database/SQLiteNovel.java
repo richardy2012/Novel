@@ -59,7 +59,7 @@ public class SQLiteNovel extends SQLiteOpenHelper {
                 "create table if not exists nc (" +
                         "id INTEGER primary key AUTOINCREMENT," +
                         "novel_id INTEGER references novel," +  // novel表的id
-                        "name varchar(64)," +  // 章节目录的url
+                        "name varchar(64)," +  // 章节目录的url(本地导入时, 本地小说路径)
                         "md5 varchar(64))"  // 章节表的表名 FL + md5
         );
         // 章节提示表

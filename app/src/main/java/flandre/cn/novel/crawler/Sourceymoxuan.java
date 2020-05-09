@@ -146,7 +146,14 @@ public class Sourceymoxuan extends BaseCrawler {
         return list;
     }
 
-    class MapThread extends BaseThread {
+    @Override
+    public BaseThread getNovelInfo(String addr, NovelInfo novelInfo) {
+        addr = addr.replace("/index.html", "");
+        addr = DOMAIN + "text_" + addr.substring(addr.lastIndexOf("/") + 1) + ".html";
+        return new MapThread(novelInfo, null, addr);
+    }
+
+    public class MapThread extends BaseThread {
         MapThread(NovelInfo map, String imgUrl, String detailUrl) {
             super(map, imgUrl, detailUrl);
         }
@@ -173,6 +180,7 @@ public class Sourceymoxuan extends BaseCrawler {
 
                 getImage();
 
+                if (list == null) return;
                 if (rank != -1) list.set(rank, novelInfo);
                 else list.add(novelInfo);
 

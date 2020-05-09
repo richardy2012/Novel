@@ -14,6 +14,7 @@ import java.util.List;
  */
 public class ScrollPageView extends NormalPageView {
     private static final int SEPARATOR = 50;
+    private static final int MOVE_PAGE_SEPARATOR = 4;
 
     private int nowPos = 0;  // 第一行的位置
     private int offset = 0;  // 第一行的偏移
@@ -173,6 +174,7 @@ public class ScrollPageView extends NormalPageView {
         // 如果不是最后一页, 写下一页的内容
         if (now + 1 != listPosition[position] || position != 6) {
             int pageCount = offset != 0 ? this.pageCount + 1 : this.pageCount;
+            pageCount = heightRest > getRowHeight() / 1.5 ? pageCount + 1 : pageCount;
             if (now + 1 == listPosition[position]) text = drawText[position + 1].getText();
             strings = textPosition.get(now + 1);
             for (int j = 1; i <= pageCount; i++) {
@@ -182,19 +184,19 @@ public class ScrollPageView extends NormalPageView {
                 j++;
             }
         }
-        drawChapter(canvas, now);
+        drawChapter(canvas, now, position);
     }
 
     @Override
     public void lastPage() {
-        for (int i = 1; i <= pageCount / 2; i++) {
+        for (int i = 1; i <= pageCount / MOVE_PAGE_SEPARATOR; i++) {
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     pos++;
-                    scroll(getRowHeight() * 2);
+                    scroll(getRowHeight() * MOVE_PAGE_SEPARATOR);
                     postInvalidate();
-                    if (pos == pageCount / 2) {
+                    if (pos == pageCount / MOVE_PAGE_SEPARATOR) {
                         last();
                     }
                 }
@@ -204,14 +206,14 @@ public class ScrollPageView extends NormalPageView {
 
     @Override
     public void nextPage() {
-        for (int i = 1; i <= pageCount / 2; i++) {
+        for (int i = 1; i <= pageCount / MOVE_PAGE_SEPARATOR; i++) {
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     pos++;
-                    scroll(-getRowHeight() * 2);
+                    scroll(-getRowHeight() * MOVE_PAGE_SEPARATOR);
                     postInvalidate();
-                    if (pos == pageCount / 2) {
+                    if (pos == pageCount / MOVE_PAGE_SEPARATOR) {
                         next();
                     }
                 }

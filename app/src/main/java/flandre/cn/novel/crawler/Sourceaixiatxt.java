@@ -126,7 +126,14 @@ public class Sourceaixiatxt extends BaseCrawler {
         return list;
     }
 
-    class MapThread extends BaseThread {
+    @Override
+    public BaseThread getNovelInfo(String addr, NovelInfo novelInfo) {
+        Document document = crawlerGET(addr);
+        addr = DOMAIN + document.select("#info > dd > a:nth-child(3)").attr("href").substring(1);
+        return new MapThread(novelInfo, null, addr);
+    }
+
+    public class MapThread extends BaseThread {
 
         MapThread(NovelInfo novelInfo, String imgUrl, String detailUrl) {
             super(novelInfo, imgUrl, detailUrl);
@@ -157,6 +164,7 @@ public class Sourceaixiatxt extends BaseCrawler {
 
                 getImage();
 
+                if (list == null) return;
                 if (rank != -1) list.set(rank, novelInfo);
                 else list.add(novelInfo);
             } catch (NullPointerException e) {

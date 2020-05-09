@@ -215,7 +215,7 @@ public class TextActivity extends BaseActivity implements PageView.PageTurn {
             }
             flushFinish = true;
         }
-        if (message.arg2 != 1 && sqLiteNovel.freeStatus && table != null) {
+        if (message.arg2 != 1 && sqLiteNovel.freeStatus && table != null && !novelText.getText().equals("")) {
             ContentValues values = new ContentValues();
             values.put("text", novelTexts[position].getText());
             sqLiteNovel.getReadableDatabase().update(table, values, "id=?", new String[]{String.valueOf(crawlPosition + position)});

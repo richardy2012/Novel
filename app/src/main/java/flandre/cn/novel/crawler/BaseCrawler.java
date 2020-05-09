@@ -61,7 +61,7 @@ public abstract class BaseCrawler {
         this.handler = new WeakReference<>(handler);
     }
 
-    void configureConn(HttpURLConnection connection) throws IOException {
+    private void configureConn(HttpURLConnection connection) throws IOException {
         connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 " +
                 "(KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36");
 //        connection.addRequestProperty("Connection", "keep-alive");
@@ -524,10 +524,15 @@ public abstract class BaseCrawler {
     }
 
     /**
+     * 从文件里面加载小说
+     */
+    public abstract BaseThread getNovelInfo(String addr, NovelInfo novelInfo);
+
+    /**
      * 多线程类
      * 如果需要使用多线程,继承该类
      */
-    abstract class BaseThread {
+    public abstract class BaseThread {
         NovelInfo novelInfo;
         String imgUrl;
         String detailUrl;

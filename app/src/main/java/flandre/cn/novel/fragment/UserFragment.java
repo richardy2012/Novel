@@ -12,13 +12,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import flandre.cn.novel.R;
-import flandre.cn.novel.Tools.NovelConfigure;
-import flandre.cn.novel.Tools.NovelConfigureManager;
-import flandre.cn.novel.Tools.NovelTools;
+import flandre.cn.novel.Tools.*;
 import flandre.cn.novel.activity.DownloadManagerActivity;
 import flandre.cn.novel.activity.LocalMusicActivity;
 import flandre.cn.novel.database.SharedTools;
@@ -27,7 +26,6 @@ import flandre.cn.novel.parse.PathParse;
 import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.adapter.UserAdapter;
 import flandre.cn.novel.database.SQLiteNovel;
-import flandre.cn.novel.Tools.Decoration;
 import flandre.cn.novel.info.Item;
 
 import java.io.*;
@@ -155,6 +153,11 @@ public class UserFragment extends AttachFragment implements UserAdapter.OnItemCl
      * 加载本地文件
      */
     private void openSystemFile() {
+        SharedTools sharedTools = new SharedTools(mContext);
+        if (!sharedTools.getMusicEnable()){
+            Toast.makeText(mContext, "我们需要权限才能加载本地小说", Toast.LENGTH_SHORT).show();
+            return;
+        }
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         //intent.setType(“image/*”);//选择图片
         //intent.setType(“audio/*”); //选择音频
@@ -172,12 +175,17 @@ public class UserFragment extends AttachFragment implements UserAdapter.OnItemCl
         PathParse pathParse = new PathParse(mContext);
         if (resultCode == Activity.RESULT_OK) {
             pathParse.parse(data);
-            FileParse fileParse = new FileParse(pathParse.getPath(), SQLiteNovel.getSqLiteNovel(mContext.getApplicationContext()), mContext);
-            fileParse.setOnfinishParse(this);
-            try {
-                fileParse.parseFile();
-            } catch (IOException e) {
-                e.printStackTrace();
+            String path = pathParse.getPath();
+            if (path.endsWith(".fh.txt")) {
+                new GetNovelInfoAsync(mContext).execute(path);
+            }else {
+                FileParse fileParse = new FileParse(path, SQLiteNovel.getSqLiteNovel(mContext.getApplicationContext()), mContext);
+                fileParse.setOnfinishParse(this);
+                try {
+                    fileParse.parseFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

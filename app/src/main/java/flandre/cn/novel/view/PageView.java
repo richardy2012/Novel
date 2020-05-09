@@ -18,6 +18,8 @@ import static flandre.cn.novel.activity.TextActivity.BufferChapterCount;
 
 /**
  * 翻页的基类, 处理数据
+ * 现在后悔了, 其实只要计算下每页的文本位置, 再自定义一个ViewGroup+TextView就好了
+ * 最后再重写触摸事件. 现在只能硬着头皮写下去, 怪以前的我
  * 2020.4
  */
 public abstract class PageView extends View {
@@ -58,6 +60,7 @@ public abstract class PageView extends View {
     protected int lastChapter;  // 最后章节, 在翻页前需要初始化
     int mode;  // pageEnable是false时的跳转模式
     int width, height;
+    int heightRest;
 
     boolean alwaysNext = false;  // 是否全屏点击下一页
     int x, y;
@@ -272,20 +275,25 @@ public abstract class PageView extends View {
      */
     private void calcText() {
         if (drawText == null) return;
-        pageCount = (height - paddingTop - paddingBottom + rowSpace) / (size + rowSpace);
+        int a = (int) textPaint.measureText("\n");
+        pageCount = (height - paddingTop - paddingBottom + rowSpace) / (size + rowSpace);  // 页面的行数
+        heightRest = (height - paddingTop - paddingBottom + rowSpace) % (size + rowSpace);  // 剩余的高度
         leftPadding = width;
         int supposeWidth = width - paddingLeft - paddingRight;
+        int end, start, middle, i, j, position, width, leave, add, rest;
         // 计算出来的文本位置
-        // 里面的每一个list代表每一页的文本的信息, 里面的list存放每一行的信息: 'start:end'
+        // 里面的每一个list代表每一页的文本的信息, 里面的list存放每一行的信息: "start:end"
         ArrayList<ArrayList<String>> list = new ArrayList<>();
-        for (int i = 0; i < BufferChapterCount; i++) {
+        for (i = 0; i < BufferChapterCount; i++) {
+            if (drawText[i].getText().equals("")) drawText[i].setText("空章节");
             String text = drawText[i].getText();
-            int end = supposeWidth / size, start = 0, middle = 0;
+            end = 0;start = 0;middle = 0;
             for (; end != text.length(); ) {
                 ArrayList<String> strings = new ArrayList<>();
-                for (int j = 0; j < pageCount & end != text.length(); j++) {
-                    int position = text.indexOf('\n', start) + 1, width = 0;  // 拿到出现换行的位置
-                    position = position != -1 && position != 0 ? position : text.length();
+                for (j = 0; j < pageCount & end != text.length(); j++) {
+                    end += supposeWidth / size;
+                    position = text.indexOf('\n', start + 1) + 1;width = 0;  // 拿到出现换行的位置
+                    position = position != 0 ? position : text.length();
                     while (true) {
                         // 遇到换行符, 直接换行
                         if (position <= end) {
@@ -293,20 +301,21 @@ public abstract class PageView extends View {
                             break;
                         }
                         width += (int) textPaint.measureText(text, middle, end);  // 计算text在屏幕占用的宽度
-                        int leave = supposeWidth - width;
+                        leave = supposeWidth - width;
                         // 当宽度不足时换行
-                        if (leave / size <= 0) {
-                            if (leftPadding > (supposeWidth - width) / 2) {
-                                leftPadding = (supposeWidth - width) / 2;
+                        add = leave / size;
+                        if (add == 0) {
+                            if (leftPadding > (rest = leave / 2)) {  // 为了让文字居中, 计算剩余的空间除以2
+                                leftPadding = rest;
                             }
                             break;
                         }
                         middle = end;
-                        end += leave / size;
+                        end += add;
                     }
                     strings.add(start + ":" + end);
                     // 计算出当前观看的位置
-                    if (start <= watch && watch <= end && i == this.position) now = list.size();
+                    if (i == this.position && start <= watch && watch <= end) now = list.size();
                     start = middle = end;
                 }
                 list.add(strings);
@@ -353,7 +362,7 @@ public abstract class PageView extends View {
     void drawText(Canvas canvas, int tp, int position) {
         if (drawText == null) return;
         String text = drawText[position].getText();
-        drawChapter(canvas, tp);
+        drawChapter(canvas, tp, position);
         ArrayList<String> strings = textPosition.get(tp);
         for (int i = 1; i <= strings.size(); i++) {
             String[] mark = strings.get(i - 1).split(":");
@@ -364,7 +373,7 @@ public abstract class PageView extends View {
     /**
      * 绘制章节等信息
      */
-    void drawChapter(Canvas canvas, int tp){
+    void drawChapter(Canvas canvas, int tp, int position){
         Paint paint = new Paint();
         paint.setColor(color);
         canvas.drawRect(0, 0, width, paddingTop, paint);

@@ -132,7 +132,12 @@ public class Sourcembtxt extends BaseCrawler {
         return list;
     }
 
-    class MapThread extends BaseThread {
+    @Override
+    public BaseThread getNovelInfo(String addr, NovelInfo novelInfo) {
+        return new MapThread(novelInfo, null, addr);
+    }
+
+    public class MapThread extends BaseThread {
 
         MapThread(NovelInfo novelInfo, String imgUrl, String detailUrl) {
             super(novelInfo, imgUrl, detailUrl);
@@ -165,6 +170,7 @@ public class Sourcembtxt extends BaseCrawler {
                 imgUrl = doc.select("body > div.container > div.content > div:nth-child(2) > div.bookcover.hidden-xs > img").attr("src");
 
                 getImage();
+                if (list == null) return;
                 if (rank != -1) list.set(rank, novelInfo);  // 因为是排行榜, 所以要确保位置不变
                 else list.add(novelInfo);
             } catch (NullPointerException e) {

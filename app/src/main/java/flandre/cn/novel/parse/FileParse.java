@@ -183,6 +183,7 @@ public class FileParse {
         values = new ContentValues();
         table = "FL" + NovelTools.md5(name + (author != null ? author : "Somebody"));
         values.put("novel_id", novel_id);
+        values.put("name", path);
         values.put("md5", table);
         long NC_id = sqLiteNovel.getReadableDatabase().insert("nc", null, values);
         // 创建存文本的表
@@ -274,6 +275,9 @@ public class FileParse {
                 }
             } catch (UnsupportedCharsetException e) {
                 e.printStackTrace();
+            }catch (StringIndexOutOfBoundsException e){
+                e.printStackTrace();
+                throw new ParseException("can not parse novel");
             }
         }
         throw new ParseException("can not parse novel");
@@ -415,11 +419,11 @@ public class FileParse {
                 } else {
                     return ALWAYS;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             } catch (ParseException e) {
                 e.printStackTrace();
                 return ERROR;
+            }catch (Exception e){
+                e.printStackTrace();
             }
             return 3;
         }

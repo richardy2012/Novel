@@ -6,7 +6,7 @@ import java.io.Serializable;
  * 小说文本信息
  */
 public class NovelText extends NovelChapter implements Serializable {
-    private String text;
+    private String text = null;
 
     public String getText() {
         return text;

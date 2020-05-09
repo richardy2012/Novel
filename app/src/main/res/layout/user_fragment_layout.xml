@@ -37,21 +37,20 @@
             <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:gravity="center"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                 <TextView
                         android:id="@+id/todayIntro"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAlignment="center"
                         android:textSize="16sp"
                         android:text="今日时长"/>
 
                 <TextView
                         android:id="@+id/todayRead"
-                        android:textAlignment="center"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="16sp"/>
 
@@ -61,21 +60,20 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:gravity="center"
                     android:orientation="vertical">
 
                 <TextView
-
                         android:id="@+id/alarmIntro"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAlignment="center"
                         android:textSize="16sp"
                         android:text="闹钟剩余"/>
 
                 <TextView
+                        android:gravity="center"
                         android:id="@+id/alarmRest"
-                        android:textAlignment="center"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="16sp"/>
 
