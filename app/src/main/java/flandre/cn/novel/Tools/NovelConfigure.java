@@ -1,15 +1,10 @@
 package flandre.cn.novel.Tools;
 
 import android.graphics.Color;
-import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.crawler.*;
 import flandre.cn.novel.view.NormalPageView;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 刚安装软件时的参数

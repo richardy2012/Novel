@@ -115,6 +115,16 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
             }
         });
     }
+	
+	private void setDateMode(){
+		if (NovelConfigureManager.getConfigure().getMode() == NovelConfigure.DAY) {
+			imageView.setBackground(mContext.getResources().getDrawable(R.drawable.sleep));
+			textView.setText("夜间");
+		} else {
+			imageView.setBackground(mContext.getResources().getDrawable(R.drawable.day));
+			textView.setText("日间");
+		}
+	}
 
     private void setupButton(View view) {
         LinearLayout night = view.findViewById(R.id.night);
@@ -123,6 +133,7 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
 
         imageView = view.findViewById(R.id.night_img);
         textView = view.findViewById(R.id.night_txt);
+		setDateMode();
 
         night.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -130,13 +141,7 @@ public class TextPopupFragment extends AttachFragment implements DownloadDialogF
                 try {
                     NovelConfigureManager.changeConfigure();
                     NovelConfigureManager.saveConfigure(NovelConfigureManager.getConfigure(), mContext);
-                    if (NovelConfigureManager.getConfigure().getMode() == NovelConfigure.DAY) {
-                        imageView.setBackground(mContext.getResources().getDrawable(R.drawable.sleep));
-                        textView.setText("夜间");
-                    } else {
-                        imageView.setBackground(mContext.getResources().getDrawable(R.drawable.day));
-                        textView.setText("日间");
-                    }
+					setDateMode();
                     Intent intent = new Intent();
                     intent.setAction(IndexActivity.CHANGE_THEME);
                     mContext.sendBroadcast(intent);

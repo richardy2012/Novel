@@ -42,7 +42,8 @@
         </activity>
         <activity
                 android:name=".activity.IndexActivity"
-                android:theme="@style/AppTheme">
+                android:theme="@style/AppTheme"
+                android:launchMode="singleTask">
         </activity>
         <activity android:name=".activity.SearchActivity">
             <meta-data
@@ -58,8 +59,7 @@
         </activity>
         <activity
                 android:name=".activity.TextActivity"
-                android:theme="@style/AppTheme"
-                android:launchMode="singleTask">
+                android:theme="@style/AppTheme">
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
                     android:value=".activity.IndexActivity"/>

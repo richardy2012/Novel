@@ -75,20 +75,27 @@ public class Sourcelinovelib extends BaseCrawler {
     }
 
     private NovelText run_text(String URL, int times) {
+        NovelText novelText = new NovelText();
+        if (URL.contains("avascript:cid(0)")){
+            novelText.setText("章节错误");
+            novelText.setChapter("章节错误");
+            return novelText;
+        }
         Document document = crawlerGET(URL);
 
         if (document == null && times < 4) {
             return run_text(URL, ++times);
         }
-
-        NovelText novelText = new NovelText();
-        novelText.setChapter(document.select("#readerFt > div > div.title > h1").text());
-        String text = withBr(document, "#readerFt > div > div.content", " ", "");
-        if (text.length() == 5) {
-            text = "假装有图片";
-        } else if (text.endsWith("（本章未完）" + BR_REPLACEMENT)) {
+        document.select("#TextContent > div.tp").remove();
+        novelText.setChapter(document.select("#mlfy_main_text > h1").text());
+        if (document.select("#TextContent > div.divimage").size() != 0){
+            novelText.setText("假装有图片");
+            return novelText;
+        }
+        String text = withBr(document, "#TextContent", " ", "");
+        if (text.endsWith("（本章未完）" + BR_REPLACEMENT)) {
             text = text.substring(0, text.length() - 6 - BR_REPLACEMENT.length() - 1);
-            text += run_text(DOMAIN + document.select("#linkNext").attr("href").substring(1), 1).getText();
+            text += run_text(DOMAIN + document.select("#readbg > p > a:nth-child(5)").attr("href").substring(1), 1).getText();
         } else
             text = text.substring(0, text.length() - BR_REPLACEMENT.length());
         novelText.setText(text);

@@ -3,13 +3,11 @@ package flandre.cn.novel.info;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import flandre.cn.novel.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * 小说的信息

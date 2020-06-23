@@ -2,11 +2,9 @@ package flandre.cn.novel.activity;
 
 import android.app.Dialog;
 import android.content.*;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;

@@ -23,7 +23,6 @@ import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.activity.TextActivity;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,7 +98,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
         empty = view.findViewById(R.id.empty);
         empty.setTextColor(NovelConfigureManager.getConfigure().getIntroduceTheme());
         refresh = view.findViewById(R.id.refresh);
-        refresh.setColorSchemeResources(R.color.blue_dark);
+        refresh.setColorSchemeColors(NovelConfigureManager.getConfigure().getMainTheme());
         refresh.setOnRefreshListener(this);
         RecyclerView recyclerView = view.findViewById(R.id.book_main);
         LinearLayoutManager manager = new LinearLayoutManager(mContext);
@@ -161,6 +160,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
 
     public void changeTheme() {
         if (empty == null) return;
+        refresh.setColorSchemeColors(NovelConfigureManager.getConfigure().getMainTheme());
         empty.setTextColor(NovelConfigureManager.getConfigure().getIntroduceTheme());
         bookAdapter.notifyDataSetChanged();
     }

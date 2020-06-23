@@ -152,6 +152,7 @@ public class DataRankFragment extends AttachFragment implements RankAdapter.Rank
         data = inflater.inflate(R.layout.rank_data, frameLayout, false);
         data.setTag("rankData");
         refresh = data.findViewById(R.id.fresh);
+        refresh.setColorSchemeColors(NovelConfigureManager.getConfigure().getMainTheme());
 
         refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -173,6 +174,7 @@ public class DataRankFragment extends AttachFragment implements RankAdapter.Rank
     void changeTheme() {
         if (frameLayout == null) return;
         if (frameLayout.findViewWithTag("loading") != null) {
+            refresh.setColorSchemeColors(NovelConfigureManager.getConfigure().getMainTheme());
             View view = frameLayout.findViewWithTag("loading");
             view.findViewById(R.id.load_img).setBackground(mContext.getResources().getDrawable(
                     NovelConfigureManager.getConfigure().getMode() == NovelConfigure.DAY ? R.drawable.loading_day : R.drawable.loading_night));

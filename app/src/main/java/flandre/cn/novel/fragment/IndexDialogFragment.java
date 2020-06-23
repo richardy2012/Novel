@@ -2,7 +2,6 @@ package flandre.cn.novel.fragment;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
@@ -254,7 +253,7 @@ public class IndexDialogFragment extends AttachDialogFragment implements PopUpAd
         }
     }
 
-    private static String getMimeType(String filePath) {
+    public static String getMimeType(String filePath) {
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
         String mime = "*/*";
         if (filePath != null) {

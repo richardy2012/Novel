@@ -13,6 +13,7 @@ import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.*;
 import android.widget.*;
 import com.github.promeg.pinyinhelper.Pinyin;
+import flandre.cn.novel.BuildConfig;
 import flandre.cn.novel.MusicAidlInterface;
 import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.NovelConfigure;
@@ -34,9 +36,12 @@ import flandre.cn.novel.Tools.Decoration;
 import flandre.cn.novel.service.PlayMusicService;
 import flandre.cn.novel.view.SlideBar;
 
+import java.io.File;
+import java.lang.reflect.Field;
 import java.util.*;
 
 import static flandre.cn.novel.Tools.PermissionManager.*;
+import static flandre.cn.novel.fragment.IndexDialogFragment.getMimeType;
 import static flandre.cn.novel.service.PlayMusicService.music_pos;
 
 /**
@@ -242,7 +247,8 @@ public class LocalMusicActivity extends BaseActivity {
         Cursor cursor = cr.query(uri, music_pos, "title != '' and _size > 1048576 and duration > 60000",
                 null, "title_key");
         while (cursor.moveToNext()) {
-            if (!cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).toLowerCase().trim().endsWith("mp3")) continue;
+            if (!cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).toLowerCase().trim().endsWith("mp3"))
+                continue;
             MusicInfo musicInfo = new MusicInfo();
             musicInfo.setSongId(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID)));
             musicInfo.setDuration(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
@@ -521,22 +527,36 @@ public class LocalMusicActivity extends BaseActivity {
                         return;
                     }
                     // 把所有的歌曲放入播放列表, 播放点击的歌曲
-                    int position = ((Holder) v.getTag()).getAdapterPosition();
+                    final int position = ((Holder) v.getTag()).getAdapterPosition();
                     if (position < 0 || position >= data.size()) return;
-                    long[] queue = new long[data.size()];
-                    for (int i = 0; i < data.size(); i++) {
-                        queue[i] = data.get(i).getSongId();
-                    }
-                    try {
-                        long[] leak = musicService.setPlayQueue(queue);
-                        if (leak != null) {
-                            for (long l : leak)
-                                musicService.addPlayInfo(l, musicData.get(l));
+                    AlertDialog.Builder builder = new AlertDialog.Builder(LocalMusicActivity.this);
+                    AlertDialog alertDialog = builder.setMessage("是否播放" + data.get(position).getName() + "？")
+                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    long[] queue = new long[data.size()];
+                                    for (int i = 0; i < data.size(); i++) {
+                                        queue[i] = data.get(i).getSongId();
+                                    }
+                                    try {
+                                        long[] leak = musicService.setPlayQueue(queue);
+                                        if (leak != null) {
+                                            for (long l : leak)
+                                                musicService.addPlayInfo(l, musicData.get(l));
+                                        }
+                                        musicService.playTarget(data.get(position).getSongId());
+                                    } catch (RemoteException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }).setNegativeButton("关闭", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
                         }
-                        musicService.playTarget(data.get(position).getSongId());
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
+                    }).create();
+                    alertDialog.show();
+//                    setDialogTheme(alertDialog);
                 }
             });
 
@@ -549,7 +569,7 @@ public class LocalMusicActivity extends BaseActivity {
                     AlertDialog.Builder musicDialog = new AlertDialog.Builder(LocalMusicActivity.this);
                     final MusicInfo musicInfo = data.get(position);
                     musicDialog.setTitle(musicInfo.getName());
-                    String[] items = new String[]{"下一首播放", "删除(播放列表)", "选择歌曲"};
+                    String[] items = new String[]{"下一首播放", "删除(播放列表)", "选择歌曲", "分享"};
                     musicDialog.setItems(items, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -561,7 +581,7 @@ public class LocalMusicActivity extends BaseActivity {
                                             musicService.addPlayInfo(musicInfo.getSongId(), musicInfo);
                                         }
                                         // 第一个会自带保存功能所以不需要我们保存
-                                        if (musicService.getPlayQueueSize() != 1){
+                                        if (musicService.getPlayQueueSize() != 1) {
                                             musicService.saveData();
                                         }
                                     } catch (RemoteException e) {
@@ -588,6 +608,27 @@ public class LocalMusicActivity extends BaseActivity {
                                     checkEnable = true;
                                     mAdapter.update();
                                     break;
+                                case 3:
+                                    File file = new File(musicInfo.getData());
+                                    if (!file.exists()){
+                                        Toast.makeText(LocalMusicActivity.this, "歌曲不存在", Toast.LENGTH_SHORT).show();
+                                        break;
+                                    }
+                                    Intent share = new Intent(Intent.ACTION_SEND);
+                                    Uri contentUri;
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                        contentUri = FileProvider.getUriForFile(LocalMusicActivity.this,
+                                                BuildConfig.APPLICATION_ID + ".fileProvider", file);
+                                    } else {
+                                        contentUri = Uri.fromFile(file);
+                                    }
+                                    share.putExtra(Intent.EXTRA_STREAM, contentUri);
+//                                    share.setType(getMimeType(file.getAbsolutePath()));//此处可发送多种文件
+                                    share.setType("*/*");//此处可发送多种文件
+                                    share.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                    LocalMusicActivity.this.startActivity(Intent.createChooser(share, "分享音乐"));
+                                    break;
                             }
                         }
                     });
@@ -609,6 +650,34 @@ public class LocalMusicActivity extends BaseActivity {
                     return true;
                 }
             });
+        }
+
+        private void setDialogTheme(AlertDialog alertDialog){
+            try {
+                Field mAlert = AlertDialog.class.getDeclaredField("mAlert");
+                mAlert.setAccessible(true);
+                Object mController = mAlert.get(alertDialog);
+                Field mMessage = mController.getClass().getDeclaredField("mMessageView");
+                mMessage.setAccessible(true);
+                TextView mMessageView = (TextView) mMessage.get(mController);
+                mMessageView.setTextColor(NovelConfigureManager.getConfigure().getTextColor());
+
+                Field mWindow = mController.getClass().getDeclaredField("mWindow");
+                mWindow.setAccessible(true);
+                Window window = (Window) mWindow.get(mController);
+                window.setBackgroundDrawable(new ColorDrawable(NovelConfigureManager.getConfigure().getBackgroundTheme()));
+//                int color = NovelConfigureManager.getConfigure().getMode() == NovelConfigure.NIGHT ? NovelConfigureManager.
+//                        getConfigure().getNameTheme() : NovelConfigureManager.getConfigure().getMainTheme();
+                int color = NovelConfigureManager.getConfigure().getNameTheme();
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(color);
+                alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(color);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }catch (IllegalAccessException e){
+                e.printStackTrace();
+            }catch (NullPointerException e){
+                e.printStackTrace();
+            }
         }
 
         @Override

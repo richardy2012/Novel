@@ -1,6 +1,5 @@
 package flandre.cn.novel.Tools;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -11,7 +10,6 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.TextView;
 import flandre.cn.novel.R;
-import flandre.cn.novel.database.SharedTools;
 
 import java.util.HashMap;
 import java.util.Map;

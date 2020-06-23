@@ -1,7 +1,6 @@
 package flandre.cn.novel.adapter;
 
 import android.content.Context;
-import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -20,7 +19,6 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 public class ReadTimeAdapter extends RecyclerView.Adapter<ReadTimeAdapter.ItemHolder> implements View.OnClickListener {
     public List<WrapperNovelInfo> data;

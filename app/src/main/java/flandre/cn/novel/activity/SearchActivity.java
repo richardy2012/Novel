@@ -72,6 +72,7 @@ public class SearchActivity extends BaseActivity {
         actionBar.setBackgroundDrawable(new ColorDrawable(configure.getMainTheme()));
 
         refreshLayout = findViewById(R.id.refresh);
+        refreshLayout.setColorSchemeColors(NovelConfigureManager.getConfigure().getMainTheme());
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
