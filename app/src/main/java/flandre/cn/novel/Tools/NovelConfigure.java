@@ -2,7 +2,7 @@ package flandre.cn.novel.Tools;
 
 import android.graphics.Color;
 import flandre.cn.novel.crawler.*;
-import flandre.cn.novel.view.NormalPageView;
+import flandre.cn.novel.view.page.NormalPageAnimation;
 
 import java.io.Serializable;
 
@@ -35,7 +35,7 @@ public class NovelConfigure implements Serializable {
     private String nowSourceKey = "望书阁 www.wangshugu.com";  // 当前使用源名
     private String nowSourceValue = Sourcewangshugu.class.getName();  // 当前使用源类
 
-    private String nowPageView = NormalPageView.class.getName();  // 当前使用的翻页
+    private String nowPageView = NormalPageAnimation.class.getName();  // 当前使用的翻页
     private boolean isAlwaysNext = false;  // 是否全屏点击下一页
     private boolean isAlarmForce = false;  // 小说闹钟是否强迫休息
 

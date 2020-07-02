@@ -238,15 +238,7 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
                     downloadPool.execute(crawler.download(map.get("url"), Integer.parseInt(map.get("id")), table, this));
                 }
                 downloadPool.shutdown();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (java.lang.InstantiationException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
+            } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         } else {
@@ -505,15 +497,7 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
                             Integer.parseInt(map.get("newId")), this));
                 }
                 fixedThreadPool.shutdown();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (java.lang.InstantiationException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
+            } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }

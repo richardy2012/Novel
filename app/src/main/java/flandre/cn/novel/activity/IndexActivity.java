@@ -16,8 +16,11 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.*;
 import android.widget.*;
+import flandre.cn.novel.Tools.NovelTools;
 import flandre.cn.novel.adapter.FragmentPagerAdapter;
+import flandre.cn.novel.database.SharedTools;
 import flandre.cn.novel.fragment.*;
+import flandre.cn.novel.parse.ShareFile;
 import flandre.cn.novel.service.NovelService;
 import flandre.cn.novel.Tools.NovelConfigure;
 import flandre.cn.novel.Tools.NovelConfigureManager;
@@ -34,7 +37,7 @@ import java.util.*;
  * Index页面
  * 2019.12.4
  */
-public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpClickListener {
+public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpClickListener, AlarmDialogFragment.OnClickItemListener {
     public static final String CHANGE_THEME = "flandre.cn.novel.changetheme";
     public static final String LOAD_DATA = "flandre.cn.novel.loaddata";
 
@@ -111,13 +114,23 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
         setupPopLeft();
         changePartly();
         setupNovelService();
-
         Bundle bundle = getIntent().getExtras();
         if (bundle != null && bundle.get("path") != null) {
             Bundle path = new Bundle();
             String s = (String) bundle.get("path");
             path.putString("path", s);
             bookFragment.setArguments(path);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Bundle bundle = intent.getExtras();
+        if (bundle != null && bundle.get("path") != null) {
+            bookFragment.getRefresh().setRefreshing(true);
+            String path = (String) bundle.get("path");
+            new ShareFile(path, this).setOnfinishParse(bookFragment).parseFile();
         }
     }
 
@@ -259,7 +272,8 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
     }
 
     private void setupPopLeft() {
-        alarmDialogFragment = new AlarmDialogFragment();
+        alarmDialogFragment = AlarmDialogFragment.newInstance("闹钟设置");
+        alarmDialogFragment.setListener(this);
         LayoutInflater inflater = LayoutInflater.from(this);
         View view = inflater.inflate(R.layout.pop_left_layput, popLeft, false);
         imageView = view.findViewById(R.id.novel_img);
@@ -323,6 +337,7 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
     protected void onResume() {
         super.onResume();
         userFragment.changeTheme();
+
     }
 
     private void switchTabs(int position) {
@@ -487,6 +502,31 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
 
     public UserFragment getUserFragment() {
         return userFragment;
+    }
+
+    @Override
+    public void clickItem(int pos) {
+        SharedTools sharedTools;
+        switch (pos) {
+            case 0:
+                sharedTools = new SharedTools(this);
+                sharedTools.setAlarm(AlarmDialogFragment.NO_ALARM_STATE);
+                break;
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+                sharedTools = new SharedTools(this);
+                sharedTools.setAlarm(600 * pos * 1000);
+                Toast.makeText(this, "闹钟将在" + NovelTools.resolver(600 * pos * 1000) + "后提示", Toast.LENGTH_SHORT).show();
+                break;
+            case 7:
+                Toast.makeText(this, "开发者认为你不需要这个功能", Toast.LENGTH_SHORT).show();
+                break;
+        }
+        userFragment.changeTheme();
     }
 
     class IndexReceiver extends BroadcastReceiver {

@@ -2,9 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+            android:id="@+id/alarm"
+            android:title="定时关闭"
+            android:icon="@drawable/alarm2"
+            app:showAsAction="ifRoom"/>
+
+    <item
             android:id="@+id/list"
             android:title="播放列表"
             android:icon="@drawable/list"
-            app:showAsAction="always"/>
+            app:showAsAction="ifRoom"/>
 
 </menu>

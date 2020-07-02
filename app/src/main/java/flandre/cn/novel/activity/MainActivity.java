@@ -4,11 +4,11 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.widget.RelativeLayout;
 import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.PermissionManager;
 import flandre.cn.novel.database.SharedTools;
@@ -21,7 +21,7 @@ import static flandre.cn.novel.Tools.PermissionManager.*;
  * 2019
  */
 public class MainActivity extends AppCompatActivity {
-    private RelativeLayout layoutSplash;
+    private CoordinatorLayout layoutSplash;
     private boolean close = false;
 
     @Override

@@ -14,6 +14,8 @@ import android.widget.*;
 import flandre.cn.novel.Tools.GetNovelInfoAsync;
 import flandre.cn.novel.info.NovelInfo;
 import flandre.cn.novel.parse.FileParse;
+import flandre.cn.novel.parse.OnFinishParse;
+import flandre.cn.novel.parse.ShareFile;
 import flandre.cn.novel.service.NovelService;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.database.SQLTools;
@@ -23,7 +25,6 @@ import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.activity.TextActivity;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +33,7 @@ import java.util.List;
  * 2019.??
  */
 public class BookFragment extends AttachFragment implements SwipeRefreshLayout.OnRefreshListener,
-        NovelService.UpdateNovel, FileParse.OnfinishParse {
+        NovelService.UpdateNovel, OnFinishParse {
     public static final String TAG = "BookFragment";
     private BookAdapter bookAdapter;
     private SwipeRefreshLayout refresh;
@@ -58,18 +59,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
             refresh.setRefreshing(true);
             String path = (String) bundle.get("path");
             setArguments(null);
-            if (path.endsWith(".fh.txt")) {
-                new GetNovelInfoAsync(mContext).execute(path);
-            } else {
-                FileParse fileParse = new FileParse(path, SQLiteNovel.getSqLiteNovel(), mContext);
-                fileParse.setOnfinishParse(this);
-                try {
-                    fileParse.parseFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                refresh.setRefreshing(false);
-            }
+            new ShareFile(path, mContext).setOnfinishParse(this).parseFile();
         }
     }
 
@@ -167,8 +157,10 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
 
     @Override
     public void onFinishParse(int mode) {
-        if (mode == FileParse.OK)
+        refresh.setRefreshing(false);
+        if (mode == OnFinishParse.OK) {
             loadData();
+        }
     }
 
     class BookAdapter extends RecyclerView.Adapter<BookAdapter.Holder> implements View.OnLongClickListener, View.OnClickListener {

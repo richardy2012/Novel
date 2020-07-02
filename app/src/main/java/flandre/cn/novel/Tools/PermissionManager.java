@@ -9,6 +9,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 import flandre.cn.novel.R;
 
 import java.util.HashMap;
@@ -47,6 +48,7 @@ public class PermissionManager {
                 // 没有权限时, 如果是第二次描述权限的作用再申请, 第一次直接申请
                 // 第二次被拒绝时就不能再申请权限了
             else if (manager.shouldShowRequestPermissionRationale(permissions)) {
+//                Toast.makeText(mContext, CODE_INFO.get(code), Toast.LENGTH_LONG).show();
                 Snackbar snackbar = Snackbar.make(layoutSplash, CODE_INFO.get(code),
                         Snackbar.LENGTH_INDEFINITE)
                         .setAction(android.R.string.ok, new View.OnClickListener() {  // 点击确定时询问
@@ -57,7 +59,7 @@ public class PermissionManager {
                         });
                 View view = snackbar.getView();
                 NovelConfigure configure = NovelConfigureManager.getConfigure(context.getApplicationContext());
-                view.setBackgroundColor(configure.getMainTheme());
+                view.setBackgroundColor(configure.getBackgroundTheme());
                 ((TextView) view.findViewById(R.id.snackbar_text)).setTextColor(configure.getAuthorTheme());
                 ((TextView) view.findViewById(R.id.snackbar_action)).setTextColor(configure.getAuthorTheme());
                 snackbar.show();

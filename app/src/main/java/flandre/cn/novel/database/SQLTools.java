@@ -191,6 +191,38 @@ public class SQLTools {
         sqLiteNovel.getReadableDatabase().delete("download", "novel_id = ?", new String[]{novel_id});
     }
 
+    /**
+     * 修改来源
+     *
+     * @param novelInfo 里面需要有name和author
+     * @param novel_id 小说的id
+     */
+    public static void changeSource(SQLiteNovel sqLiteNovel, NovelInfo novelInfo, String novel_id, NovelService service){
+        // 检查该小说是否在被下载, 有的话先停止下载
+        List<NovelDownloadInfo> downloadInfos = getDownloadInfo(sqLiteNovel, "novel_id = ? and status = ?", new String[]{novel_id,
+                String.valueOf(SQLiteNovel.DOWNLOAD_PAUSE)}, null);
+        if (downloadInfos.size() > 0) {
+            service.stopDownload(false, false, true);
+        }
+
+        String table = "FL" + NovelTools.md5(novelInfo.getName() + novelInfo.getAuthor());
+        sqLiteNovel.getReadableDatabase().execSQL("drop table " + table);
+        sqLiteNovel.getReadableDatabase().delete("download", "novel_id = ?", new String[]{novel_id});
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("name", novelInfo.getUrl());
+        sqLiteNovel.getReadableDatabase().update("nc", contentValues, "novel_id = ?", new String[]{novel_id});
+        contentValues = new ContentValues();
+        contentValues.put("source", novelInfo.getSource());
+        sqLiteNovel.getReadableDatabase().update("novel", contentValues, "id = ?", new String[]{novel_id});
+        sqLiteNovel.getReadableDatabase().execSQL(
+                "create table " + table + "(" +
+                        "id INTEGER primary key AUTOINCREMENT," +
+                        "chapter varchar(255)," +
+                        "url varcahr(255)," +
+                        "text text)"
+        );
+    }
+
     public static NovelInfo getNovelOneData(SQLiteNovel sqLiteNovel, String name, String author) {
         return getNovelOneData(sqLiteNovel, name, author, null);
     }

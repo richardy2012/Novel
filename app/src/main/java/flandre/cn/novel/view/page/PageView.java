@@ -1,9 +1,10 @@
-package flandre.cn.novel.view;
+package flandre.cn.novel.view.page;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -13,7 +14,7 @@ import flandre.cn.novel.info.NovelText;
 import java.util.ArrayList;
 import java.util.Date;
 
-import static flandre.cn.novel.activity.TextActivity.BufferChapterCount;
+import static flandre.cn.novel.view.page.PageViewTextManager.BufferChapterCount;
 
 /**
  * 翻页的基类, 处理数据
@@ -21,10 +22,10 @@ import static flandre.cn.novel.activity.TextActivity.BufferChapterCount;
  * 最后再重写触摸事件. 现在只能硬着头皮写下去, 怪以前的我
  * 2020.4
  */
-public abstract class PageView extends View {
+public class PageView extends View {
     public static final int REDIRECT = 0;  // 跳转
-    static final int NEXT = 1;  // 下一页
-    static final int LAST = 2;  // 上一页
+    public static final int NEXT = 1;  // 下一页
+    public static final int LAST = 2;  // 上一页
 
     private int topLength;  // 头顶通知的高度
     private int marginTop;
@@ -63,6 +64,7 @@ public abstract class PageView extends View {
 
     boolean alwaysNext = false;  // 是否全屏点击下一页
     int x, y;
+    private PageAnimation pageAnimation;
 
     public PageView(Context context) {
         this(context, null);
@@ -72,8 +74,6 @@ public abstract class PageView extends View {
 
     public PageView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
-        mContext = context;
-        initPaint();
     }
 
     public PageView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -114,15 +114,12 @@ public abstract class PageView extends View {
         if (!load) {
             calcText();
             load = true;
-            onLoad();
+            pageAnimation.onLoad(width, height);
         }
     }
 
     public void setAlwaysNext(boolean alwaysNext) {
         this.alwaysNext = alwaysNext;
-    }
-
-    protected void onLoad() {
     }
 
     public Paint getPaint() {
@@ -145,12 +142,24 @@ public abstract class PageView extends View {
         return position;
     }
 
+    public PageAnimation getPageAnimation() {
+        return pageAnimation;
+    }
+
     public void setMode(int mode) {
         this.mode = mode;
     }
 
     public void setTime(long time) {
         this.time = time;
+    }
+
+    public void setPageAnimation(PageAnimation pageAnimation) {
+        if (pageAnimation != null){
+            pageAnimation.onCycle();
+        }
+        this.pageAnimation = pageAnimation;
+        if (load) this.pageAnimation.onLoad(width, height);
     }
 
     /**
@@ -189,16 +198,16 @@ public abstract class PageView extends View {
         int x = (int) event.getX();
         if (Math.abs(x - tx) > width / 10) {
             if (event.getX() - tx > width / 10) {
-                lastPage();
+                pageAnimation.lastPage();
             } else if (tx - event.getX() > width / 10) {
-                nextPage();
+                pageAnimation.nextPage();
             }
         } else {
             if (tx > width / 2 + width / 10) {
-                nextPage();
+                pageAnimation.nextPage();
             } else if (tx < width / 2 - width / 10) {
-                if (alwaysNext) nextPage();
-                else lastPage();
+                if (alwaysNext) pageAnimation.nextPage();
+                else pageAnimation.lastPage();
             } else {
                 pageTurn.onShowAction();
             }
@@ -340,8 +349,18 @@ public abstract class PageView extends View {
         }
         if (!pageEnable) {
             pageEnable = true;
-            onUpdateText();
+            pageAnimation.onUpdateText();
         }
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        pageAnimation.onDraw(canvas);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        return pageAnimation.onKeyDown(keyCode, event);
     }
 
     public void setWatch(int watch) {
@@ -390,7 +409,7 @@ public abstract class PageView extends View {
         return paddingTop + i * (size + rowSpace) - rowSpace;
     }
 
-    protected void next() {
+    void next() {
         now++;
         boolean t = false;  // 文本位置是否改变
         // 如果当前观看的位置达到了下一个文本, 调整文本的位置
@@ -416,7 +435,7 @@ public abstract class PageView extends View {
         }
     }
 
-    protected void last() {
+    void last() {
         now--;
         boolean t = false;
         if (position != 0 && now == listPosition[position - 1] - 1) {
@@ -439,24 +458,20 @@ public abstract class PageView extends View {
         }
     }
 
-    public abstract void onUpdateText();
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return pageAnimation.onTouch(event);
+    }
 
     /**
      * 设置背景颜色
      *
      * @param color 背景颜色
      */
-    public abstract void setColor(int color);
-
-    /**
-     * 向下翻页
-     */
-    public abstract void nextPage();
-
-    /**
-     * 向上翻页
-     */
-    public abstract void lastPage();
+    public void setColor(int color){
+        this.color = color;
+        pageAnimation.onPaintChange();
+    }
 
     public interface PageTurn {
         /**

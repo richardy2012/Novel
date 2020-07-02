@@ -22,11 +22,13 @@ import flandre.cn.novel.activity.DownloadManagerActivity;
 import flandre.cn.novel.activity.LocalMusicActivity;
 import flandre.cn.novel.database.SharedTools;
 import flandre.cn.novel.parse.FileParse;
+import flandre.cn.novel.parse.OnFinishParse;
 import flandre.cn.novel.parse.PathParse;
 import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.adapter.UserAdapter;
 import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.info.Item;
+import flandre.cn.novel.parse.ShareFile;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ import java.util.List;
  * 用户个人中心
  * 2019.??
  */
-public class UserFragment extends AttachFragment implements UserAdapter.OnItemClick, FileParse.OnfinishParse {
+public class UserFragment extends AttachFragment implements UserAdapter.OnItemClick, OnFinishParse {
     public static final String TAG = "UserFragment";
     private LinearLayout top;
     private TextView todayRead;
@@ -154,7 +156,7 @@ public class UserFragment extends AttachFragment implements UserAdapter.OnItemCl
      */
     private void openSystemFile() {
         SharedTools sharedTools = new SharedTools(mContext);
-        if (!sharedTools.getMusicEnable()){
+        if (!sharedTools.getMusicEnable()) {
             Toast.makeText(mContext, "我们需要权限才能加载本地小说", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -176,23 +178,14 @@ public class UserFragment extends AttachFragment implements UserAdapter.OnItemCl
         if (resultCode == Activity.RESULT_OK) {
             pathParse.parse(data);
             String path = pathParse.getPath();
-            if (path.endsWith(".fh.txt")) {
-                new GetNovelInfoAsync(mContext).execute(path);
-            }else {
-                FileParse fileParse = new FileParse(path, SQLiteNovel.getSqLiteNovel(mContext.getApplicationContext()), mContext);
-                fileParse.setOnfinishParse(this);
-                try {
-                    fileParse.parseFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            new ShareFile(path, mContext).setOnfinishParse(this).parseFile();
         }
     }
 
     @Override
     public void onFinishParse(int mode) {
-        if (mode == FileParse.OK)
+        ((IndexActivity) mContext).getBookFragment().getRefresh().setRefreshing(false);
+        if (mode == OnFinishParse.OK)
             ((IndexActivity) mContext).getBookFragment().loadData();
     }
 }

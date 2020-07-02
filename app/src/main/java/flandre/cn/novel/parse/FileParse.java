@@ -23,9 +23,6 @@ import java.util.regex.Pattern;
  * 解析小说文本, 放入数据库
  */
 public class FileParse {
-    public static final int OK = 1;
-    private static final int ALWAYS = 0;
-    private static final int ERROR = 2;
     private static final String[] CODE = new String[]{"utf8", "gbk", "utf16", "utf32", "ansi", "gb2312", "big5", "gb18030"};
     private final static String allChineseNum = "零一二三四五六七八九十百千万亿";
     private final static String chineseUnit = "十百千万亿";
@@ -43,11 +40,11 @@ public class FileParse {
     private String table;  // 表名
     private Context mContext;
     private long novel_id;  // novel的id
-    private OnfinishParse onfinishParse = null;  // 接口
+    private OnFinishParse onfinishParse = null;  // 接口
 
     private BufferedReader reader;
 
-    public void setOnfinishParse(OnfinishParse onfinishParse) {
+    public void setOnfinishParse(OnFinishParse onfinishParse) {
         this.onfinishParse = onfinishParse;
     }
 
@@ -415,13 +412,13 @@ public class FileParse {
                 if (mParse.checkInfo()) {
                     mParse.saveInfo();
                     mParse.parseData();
-                    return OK;
+                    return OnFinishParse.OK;
                 } else {
-                    return ALWAYS;
+                    return OnFinishParse.ALWAYS;
                 }
             } catch (ParseException e) {
                 e.printStackTrace();
-                return ERROR;
+                return OnFinishParse.ERROR;
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -431,26 +428,17 @@ public class FileParse {
         @Override
         protected void onPostExecute(Integer mode) {
             switch (mode) {
-                case ALWAYS:
+                case OnFinishParse.ALWAYS:
                     Toast.makeText(mParse.mContext, "小说已经加载了！", Toast.LENGTH_SHORT).show();
                     break;
-                case OK:
+                case OnFinishParse.OK:
                     Toast.makeText(mParse.mContext, "小说加载完成！", Toast.LENGTH_SHORT).show();
                     break;
-                case ERROR:
+                case OnFinishParse.ERROR:
                     Toast.makeText(mParse.mContext, "解析不了这本小说...", Toast.LENGTH_SHORT).show();
                     break;
             }
             if (mParse.onfinishParse != null) mParse.onfinishParse.onFinishParse(mode);
         }
-    }
-
-    public interface OnfinishParse {
-        /**
-         * 当解析完成时调用
-         *
-         * @param mode 解析的情况
-         */
-        public void onFinishParse(int mode);
     }
 }

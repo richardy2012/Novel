@@ -29,6 +29,7 @@ import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.activity.NovelDetailActivity;
 import flandre.cn.novel.activity.TextActivity;
 import flandre.cn.novel.info.Item;
+import flandre.cn.novel.parse.ShareFile;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -204,71 +205,7 @@ public class IndexDialogFragment extends AttachDialogFragment implements PopUpAd
      * 分享小说
      */
     private void share() {
-        try {
-            File file;
-            if (novelInfo.getSource() != null) {
-                // 如果是网上小说, 生成一个fh文件分享过去
-                String name = novelInfo.getName();
-                File dir = new File(mContext.getExternalFilesDir(null), "tmp");
-                if (!dir.exists()) dir.mkdir();
-                file = new File(dir, name + ".fh.txt");
-                FileOutputStream outputStream = new FileOutputStream(file);
-                outputStream.write(novelInfo.getSource().getBytes().length);
-                outputStream.write(novelInfo.getSource().getBytes());
-                outputStream.write(name.getBytes().length);
-                outputStream.write(name.getBytes());
-                outputStream.write(novelInfo.getAuthor().getBytes().length);
-                outputStream.write(novelInfo.getAuthor().getBytes());
-                outputStream.write(novelInfo.getUrl().getBytes().length);
-                outputStream.write(novelInfo.getUrl().getBytes());
-                outputStream.flush();
-                outputStream.close();
-            } else if (novelInfo.getUrl() != null) {
-                // 如果是本地小说, 把本地小说分享过去
-                file = new File(novelInfo.getUrl());
-                if (!file.exists()) {
-                    Toast.makeText(mContext, "要分享的小说的本地文件已被删除！", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            } else {
-                Toast.makeText(mContext, "分享不了该小说！", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Intent share = new Intent(Intent.ACTION_SEND);
-            Uri contentUri;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                contentUri = FileProvider.getUriForFile(mContext, BuildConfig.APPLICATION_ID + ".fileProvider", file);
-            } else {
-                contentUri = Uri.fromFile(file);
-            }
-            share.putExtra(Intent.EXTRA_STREAM, contentUri);
-            share.setType(getMimeType(file.getAbsolutePath()));//此处可发送多种文件
-            share.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            mContext.startActivity(Intent.createChooser(share, "分享小说"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static String getMimeType(String filePath) {
-        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        String mime = "*/*";
-        if (filePath != null) {
-            try {
-                mmr.setDataSource(filePath);
-                mime = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE);
-            } catch (IllegalStateException e) {
-                return mime;
-            } catch (IllegalArgumentException e) {
-                return mime;
-            } catch (RuntimeException e) {
-                return mime;
-            }
-        }
-        return mime;
+        new ShareFile(novelInfo, mContext).shareFile();
     }
 
     @Override

@@ -5,10 +5,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class SQLiteNovel extends SQLiteOpenHelper {
-    public static final int DOWNLOAD_PAUSE = 0;
-    public static final int DOWNLOAD_WAIT = 1;
-    public static final int DOWNLOAD_CONTINUE = 2;
-    public static final int DOWNLOAD_FINISH = 3;
+    public static final int DOWNLOAD_PAUSE = 0;  // 正在下载
+    public static final int DOWNLOAD_WAIT = 1;  // 等待中
+    public static final int DOWNLOAD_CONTINUE = 2;  // 继续下载
+    public static final int DOWNLOAD_FINISH = 3;  // 下载完成
 
     private static SQLiteNovel sqLiteNovel = null;
     public boolean freeStatus = true;  // 数据库是否空闲状态

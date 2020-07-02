@@ -28,11 +28,28 @@ public class AlarmDialogFragment extends AttachDialogFragment {
 
     private static final String[] CHOICE = new String[]{"不开启", "10分钟后", "20分钟后", "30分钟后", "40分钟后", "50分钟后", "60分钟后", "自定义"};
     private int height;
+    private OnClickItemListener listener;
+    private String title;
+
+    public void setListener(OnClickItemListener listener) {
+        this.listener = listener;
+    }
+
+    public static AlarmDialogFragment newInstance(String title) {
+
+        Bundle args = new Bundle();
+        args.putString("title", title);
+
+        AlarmDialogFragment fragment = new AlarmDialogFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.AlarmDialog);
+        title = getArguments().getString("title");
     }
 
     @Nullable
@@ -40,6 +57,7 @@ public class AlarmDialogFragment extends AttachDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.alarm_dialog_fragment, container, false);
         view.findViewById(R.id.top).setBackgroundColor(NovelConfigureManager.getConfigure().getMainTheme());
+        ((TextView) view.findViewById(R.id.title)).setText(title);
 
         LinearLayoutManager manager = new LinearLayoutManager(mContext);
         manager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -94,27 +112,7 @@ public class AlarmDialogFragment extends AttachDialogFragment {
         @Override
         public void onClick(View v) {
             int pos = (int) v.getTag();
-            SharedTools sharedTools;
-            switch (pos) {
-                case 0:
-                    sharedTools = new SharedTools(mContext);
-                    sharedTools.setAlarm(AlarmDialogFragment.NO_ALARM_STATE);
-                    break;
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                    sharedTools = new SharedTools(mContext);
-                    sharedTools.setAlarm(600 * pos * 1000);
-                    Toast.makeText(mContext, "闹钟将在" + NovelTools.resolver(600 * pos * 1000) + "后提示", Toast.LENGTH_SHORT).show();
-                    break;
-                case 7:
-                    Toast.makeText(mContext, "开发者认为你不需要这个功能", Toast.LENGTH_SHORT).show();
-                    break;
-            }
-            ((IndexActivity)mContext).getUserFragment().changeTheme();
+            if (listener != null) listener.clickItem(pos);
             dismiss();
         }
 
@@ -126,5 +124,9 @@ public class AlarmDialogFragment extends AttachDialogFragment {
                 textView = itemView.findViewById(R.id.item);
             }
         }
+    }
+
+    public interface OnClickItemListener {
+        public void clickItem(int pos);
     }
 }

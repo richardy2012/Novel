@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import flandre.cn.novel.crawler.*;
-import flandre.cn.novel.view.*;
+import flandre.cn.novel.view.page.*;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -78,19 +78,19 @@ public class NovelConfigureManager {
     private final static List<Map<String, String>> pageView = new ArrayList<Map<String, String>>() {{
         add(new HashMap<String, String>() {{
             put("description", "普通翻页(无动画)");
-            put("source", NormalPageView.class.getName());
+            put("source", NormalPageAnimation.class.getName());
         }});
         add(new HashMap<String, String>() {{
             put("description", "仿真翻页(左右层叠)");
-            put("source", CascadeSmoothPageView.class.getName());
+            put("source", CascadeSmoothPageAnimation.class.getName());
         }});
         add(new HashMap<String, String>(){{
             put("description", "仿真翻页(左右平移)");
-            put("source", TranslationSmoothPageView.class.getName());
+            put("source", TranslationSmoothPageAnimation.class.getName());
         }});
         add(new HashMap<String, String>(){{
             put("description", "仿真翻页(上下滚动)");
-            put("source", ScrollPageView.class.getName());
+            put("source", ScrollPageAnimation.class.getName());
         }});
     }};
 
@@ -207,10 +207,10 @@ public class NovelConfigureManager {
     /**
      * 拿到当前的页面View
      */
-    public static PageView getPageView(Context context) {
+    public static PageAnimation getPageView(PageView pageView) {
         try {
-            Constructor constructor = Class.forName(NovelConfigureManager.novelConfigure.getNowPageView()).getConstructor(Context.class);
-            return (PageView) constructor.newInstance(context);
+            Constructor constructor = Class.forName(NovelConfigureManager.novelConfigure.getNowPageView()).getConstructor(PageView.class);
+            return (PageAnimation) constructor.newInstance(pageView);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {

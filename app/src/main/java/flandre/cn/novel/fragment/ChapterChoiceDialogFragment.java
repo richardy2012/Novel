@@ -35,7 +35,7 @@ public class ChapterChoiceDialogFragment extends AttachDialogFragment implements
         TextActivity activity = (TextActivity) mContext;
         mChapter = activity.getChapter();
         if (activity.getTable() == null){
-            mList = activity.list;
+            mList = activity.getList();
         }else {
             List<NovelChapter> list = new ArrayList<>();
             Cursor cursor = sqLiteNovel.getReadableDatabase().query(activity.getTable(), new String[]{"chapter"},

@@ -5,6 +5,7 @@ import android.content.*;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -239,6 +240,11 @@ public abstract class BaseActivity extends AppCompatActivity implements Download
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        try {
+            if (musicService != null) musicService.saveData();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         unregisterReceiver(receiver);
         unBindNovelService();
         if (isMusicBind) {

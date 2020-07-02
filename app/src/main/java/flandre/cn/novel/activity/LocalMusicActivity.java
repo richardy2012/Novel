@@ -1,11 +1,14 @@
 package flandre.cn.novel.activity;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -25,14 +28,13 @@ import com.github.promeg.pinyinhelper.Pinyin;
 import flandre.cn.novel.BuildConfig;
 import flandre.cn.novel.MusicAidlInterface;
 import flandre.cn.novel.R;
-import flandre.cn.novel.Tools.NovelConfigure;
-import flandre.cn.novel.Tools.NovelConfigureManager;
-import flandre.cn.novel.Tools.PermissionManager;
+import flandre.cn.novel.Tools.*;
 import flandre.cn.novel.database.SharedTools;
+import flandre.cn.novel.fragment.AlarmDialogFragment;
 import flandre.cn.novel.fragment.MusicControlerFragment;
 import flandre.cn.novel.fragment.MusicDialogFragment;
 import flandre.cn.novel.info.MusicInfo;
-import flandre.cn.novel.Tools.Decoration;
+import flandre.cn.novel.parse.ShareFile;
 import flandre.cn.novel.service.PlayMusicService;
 import flandre.cn.novel.view.SlideBar;
 
@@ -41,16 +43,16 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 import static flandre.cn.novel.Tools.PermissionManager.*;
-import static flandre.cn.novel.fragment.IndexDialogFragment.getMimeType;
 import static flandre.cn.novel.service.PlayMusicService.music_pos;
 
 /**
  * 本地音乐播放
  * 2020.4.1
  */
-public class LocalMusicActivity extends BaseActivity {
+public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragment.OnClickItemListener {
     private Adapter mAdapter;
     private MusicDialogFragment mDialogFragment;
+    private AlarmDialogFragment mAlarmDialogFragment;
     private Map<Long, MusicInfo> musicData;  // 所有的歌曲
     private MusicControlerFragment musicControlerFragment;  // 歌曲的控制组件
     private long nowSongId = -1;  // 当前播放的歌曲ID
@@ -111,9 +113,9 @@ public class LocalMusicActivity extends BaseActivity {
                             });
                     View view = snackbar.getView();
                     NovelConfigure configure = NovelConfigureManager.getConfigure(getApplicationContext());
-                    ((TextView) view.findViewById(R.id.snackbar_text)).setTextColor(configure.getAuthorTheme());
+                    ((TextView) view.findViewById(R.id.snackbar_text)).setTextColor(Color.parseColor("#AAFFFFFF"));
+                    ((TextView) view.findViewById(R.id.snackbar_action)).setTextColor(Color.parseColor("#AAFFFFFF"));
                     view.setBackgroundColor(configure.getMainTheme());
-                    ((TextView) view.findViewById(R.id.snackbar_action)).setTextColor(configure.getAuthorTheme());
                     snackbar.show();
                 }
             });
@@ -177,6 +179,8 @@ public class LocalMusicActivity extends BaseActivity {
         setupRecycle();
         setupCheckBox();
         addMusicListener(this);
+        mAlarmDialogFragment = AlarmDialogFragment.newInstance("定时关闭");
+        mAlarmDialogFragment.setListener(this);
         checkPermission();
     }
 
@@ -305,7 +309,7 @@ public class LocalMusicActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
@@ -326,6 +330,9 @@ public class LocalMusicActivity extends BaseActivity {
                         e.printStackTrace();
                     }
                 }
+                break;
+            case R.id.alarm:
+                mAlarmDialogFragment.show(getSupportFragmentManager(), "AlarmDialogFragment");
                 break;
         }
 //        return super.onOptionsItemSelected(item);
@@ -453,6 +460,38 @@ public class LocalMusicActivity extends BaseActivity {
                 }
                 break;
             case ACCESS_NOTIFICATION_POLICY_CODE:
+                break;
+        }
+    }
+
+    @Override
+    public void clickItem(int pos) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        Intent intent;
+        PendingIntent pendingIntent;
+        switch (pos){
+            case 0:
+                intent = new Intent(PlayMusicService.NOTIFICATION_PAUSE);
+                pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+                alarmManager.cancel(pendingIntent);
+                break;
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(System.currentTimeMillis());
+                calendar.add(Calendar.SECOND, 600 * pos);
+                intent = new Intent(PlayMusicService.NOTIFICATION_PAUSE);
+                pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+                alarmManager.cancel(pendingIntent);
+                alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                Toast.makeText(this, "音乐将在" + NovelTools.resolver(600 * pos * 1000) + "后停止", Toast.LENGTH_SHORT).show();
+                break;
+            case 7:
+                Toast.makeText(this, "开发者认为你不需要这个功能", Toast.LENGTH_SHORT).show();
                 break;
         }
     }
@@ -610,24 +649,11 @@ public class LocalMusicActivity extends BaseActivity {
                                     break;
                                 case 3:
                                     File file = new File(musicInfo.getData());
-                                    if (!file.exists()){
+                                    if (!file.exists()) {
                                         Toast.makeText(LocalMusicActivity.this, "歌曲不存在", Toast.LENGTH_SHORT).show();
                                         break;
                                     }
-                                    Intent share = new Intent(Intent.ACTION_SEND);
-                                    Uri contentUri;
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                        contentUri = FileProvider.getUriForFile(LocalMusicActivity.this,
-                                                BuildConfig.APPLICATION_ID + ".fileProvider", file);
-                                    } else {
-                                        contentUri = Uri.fromFile(file);
-                                    }
-                                    share.putExtra(Intent.EXTRA_STREAM, contentUri);
-//                                    share.setType(getMimeType(file.getAbsolutePath()));//此处可发送多种文件
-                                    share.setType("*/*");//此处可发送多种文件
-                                    share.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                    LocalMusicActivity.this.startActivity(Intent.createChooser(share, "分享音乐"));
+                                    new ShareFile(LocalMusicActivity.this).share(file, "*/*", "分享音乐");
                                     break;
                             }
                         }
@@ -671,11 +697,7 @@ public class LocalMusicActivity extends BaseActivity {
                 int color = NovelConfigureManager.getConfigure().getNameTheme();
                 alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(color);
                 alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(color);
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            }catch (IllegalAccessException e){
-                e.printStackTrace();
-            }catch (NullPointerException e){
+            } catch (NoSuchFieldException | IllegalAccessException | NullPointerException e) {
                 e.printStackTrace();
             }
         }

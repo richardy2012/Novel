@@ -45,16 +45,22 @@ public class NovelDetailActivity extends BaseActivity implements View.OnClickLis
         unpack(savedInstanceState);
         // 判断数据库里是否存在数据
         sqLiteNovel = SQLiteNovel.getSqLiteNovel(getApplicationContext());
-        Cursor cursor = sqLiteNovel.getReadableDatabase().query("novel", new String[]{"name", "image", "newChapter"},
+        Cursor cursor = sqLiteNovel.getReadableDatabase().query("novel", new String[]{"source"},
                 "author=? and name=?", new String[]{novelInfo.getAuthor(), novelInfo.getName()},
                 null, null, null);
         if (cursor.moveToNext()) {
-            star.setText(getResources().getText(R.string.cancel));
-            read.setText(getResources().getText(R.string.ctn));
+            if (novelInfo.getSource().equals(cursor.getString(0))){
+                star.setText(getResources().getText(R.string.cancel));
+                read.setText(getResources().getText(R.string.ctn));
+            }else {
+                star.setText(getResources().getText(R.string.change));
+                read.setText(getResources().getText(R.string.ctn));
+            }
         } else {
             star.setText(getResources().getText(R.string.star));
             read.setText(getResources().getText(R.string.read));
         }
+        cursor.close();
         NestedScrollView scrollView = findViewById(R.id.wrap);
         name.setText(novelInfo.getName());
         author.setText("作者: " + novelInfo.getAuthor());
@@ -65,7 +71,6 @@ public class NovelDetailActivity extends BaseActivity implements View.OnClickLis
         star.setOnClickListener(starListener);
 
         read.setOnClickListener(this);
-        cursor.close();
     }
 
     private void unpack(Bundle savedInstanceState) {
@@ -118,14 +123,24 @@ public class NovelDetailActivity extends BaseActivity implements View.OnClickLis
         readView.setText(getResources().getText(R.string.read));
     }
 
+    private void changeSource(TextView readView, TextView textView){
+        // 改变书本来源
+        int id = SQLTools.getNovelId(sqLiteNovel, novelInfo.getName(), novelInfo.getAuthor());
+        SQLTools.changeSource(sqLiteNovel, novelInfo, String.valueOf(id), mService);
+        textView.setText(getResources().getText(R.string.cancel));
+        readView.setText(getResources().getText(R.string.ctn));
+    }
+
     private View.OnClickListener starListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             TextView textView = (TextView) view;
             TextView readView = findViewById(R.id.read);
-            if (textView.getText() == getResources().getText(R.string.star)) {
+            if (textView.getText().equals(getResources().getText(R.string.star))) {
                 starBook(readView, textView);
-            } else {
+            } else if (textView.getText().equals(getResources().getText(R.string.change))){
+                changeSource(readView, textView);
+            }else {
                 cancelStar(readView, textView);
             }
         }

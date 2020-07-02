@@ -1,6 +1,8 @@
 package flandre.cn.novel.service;
 
 import android.app.*;
+import android.bluetooth.BluetoothHeadset;
+import android.bluetooth.BluetoothProfile;
 import android.content.*;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -46,6 +48,7 @@ public class PlayMusicService extends Service {
     private static final String NOTIFICATION_PLAY_PAUSE = "flandre.cn.novel.notificationplaypause";
     private static final String NOTIFICATION_CLOSE = "flandre.cn.novel.notificationclose";
     public static final String NOTIFICATION_CHANGE = "flandre.cn.novel.notificationchange";
+    public static final String NOTIFICATION_PAUSE = "flandre.cn.novel.notificationpause";
 
     public static final int STATUS_ONE_LOOPING = 0;  // 单曲循环
     public static final int STATUS_ALL_LOOPING = 1;  // 循环播放
@@ -105,9 +108,14 @@ public class PlayMusicService extends Service {
         filter.addAction(PlayMusicService.NOTIFICATION_PLAY_PAUSE);
         filter.addAction(PlayMusicService.NOTIFICATION_CLOSE);
         filter.addAction(PlayMusicService.NOTIFICATION_CHANGE);
+        filter.addAction(PlayMusicService.NOTIFICATION_PAUSE);
+        filter.addAction(Intent.ACTION_HEADSET_PLUG);
+        filter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
         registerReceiver(receiver, filter);
+
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (isShowNotification) setNotification();
+
         // 设置好电话接收器
         phoneListener = new PhoneListener();
         TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -287,7 +295,8 @@ public class PlayMusicService extends Service {
         Cursor cursor = cr.query(uri, music_pos, "title != '' and _size > 1048576 and duration > 60000",
                 null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
         while (cursor.moveToNext()) {
-            if (!cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).toLowerCase().trim().endsWith("mp3")) continue;
+            if (!cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).toLowerCase().trim().endsWith("mp3"))
+                continue;
             MusicInfo musicInfo = new MusicInfo();
             musicInfo.setDuration(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
             musicInfo.setSongId(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID)));
@@ -408,7 +417,7 @@ public class PlayMusicService extends Service {
         return true;
     }
 
-    private int getPlayQueueSize(){
+    private int getPlayQueueSize() {
         return saveList.size();
     }
 
@@ -435,7 +444,7 @@ public class PlayMusicService extends Service {
         }
         saveList.remove(id);
         playList.remove(id);
-        if (!isNowPlaySong){
+        if (!isNowPlaySong) {
             playPosition = playList.indexOf(nowPlayId);
         }
         saveData();
@@ -486,7 +495,7 @@ public class PlayMusicService extends Service {
      */
     private void setPlayOrder(int status) {
         playStatus = status;
-        if (saveList.size() == 0)return;
+        if (saveList.size() == 0) return;
         long playSongId = playList.get(playPosition);
         upsetOrder();
         playPosition = playList.indexOf(playSongId);
@@ -602,7 +611,7 @@ public class PlayMusicService extends Service {
     @Override
     public void onDestroy() {
         TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        tmgr.listen(phoneListener, 0);
+        tmgr.listen(phoneListener, PhoneStateListener.LISTEN_NONE);
         super.onDestroy();
         if (receiver != null)
             unregisterReceiver(receiver);
@@ -615,7 +624,7 @@ public class PlayMusicService extends Service {
         changeNotification(PlayMusicService.NOTIFICATION_CREATE);
     }
 
-    class PhoneListener extends PhoneStateListener {
+    private class PhoneListener extends PhoneStateListener {
         @Override
         public void onCallStateChanged(int state, String phoneNumber) {
             switch (state) {
@@ -644,6 +653,7 @@ public class PlayMusicService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (!notificationClickable) return;
+            if (saveList.size() == 0) return;
             String action = intent.getAction();
             assert action != null;
             // 这里有个小bug, 当长事件挂后台时, 点击控件播放音乐时, 控件不会刷新
@@ -669,6 +679,20 @@ public class PlayMusicService extends Service {
                     SharedTools sharedTools = new SharedTools(PlayMusicService.this);
                     sharedTools.changeNotificationDarkTheme();
                     PlayMusicService.this.changeNotification(PlayMusicService.NOTIFICATION_UPDATE);
+                    break;
+                case Intent.ACTION_HEADSET_PLUG:
+                    if (intent.hasExtra("state")) {
+                        if (intent.getIntExtra("state", 0) == 0 && isPlaying()) pause();
+                    }
+                    break;
+                case BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED:
+                    int extra = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1);
+                    if (extra == BluetoothProfile.STATE_DISCONNECTED) {
+                        if (isPlaying()) pause();
+                    }
+                    break;
+                case PlayMusicService.NOTIFICATION_PAUSE:
+                    if (isPlaying()) pause();
                     break;
             }
             // cancel时就不需要delay了
@@ -832,7 +856,7 @@ public class PlayMusicService extends Service {
         }
 
         @Override
-        public int getPlayQueueSize(){
+        public int getPlayQueueSize() {
             return mService.get().getPlayQueueSize();
         }
 

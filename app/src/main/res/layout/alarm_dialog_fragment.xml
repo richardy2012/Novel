@@ -18,7 +18,6 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:textSize="25sp"
-                android:text="闹钟设置"
                 android:textColor="#AAFFFFFF"/>
     </LinearLayout>
 
