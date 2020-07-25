@@ -39,7 +39,7 @@ public class SearchResultFragment extends AttachFragment implements View.OnClick
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        search_result.setVisibility(isVisibleToUser?View.VISIBLE:View.GONE);
+        search_result.setVisibility(isVisibleToUser ? View.VISIBLE : View.GONE);
     }
 
     @Nullable
@@ -83,32 +83,24 @@ public class SearchResultFragment extends AttachFragment implements View.OnClick
          */
         @Override
         protected List<NovelInfo> doInBackground(String... s) {
-            try {
-                SearchActivity mContext = (SearchActivity) mFragment.get().mContext;
-                SQLiteNovel sqLiteNovel = mContext.getSqLiteNovel();
-                Cursor cursor = sqLiteNovel.getReadableDatabase().query("search", null,
-                        "name=?", s, null, null, null);
-                if (cursor.moveToNext()) {
-                    ContentValues values = new ContentValues();
-                    values.put("time", new Date().getTime());
-                    sqLiteNovel.getReadableDatabase().update("search", values, "name=?", s);
-                } else {
-                    ContentValues values = new ContentValues();
-                    values.put("name", s[0]);
-                    values.put("time", new Date().getTime());
-                    sqLiteNovel.getReadableDatabase().insert("search", null, values);
-                }
-                cursor.close();
-                BaseCrawler crawler = (BaseCrawler) NovelConfigureManager.getConstructor().newInstance(mFragment.get().mContext, null);
-                return crawler.search(s[0]);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (java.lang.InstantiationException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
+            SearchActivity mContext = (SearchActivity) mFragment.get().mContext;
+            SQLiteNovel sqLiteNovel = mContext.getSqLiteNovel();
+            Cursor cursor = sqLiteNovel.getReadableDatabase().query("search", null,
+                    "name=?", s, null, null, null);
+            if (cursor.moveToNext()) {
+                ContentValues values = new ContentValues();
+                values.put("time", new Date().getTime());
+                sqLiteNovel.getReadableDatabase().update("search", values, "name=?", s);
+            } else {
+                ContentValues values = new ContentValues();
+                values.put("name", s[0]);
+                values.put("time", new Date().getTime());
+                sqLiteNovel.getReadableDatabase().insert("search", null, values);
             }
-            return null;
+            cursor.close();
+            BaseCrawler crawler = NovelConfigureManager.getCrawler(mFragment.get().mContext, null);
+            if (crawler == null) return null;
+            return crawler.search(s[0]);
         }
 
         /**
@@ -124,7 +116,7 @@ public class SearchResultFragment extends AttachFragment implements View.OnClick
                     mContext.getRemindFragment().setUserVisibleHint(false);
                     mContext.getResultFragment().setUserVisibleHint(true);
                 }
-                if (list.size() == 0){
+                if (list.size() == 0) {
                     mFragment.get().changeSource.setVisibility(View.VISIBLE);
                 }
                 // 显示到界面

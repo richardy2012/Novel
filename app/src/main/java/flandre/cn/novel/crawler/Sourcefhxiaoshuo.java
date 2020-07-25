@@ -1,6 +1,6 @@
 package flandre.cn.novel.crawler;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Handler;
 import flandre.cn.novel.info.NovelInfo;
 import flandre.cn.novel.info.NovelRemind;
@@ -20,15 +20,15 @@ import static java.lang.Math.min;
 public class Sourcefhxiaoshuo extends BaseCrawler {
     private List<NovelInfo> list;
 
-    public Sourcefhxiaoshuo(Activity activity, Handler handler) {
-        super(activity, handler);
+    public Sourcefhxiaoshuo(Context context, Handler handler) {
+        super(context, handler);
         CHARSET = "GBK";
         DOMAIN = "https://www.fhxiaoshuo.org/";
         THREAD_COUNT = MIDDLE_THREAD_COUNT;
     }
 
     @Override
-    List<NovelInfo> run_search(String s) {
+    public List<NovelInfo> run_search(String s) {
         list = new ArrayList<>();
         Document document = crawlerPOST(DOMAIN + "modules/article/search.php", "searchkey=" + s);
 
@@ -51,7 +51,7 @@ public class Sourcefhxiaoshuo extends BaseCrawler {
     }
 
     @Override
-    List<NovelTextItem> run_list(String URL) {
+    public List<NovelTextItem> run_list(String URL) {
         List<NovelTextItem> list = new ArrayList<>();
 
         Document document = crawlerGET(URL);
@@ -99,7 +99,7 @@ public class Sourcefhxiaoshuo extends BaseCrawler {
     }
 
     @Override
-    NovelText run_text(String URL) {
+    public NovelText run_text(String URL) {
         return run_text(URL, 1);
     }
 

@@ -132,8 +132,9 @@ public class DataRankFragment extends AttachFragment implements RankAdapter.Rank
         View load = inflater.inflate(R.layout.loading_layout, frameLayout, false);
         load.setTag("loading");
         ImageView load_img = load.findViewById(R.id.load_img);
-        load_img.setBackground(mContext.getResources().getDrawable(
-                NovelConfigureManager.getConfigure().getMode() == NovelConfigure.DAY ? R.drawable.loading_day : R.drawable.loading_night));
+        load_img.setBackground(mContext.getResources().getDrawable(NovelConfigureManager.getConfigure().getMode()
+                == NovelConfigure.DAY ? R.drawable.loading_day : R.drawable.loading_night));
+
         TextView textView = load.findViewById(R.id.load_txt);
         textView.setTextColor(NovelConfigureManager.getConfigure().getNameTheme());
         // 让图片旋转
@@ -173,8 +174,8 @@ public class DataRankFragment extends AttachFragment implements RankAdapter.Rank
 
     void changeTheme() {
         if (frameLayout == null) return;
+        refresh.setColorSchemeColors(NovelConfigureManager.getConfigure().getMainTheme());
         if (frameLayout.findViewWithTag("loading") != null) {
-            refresh.setColorSchemeColors(NovelConfigureManager.getConfigure().getMainTheme());
             View view = frameLayout.findViewWithTag("loading");
             view.findViewById(R.id.load_img).setBackground(mContext.getResources().getDrawable(
                     NovelConfigureManager.getConfigure().getMode() == NovelConfigure.DAY ? R.drawable.loading_day : R.drawable.loading_night));

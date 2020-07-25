@@ -1,6 +1,6 @@
 package flandre.cn.novel.crawler;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Handler;
 import flandre.cn.novel.info.NovelInfo;
 import flandre.cn.novel.info.NovelRemind;
@@ -10,6 +10,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -20,16 +22,24 @@ import static java.lang.StrictMath.min;
 public class Sourcelinovelib extends BaseCrawler {
     private List<NovelInfo> list;
 
-    public Sourcelinovelib(Activity activity, Handler handler) {
-        super(activity, handler);
+    public Sourcelinovelib(Context context, Handler handler) {
+        super(context, handler);
         DOMAIN = "https://www.linovelib.com/";
         CHARSET = "UTF8";
         THREAD_COUNT = MIDDLE_THREAD_COUNT;
     }
 
     @Override
-    List<NovelInfo> run_search(String s) {
+    public List<NovelInfo> run_search(String s) {
         list = new ArrayList<>();
+        try {
+            if (URLDecoder.decode(s, CHARSET).endsWith("（漫画）")){
+                return list;
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return list;
+        }
         Document document = crawlerPOST(DOMAIN + "s/", "searchkey=" + s + "&searchtype=all");
         if (document.select("div.book-img").size() > 0) {
             MapThread mapThread = new MapThread(document, null, new NovelInfo());
@@ -56,7 +66,7 @@ public class Sourcelinovelib extends BaseCrawler {
     }
 
     @Override
-    List<NovelTextItem> run_list(String URL) {
+    public List<NovelTextItem> run_list(String URL) {
         List<NovelTextItem> list = new ArrayList<>();
         Document document = crawlerGET(URL);
         Elements elements = document.select("body > div.wrap > div.container > div:nth-child(2) > div.volume-list > div > ul > li.col-4");
@@ -70,7 +80,7 @@ public class Sourcelinovelib extends BaseCrawler {
     }
 
     @Override
-    NovelText run_text(String URL) {
+    public NovelText run_text(String URL) {
         return run_text(URL, 1);
     }
 

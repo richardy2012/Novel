@@ -14,12 +14,14 @@ import flandre.cn.novel.R;
  * 2020.4.7
  */
 public class AlarmTriggerDialogFragment extends AttachDialogFragment implements View.OnTouchListener {
+    public static final int REST_TIME = 120;
+
     private Handler handler;
     private View view;
     private float y;
     private boolean isTouch = false;
     private boolean force = false;
-    private int restTime = 120;
+    private int restTime = REST_TIME;
     private TextView bottom;
     private TextView countdown;
     private boolean mIsPaddingResume = false;
@@ -29,7 +31,7 @@ public class AlarmTriggerDialogFragment extends AttachDialogFragment implements 
         public void run() {
             if (--restTime == 0) {
                 force = false;
-                restTime = 120;
+                restTime = REST_TIME;
                 countdown.setText("↑↑↑↑");
                 bottom.setText("上滑关闭");
             } else {
@@ -71,6 +73,10 @@ public class AlarmTriggerDialogFragment extends AttachDialogFragment implements 
         countdown = view.findViewById(R.id.countdown);
         view.setPadding(0, 0, 0, 0);
         view.setOnTouchListener(this);
+        if (!force){
+            countdown.setText("↑↑↑↑");
+            bottom.setText("上滑关闭");
+        }
         return view;
     }
 

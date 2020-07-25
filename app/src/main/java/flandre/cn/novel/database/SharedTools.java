@@ -105,7 +105,7 @@ public class SharedTools {
      * @param musicSaveData 要保存的信息
      */
     public void saveMusic(MusicSaveData musicSaveData) {
-        SharedPreferences sharedPreferences = mContext.getSharedPreferences("novel", Activity.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences("novel", Activity.MODE_MULTI_PROCESS);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("SaveList", musicSaveData.getSaveList());
         editor.putLong("SongId", musicSaveData.getSongId());
@@ -119,13 +119,31 @@ public class SharedTools {
      * 拿到之前保存的播放信息
      */
     public MusicSaveData getMusic() {
-        SharedPreferences sharedPreferences = mContext.getSharedPreferences("novel", Activity.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences("novel", Activity.MODE_MULTI_PROCESS);
         String saveList = sharedPreferences.getString("SaveList", null);
         long songId = sharedPreferences.getLong("SongId", -1);
         int playStatus = sharedPreferences.getInt("PlayStatus", PlayMusicService.STATUS_ALL_LOOPING);
         int current = sharedPreferences.getInt("Current", 0);
         boolean isShowNotification = sharedPreferences.getBoolean("IsShowNotification", false);
         return new MusicSaveData(saveList, songId, playStatus, current, isShowNotification);
+    }
+
+    /**
+     * 记录用户设置闹钟的时间, 用于循环闹钟
+     */
+    public void setAlarmTime(long time){
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences("novel", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong("AlarmTime", time);
+        editor.apply();
+    }
+
+    /**
+     * 拿到用户设置的闹钟时间
+     */
+    public long getAlarmTime(){
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences("novel", Activity.MODE_PRIVATE);
+        return sharedPreferences.getLong("AlarmTime", AlarmDialogFragment.NO_ALARM_STATE);
     }
 
     /**

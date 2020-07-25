@@ -38,6 +38,15 @@ public class NovelConfigure implements Serializable {
     private String nowPageView = NormalPageAnimation.class.getName();  // 当前使用的翻页
     private boolean isAlwaysNext = false;  // 是否全屏点击下一页
     private boolean isAlarmForce = false;  // 小说闹钟是否强迫休息
+    private boolean isConstantAlarm = false;  // 是否循环闹钟
+
+    public boolean isConstantAlarm() {
+        return isConstantAlarm;
+    }
+
+    public void setConstantAlarm(boolean constantAlarm) {
+        isConstantAlarm = constantAlarm;
+    }
 
     public NovelConfigure() {
         mainTheme = new MainTheme[MAIN_THEME_COUNT];

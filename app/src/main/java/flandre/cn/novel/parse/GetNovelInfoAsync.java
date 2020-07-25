@@ -1,4 +1,4 @@
-package flandre.cn.novel.Tools;
+package flandre.cn.novel.parse;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,17 +6,19 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Base64;
 import android.widget.Toast;
+import flandre.cn.novel.Tools.AES;
+import flandre.cn.novel.Tools.ByteBuilder;
+import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.crawler.BaseCrawler;
 import flandre.cn.novel.database.SQLTools;
 import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.info.NovelInfo;
-import flandre.cn.novel.parse.OnFinishParse;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
+
+import static flandre.cn.novel.parse.ShareFile.FL_FILE;
 
 public class GetNovelInfoAsync extends AsyncTask<String, Void, Integer> {
     private WeakReference<Context> mContext;
@@ -38,23 +40,21 @@ public class GetNovelInfoAsync extends AsyncTask<String, Void, Integer> {
             byte[] data = new byte[1024];
             FileInputStream inputStream = new FileInputStream(strings[0]);
             int read = inputStream.read(data);
-            ByteBuilder byteBuilder = new ByteBuilder(AES.decrypt(Base64.decode(data, 0, read, Base64.DEFAULT)));
+            ByteBuilder byteBuilder = new ByteBuilder(AES.decrypt(Base64.decode(data, FL_FILE.length(), read, Base64.DEFAULT)));
             String source = byteBuilder.readString(byteBuilder.readInt());
             String name = byteBuilder.readString(byteBuilder.readInt());
             String author = byteBuilder.readString(byteBuilder.readInt());
             String address = byteBuilder.readString(byteBuilder.readInt());
 
             if (SQLTools.getNovelId(SQLiteNovel.getSqLiteNovel(), name, author) == -1) {
-                BaseCrawler crawler = (BaseCrawler) Class.forName(source).getConstructor(Activity.class,
-                        Handler.class).newInstance((Activity) mContext.get(), null);
+                BaseCrawler crawler = NovelConfigureManager.getCrawler(source, mContext.get(), null);
+                if (crawler == null) return null;
                 crawler.getNovelInfo(address, novelInfo).run().run();
                 SQLTools.saveInSQLite(novelInfo, SQLiteNovel.getSqLiteNovel(), mContext.get());
                 return OnFinishParse.OK;
             } else {
                 return OnFinishParse.ALWAYS;
             }
-        } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException | IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -75,7 +75,6 @@ public class GetNovelInfoAsync extends AsyncTask<String, Void, Integer> {
                 ((IndexActivity) mContext.get()).getBookFragment().loadData();
                 break;
         }
-//        ((IndexActivity) mContext.get()).getBookFragment().getRefresh().setRefreshing(false);
         if (onFinishParse != null) onFinishParse.onFinishParse(integer);
     }
 }

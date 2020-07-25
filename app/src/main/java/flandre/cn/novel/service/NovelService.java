@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.crawler.BaseCrawler;
 import flandre.cn.novel.database.SQLTools;
 import flandre.cn.novel.database.SQLiteNovel;
@@ -229,18 +230,13 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
                 downloadInfo.setFinish(finish);
             }
 
-            // 开四个线程继续小说下载
-            try {
-                Constructor constructor = Class.forName(novelInfo.getSource()).getConstructor(Activity.class, Handler.class);
-                BaseCrawler crawler = (BaseCrawler) constructor.newInstance(null, null);
-                downloadPool = Executors.newFixedThreadPool(crawler.THREAD_COUNT);
-                for (Map<String, String> map : list) {
-                    downloadPool.execute(crawler.download(map.get("url"), Integer.parseInt(map.get("id")), table, this));
-                }
-                downloadPool.shutdown();
-            } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-                e.printStackTrace();
+            // 开线程继续小说下载
+            BaseCrawler crawler = NovelConfigureManager.getCrawler(novelInfo.getSource(), null, null);
+            downloadPool = Executors.newFixedThreadPool(crawler.THREAD_COUNT);
+            for (Map<String, String> map : list) {
+                downloadPool.execute(crawler.download(map.get("url"), Integer.parseInt(map.get("id")), table, this));
             }
+            downloadPool.shutdown();
         } else {
             if (novelDownloadInfo == null) {
                 downloadInfo.setFinish(0);
@@ -387,7 +383,7 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
         }
     }
 
-    public boolean isContainId(int id){
+    public boolean isContainId(int id) {
         return containId.contains(id);
     }
 
@@ -488,18 +484,13 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
 
         // 最大开4个线程去更新
         if (updateList.size() != 0) {
-            try {
-                ExecutorService fixedThreadPool = Executors.newFixedThreadPool(min(updateList.size(), 4));
-                for (Map<String, String> map : updateList) {
-                    Constructor constructor = Class.forName(map.get("source")).getConstructor(Activity.class, Handler.class);
-                    BaseCrawler crawler = (BaseCrawler) constructor.newInstance(null, null);
-                    fixedThreadPool.execute(crawler.update(map.get("URL"), Integer.parseInt(map.get("id")),
-                            Integer.parseInt(map.get("newId")), this));
-                }
-                fixedThreadPool.shutdown();
-            } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-                e.printStackTrace();
+            ExecutorService fixedThreadPool = Executors.newFixedThreadPool(min(updateList.size(), 4));
+            for (Map<String, String> map : updateList) {
+                BaseCrawler crawler = NovelConfigureManager.getCrawler(map.get("source"), null, null);
+                fixedThreadPool.execute(crawler.update(map.get("URL"), Integer.parseInt(map.get("id")),
+                        Integer.parseInt(map.get("newId")), this));
             }
+            fixedThreadPool.shutdown();
         }
 
         // 如果没有小说需要更新

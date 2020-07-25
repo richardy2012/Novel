@@ -32,6 +32,7 @@ public class ConfigureThemeActivity extends BaseActivity {
     private int current;  // 当前选择的页面的索引, 保存时根据此设置配置文件
     private boolean alwaysNext;  // 是否全屏点击下一页
     private boolean alarmForce;  // 小说闹钟是否强制
+    private boolean constantAlarm;  // 是否循环闹钟
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +55,7 @@ public class ConfigureThemeActivity extends BaseActivity {
 
         alwaysNext = configure.isAlwaysNext();
         alarmForce = configure.isAlarmForce();
+        constantAlarm = configure.isConstantAlarm();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(configure.getMainTheme()));
@@ -151,6 +153,7 @@ public class ConfigureThemeActivity extends BaseActivity {
             configure.setNowPageView(NovelConfigureManager.getPageView().get(current).get("source"));
             configure.setAlwaysNext(alwaysNext);
             configure.setAlarmForce(alarmForce);
+            configure.setConstantAlarm(constantAlarm);
 
             NovelConfigureManager.saveConfigure(this.configure, this);
             Intent intent = new Intent();
@@ -290,6 +293,7 @@ public class ConfigureThemeActivity extends BaseActivity {
         List<String> list = new ArrayList<String>() {{
             add("全屏点击翻下页");
             add("小说闹钟强制休息");
+            add("循环闹钟");
         }};
 
         @NonNull
@@ -314,6 +318,9 @@ public class ConfigureThemeActivity extends BaseActivity {
                 case 1:
                     holder.choice.setVisibility(alarmForce ? View.VISIBLE : View.GONE);
                     break;
+                case 2:
+                    holder.choice.setVisibility(constantAlarm ? View.VISIBLE : View.GONE);
+                    break;
             }
         }
 
@@ -330,6 +337,9 @@ public class ConfigureThemeActivity extends BaseActivity {
                     break;
                 case 1:
                     v.findViewById(R.id.choice).setVisibility((alarmForce = !alarmForce) ? View.VISIBLE : View.GONE);
+                    break;
+                case 2:
+                    v.findViewById(R.id.choice).setVisibility((constantAlarm = !constantAlarm) ? View.VISIBLE : View.GONE);
                     break;
             }
         }

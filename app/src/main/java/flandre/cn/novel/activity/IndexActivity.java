@@ -68,11 +68,11 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
         // 保存当前时间与播放的状态
         outState.putLong("SaveTime", new Date().getTime());
         if (musicService != null)
             outState.putBoolean("isPlaying", isPlaying);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
         if (bundle != null && bundle.get("path") != null) {
             bookFragment.getRefresh().setRefreshing(true);
             String path = (String) bundle.get("path");
-            new ShareFile(path, this).setOnfinishParse(bookFragment).parseFile();
+            new ShareFile(path, this).setOnfinishParse(bookFragment).parseFile(bookFragment.getRefresh());
         }
     }
 
@@ -511,6 +511,7 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
             case 0:
                 sharedTools = new SharedTools(this);
                 sharedTools.setAlarm(AlarmDialogFragment.NO_ALARM_STATE);
+                Toast.makeText(this, "取消了闹钟！", Toast.LENGTH_SHORT).show();
                 break;
             case 1:
             case 2:
@@ -520,6 +521,7 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
             case 6:
                 sharedTools = new SharedTools(this);
                 sharedTools.setAlarm(600 * pos * 1000);
+                sharedTools.setAlarmTime(600 * pos * 1000);
                 Toast.makeText(this, "闹钟将在" + NovelTools.resolver(600 * pos * 1000) + "后提示", Toast.LENGTH_SHORT).show();
                 break;
             case 7:

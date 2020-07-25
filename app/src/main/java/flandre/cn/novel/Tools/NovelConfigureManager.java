@@ -1,6 +1,5 @@
 package flandre.cn.novel.Tools;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import flandre.cn.novel.crawler.*;
@@ -102,12 +101,27 @@ public class NovelConfigureManager {
         return source;
     }
 
-    public static Constructor<?> getConstructor() {
-        return constructor;
+    public static BaseCrawler getCrawler(Context context, Handler handler){
+        try {
+            return (BaseCrawler) constructor.newInstance(context, handler);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public static void setConstructor(Constructor<?> constructor) {
-        NovelConfigureManager.constructor = constructor;
+    public static void setConstructor(String source){
+        try {
+            NovelConfigureManager.constructor = Class.forName(source).getConstructor(Context.class, Handler.class);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public static NovelConfigure getConfigure(Context context) {
@@ -196,12 +210,30 @@ public class NovelConfigureManager {
             }
         }
         try {
-            constructor = Class.forName(novelConfigure.getNowSourceValue()).getConstructor(Activity.class, Handler.class);
+            constructor = Class.forName(novelConfigure.getNowSourceValue()).getConstructor(Context.class, Handler.class);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
+    }
+
+    public static BaseCrawler getCrawler(String source, Context context, Handler handler){
+        try {
+            return (BaseCrawler) Class.forName(source).
+                getConstructor(Context.class, Handler.class).newInstance(context, handler);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**

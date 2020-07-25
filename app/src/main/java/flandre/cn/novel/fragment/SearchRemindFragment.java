@@ -100,19 +100,9 @@ public class SearchRemindFragment extends AttachFragment {
 
         @Override
         protected List<NovelRemind> doInBackground(Void... voids) {
-            try {
-                BaseCrawler crawler = (BaseCrawler) NovelConfigureManager.getConstructor().newInstance(mFragment.get().mContext, null);
-                return crawler.remind();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (java.lang.InstantiationException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            }
-            return null;
+            BaseCrawler crawler = NovelConfigureManager.getCrawler(mFragment.get().mContext, null);
+            if (crawler == null) return null;
+            return crawler.remind();
         }
 
         @Override

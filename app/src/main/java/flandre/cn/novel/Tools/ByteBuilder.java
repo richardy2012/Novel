@@ -34,8 +34,10 @@ public class ByteBuilder {
 
     public int readInt(){
         int result = 0;
+        int tmp;
         for (int j = 0; j <= 24; j += 8) {
-            result += bytes[seek++] << j;
+            tmp = bytes[seek++];
+            result += (tmp >= 0 ? tmp : tmp + 256) << j;
         }
         return result;
     }
@@ -46,8 +48,9 @@ public class ByteBuilder {
         return s;
     }
 
-    public void setSeek(int seek) {
+    public ByteBuilder setSeek(int seek) {
         this.seek = seek;
+        return this;
     }
 
     public int getSeek() {

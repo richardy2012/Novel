@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import flandre.cn.novel.R;
+import flandre.cn.novel.Tools.NovelConfigure;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.adapter.FragmentPagerAdapter;
 import flandre.cn.novel.crawler.BaseCrawler;
@@ -24,7 +25,6 @@ import java.util.List;
  */
 public class RankFragment extends AttachFragment {
     public static final String TAG = "RankFragment";
-    private Adapter adapter;
     private DataRankFragment dayFragment;
     private DataRankFragment monthFragment;
     private DataRankFragment totalFragment;
@@ -40,7 +40,7 @@ public class RankFragment extends AttachFragment {
         View view = inflater.inflate(R.layout.rank_fragment_layout, container, false);
         ViewPager viewPager = view.findViewById(R.id.pager);
         tabLayout = view.findViewById(R.id.tab);
-        adapter = new Adapter(getChildFragmentManager());
+        Adapter adapter = new Adapter(getChildFragmentManager());
         if (savedInstanceState == null) {
             dayFragment = DataRankFragment.newInstance(BaseCrawler.DAY_RANK);
             monthFragment = DataRankFragment.newInstance(BaseCrawler.MONTH_RANK);
@@ -71,7 +71,8 @@ public class RankFragment extends AttachFragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        tabLayout.setSelectedTabIndicatorColor(NovelConfigureManager.getConfigure().getNameTheme());
+        tabLayout.setSelectedTabIndicatorColor(NovelConfigureManager.getConfigure().getMode() != NovelConfigure.NIGHT
+                ? NovelConfigureManager.getConfigure().getMainTheme() : NovelConfigureManager.getConfigure().getNameTheme());
         tabLayout.setTabTextColors(NovelConfigureManager.getConfigure().getAuthorTheme(), NovelConfigureManager.getConfigure().getNameTheme());
     }
 
@@ -82,7 +83,8 @@ public class RankFragment extends AttachFragment {
 
     public void changeTheme(){
         if (tabLayout == null) return;
-        tabLayout.setSelectedTabIndicatorColor(NovelConfigureManager.getConfigure().getNameTheme());
+        tabLayout.setSelectedTabIndicatorColor(NovelConfigureManager.getConfigure().getMode() == NovelConfigure.DAY
+                ? NovelConfigureManager.getConfigure().getMainTheme() : NovelConfigureManager.getConfigure().getNameTheme());
         tabLayout.setTabTextColors(NovelConfigureManager.getConfigure().getAuthorTheme(), NovelConfigureManager.getConfigure().getNameTheme());
         dayFragment.changeTheme();
         monthFragment.changeTheme();

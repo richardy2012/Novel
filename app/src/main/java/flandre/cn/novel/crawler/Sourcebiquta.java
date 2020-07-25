@@ -1,6 +1,6 @@
 package flandre.cn.novel.crawler;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Handler;
 import flandre.cn.novel.info.NovelInfo;
 import flandre.cn.novel.info.NovelRemind;
@@ -24,15 +24,15 @@ import static java.lang.Math.min;
 public class Sourcebiquta extends BaseCrawler {
     private List<NovelInfo> list;
 
-    public Sourcebiquta(Activity activity, Handler handler) {
-        super(activity, handler);
+    public Sourcebiquta(Context context, Handler handler) {
+        super(context, handler);
         this.CHARSET = "UTF8";
         this.DOMAIN = "https://www.biquta.la/";
         this.THREAD_COUNT = MIDDLE_THREAD_COUNT;
     }
 
     @Override
-    List<NovelInfo> run_search(String s) {
+    public List<NovelInfo> run_search(String s) {
         list = new ArrayList<>();
         Document document = crawlerGET(DOMAIN + "searchbook.php?keyword=" + s);
         document.select("#main > div.novelslist2 > ul > li:nth-child(1)").remove();
@@ -49,7 +49,7 @@ public class Sourcebiquta extends BaseCrawler {
     }
 
     @Override
-    List<NovelTextItem> run_list(String URL) {
+    public List<NovelTextItem> run_list(String URL) {
         List<NovelTextItem> list = new ArrayList<>();
         Document document = crawlerGET(URL);
         document.select(".list > dl > dt").remove();
@@ -105,7 +105,7 @@ public class Sourcebiquta extends BaseCrawler {
     }
 
     @Override
-    NovelText run_text(String URL) {
+    public NovelText run_text(String URL) {
         return run_text(URL, 1);
     }
 

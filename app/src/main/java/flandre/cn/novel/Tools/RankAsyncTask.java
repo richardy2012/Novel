@@ -17,12 +17,12 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-public class RankAsyncTask extends AsyncTask<Integer, Void, List<NovelInfo>>{
+public class RankAsyncTask extends AsyncTask<Integer, Void, List<NovelInfo>> {
     private WeakReference<IndexActivity> mContext;
     private RankAdapter adapter;
     private DataRankFragment fragment;
 
-    public RankAsyncTask(Context context, RankAdapter adapter, DataRankFragment fragment){
+    public RankAsyncTask(Context context, RankAdapter adapter, DataRankFragment fragment) {
         super();
         this.mContext = new WeakReference<>((IndexActivity) context);
         this.adapter = adapter;
@@ -31,19 +31,9 @@ public class RankAsyncTask extends AsyncTask<Integer, Void, List<NovelInfo>>{
 
     @Override
     protected List<NovelInfo> doInBackground(Integer... voids) {
-        try {
-            BaseCrawler crawler = (BaseCrawler) NovelConfigureManager.getConstructor().newInstance(mContext.get(), null);
-            return crawler.rank(voids[0]);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (java.lang.InstantiationException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (RuntimeException e){
-            e.printStackTrace();
-        }
-        return null;
+        BaseCrawler baseCrawler = NovelConfigureManager.getCrawler(mContext.get(), null);
+        if (baseCrawler == null) return null;
+        return baseCrawler.rank(voids[0]);
     }
 
     @Override
@@ -56,9 +46,9 @@ public class RankAsyncTask extends AsyncTask<Integer, Void, List<NovelInfo>>{
         if (list != null) {
             TextView text = fragment.getFrameLayout().findViewWithTag("IOError");
             if (text != null) fragment.getFrameLayout().removeView(text);
-            while (list.remove(null));
+            while (list.remove(null)) ;
             adapter.update(list);
-        }else {
+        } else {
             adapter.update(null);
             TextView text = fragment.getFrameLayout().findViewWithTag("IOError");
             if (text != null) fragment.getFrameLayout().removeView(text);

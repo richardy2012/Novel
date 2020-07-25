@@ -35,6 +35,7 @@ public class PageView extends View {
     private Paint descriptionPaint;  //
     private int leftPadding;
     private int watch;  // 观看的位置
+    private int length;  // 长度
     private long time;
 
     ArrayList<ArrayList<String>> textPosition;  // 文本的位置信息
@@ -56,14 +57,12 @@ public class PageView extends View {
     private int paddingBottom = 0;
     private int paddingLeft = 0;
     private int paddingRight = 0;
-    protected int chapter;  // 当前章节, 有翻页动画需要用到, 在翻页前需要初始化
     protected int lastChapter;  // 最后章节, 在翻页前需要初始化
     int mode;  // pageEnable是false时的跳转模式
-    int width, height;
+    private int width, height;
     int heightRest;
 
     boolean alwaysNext = false;  // 是否全屏点击下一页
-    int x, y;
     private PageAnimation pageAnimation;
 
     public PageView(Context context) {
@@ -128,10 +127,6 @@ public class PageView extends View {
 
     public boolean getLoad() {
         return load;
-    }
-
-    public void setChapter(int chapter) {
-        this.chapter = chapter;
     }
 
     public void setLastChapter(int lastChapter) {
@@ -292,7 +287,7 @@ public class PageView extends View {
         // 计算出来的文本位置
         // 里面的每一个list代表每一页的文本的信息, 里面的list存放每一行的信息: "start:end"
         ArrayList<ArrayList<String>> list = new ArrayList<>();
-        for (i = 0; i < BufferChapterCount; i++) {
+        for (i = 0; i < BufferChapterCount && drawText[i] != null; i++) {
             if (drawText[i].getText().equals("")) drawText[i].setText("空章节");
             String text = drawText[i].getText();
             end = 0;start = 0;middle = 0;
@@ -330,6 +325,7 @@ public class PageView extends View {
             }
             listPosition[i] = list.size();
         }
+        length = i - 1;
         textPosition = list;
     }
 
@@ -418,7 +414,7 @@ public class PageView extends View {
             t = true;
         }
         // 当文本位置溢出, 重调文本位置, 设置页面不可移动
-        if (position > 6) {
+        if (position > length) {
             position--;
             mode = NEXT;
             pageEnable = t = false;

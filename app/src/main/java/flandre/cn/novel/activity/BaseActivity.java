@@ -33,6 +33,9 @@ public abstract class BaseActivity extends AppCompatActivity implements Download
     public final static int NOVEL_SERVICE_CONNECTED = 0;
     public final static int MUSIC_SERVICE_CONNECTED = 1;
 
+    private static boolean isFirst = true;
+    private static boolean isSave = false;
+
     private Dialog splashDialog;  // 加载窗口界面弹窗
     private List<DownloadListener> mDownloadListener = new ArrayList<>();  // 下载监听器
     private List<MusicListener> mMusicListener = new ArrayList<>();  // 音乐监听器
@@ -74,6 +77,11 @@ public abstract class BaseActivity extends AppCompatActivity implements Download
         if (hasBindMusic) return;
         SharedTools sharedTools = new SharedTools(this);
         if (!sharedTools.getMusicEnable()) return;
+        if (isFirst){
+            Intent intent = new Intent(this, PlayMusicService.class);
+            startService(intent);
+            isFirst = false;
+        }
         hasBindMusic = true;
         musicSConnection = new ServiceConnection() {
             @Override
@@ -151,6 +159,25 @@ public abstract class BaseActivity extends AppCompatActivity implements Download
         splashDialog.setContentView(root);
         splashDialog.setCancelable(false);
         splashDialog.show();
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        isSave = false;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (musicService != null && !isSave) {
+            try {
+                isSave = true;
+                musicService.saveData();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -240,11 +267,6 @@ public abstract class BaseActivity extends AppCompatActivity implements Download
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        try {
-            if (musicService != null) musicService.saveData();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
         unregisterReceiver(receiver);
         unBindNovelService();
         if (isMusicBind) {

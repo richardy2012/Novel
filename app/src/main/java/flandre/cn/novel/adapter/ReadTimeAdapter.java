@@ -3,6 +3,7 @@ package flandre.cn.novel.adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,8 +44,18 @@ public class ReadTimeAdapter extends RecyclerView.Adapter<ReadTimeAdapter.ItemHo
     @Override
     public ItemHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         // 当read不为空时表示创建的是一个详细信息
-        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.read_list, viewGroup, false);
-        return new ItemHolder(view);
+        View view = null;
+        if (i == 0) {
+            view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.read_min_list, viewGroup, false);
+        }else if (i == 1){
+            view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.read_list, viewGroup, false);
+        }
+        return new ItemHolder(view, i == 1);
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return data.get(position).isShowDetailInfo() ? 1 : 0;
     }
 
     @Override
@@ -69,8 +80,7 @@ public class ReadTimeAdapter extends RecyclerView.Adapter<ReadTimeAdapter.ItemHo
         holder.percent.setText(new BigDecimal(percent).setScale(1, BigDecimal.ROUND_HALF_UP) + "%");
         holder.image.setImageBitmap(NovelInfo.getBitmap(info.getImagePath(), context));
         setTopItemTheme(holder);
-        if (!wrapperNovelInfo.isShowDetailInfo()) holder.bottom.setVisibility(View.GONE);
-        else {
+        if (wrapperNovelInfo.isShowDetailInfo()){
             holder.year_left.setText(new SimpleDateFormat("yyyy年").format(info.getStart()));
             holder.month_left.setText(new SimpleDateFormat("MM月").format(info.getStart()));
             holder.day_left.setText(new SimpleDateFormat("dd日").format(info.getStart()));
@@ -153,38 +163,40 @@ public class ReadTimeAdapter extends RecyclerView.Adapter<ReadTimeAdapter.ItemHo
         CircularProgressView progress;
         FrameLayout bottom;
 
-        ItemHolder(View itemView) {
+        ItemHolder(View itemView, boolean isShow) {
             super(itemView);
             name = itemView.findViewById(R.id.name);
             author = itemView.findViewById(R.id.author);
             newChapter = itemView.findViewById(R.id.newChapter);
             percent = itemView.findViewById(R.id.percent);
-            start = itemView.findViewById(R.id.start);
-            year_left = itemView.findViewById(R.id.year_left);
-            month_left = itemView.findViewById(R.id.month_left);
-            day_left = itemView.findViewById(R.id.day_left);
-            hour_left = itemView.findViewById(R.id.hour_left);
-            minute_left = itemView.findViewById(R.id.minute_left);
-            finish = itemView.findViewById(R.id.finish);
-            year_right = itemView.findViewById(R.id.year_right);
-            month_right = itemView.findViewById(R.id.month_right);
-            day_right = itemView.findViewById(R.id.day_right);
-            hour_right = itemView.findViewById(R.id.hour_right);
-            minute_right = itemView.findViewById(R.id.minute_right);
-            watchChapter = itemView.findViewById(R.id.watchChapter);
-            watchLately = itemView.findViewById(R.id.watchLately);
-            source = itemView.findViewById(R.id.source);
-            watchTime = itemView.findViewById(R.id.watchTime);
-            status = itemView.findViewById(R.id.status);
-            sep_left = itemView.findViewById(R.id.sep_left);
-            sep_right = itemView.findViewById(R.id.sep_right);
             image = itemView.findViewById(R.id.image);
             progress = itemView.findViewById(R.id.progress);
-            bottom = itemView.findViewById(R.id.bottom);
-            nowChapterIntro = itemView.findViewById(R.id.nowChapterIntro);
-            latelyIntro = itemView.findViewById(R.id.latelyIntro);
-            sourceIntro = itemView.findViewById(R.id.sourceIntro);
-            timeIntro = itemView.findViewById(R.id.timeIntro);
+            if (isShow) {
+                start = itemView.findViewById(R.id.start);
+                year_left = itemView.findViewById(R.id.year_left);
+                month_left = itemView.findViewById(R.id.month_left);
+                day_left = itemView.findViewById(R.id.day_left);
+                hour_left = itemView.findViewById(R.id.hour_left);
+                minute_left = itemView.findViewById(R.id.minute_left);
+                finish = itemView.findViewById(R.id.finish);
+                year_right = itemView.findViewById(R.id.year_right);
+                month_right = itemView.findViewById(R.id.month_right);
+                day_right = itemView.findViewById(R.id.day_right);
+                hour_right = itemView.findViewById(R.id.hour_right);
+                minute_right = itemView.findViewById(R.id.minute_right);
+                watchChapter = itemView.findViewById(R.id.watchChapter);
+                watchLately = itemView.findViewById(R.id.watchLately);
+                source = itemView.findViewById(R.id.source);
+                watchTime = itemView.findViewById(R.id.watchTime);
+                status = itemView.findViewById(R.id.status);
+                sep_left = itemView.findViewById(R.id.sep_left);
+                sep_right = itemView.findViewById(R.id.sep_right);
+                bottom = itemView.findViewById(R.id.bottom);
+                nowChapterIntro = itemView.findViewById(R.id.nowChapterIntro);
+                latelyIntro = itemView.findViewById(R.id.latelyIntro);
+                sourceIntro = itemView.findViewById(R.id.sourceIntro);
+                timeIntro = itemView.findViewById(R.id.timeIntro);
+            }
         }
     }
 

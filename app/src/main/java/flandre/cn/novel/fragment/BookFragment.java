@@ -11,9 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
-import flandre.cn.novel.Tools.GetNovelInfoAsync;
 import flandre.cn.novel.info.NovelInfo;
-import flandre.cn.novel.parse.FileParse;
 import flandre.cn.novel.parse.OnFinishParse;
 import flandre.cn.novel.parse.ShareFile;
 import flandre.cn.novel.service.NovelService;
@@ -59,7 +57,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
             refresh.setRefreshing(true);
             String path = (String) bundle.get("path");
             setArguments(null);
-            new ShareFile(path, mContext).setOnfinishParse(this).parseFile();
+            new ShareFile(path, mContext).setOnfinishParse(this).parseFile(refresh);
         }
     }
 

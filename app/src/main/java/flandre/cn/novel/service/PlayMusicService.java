@@ -122,6 +122,12 @@ public class PlayMusicService extends Service {
         tmgr.listen(phoneListener, PhoneStateListener.LISTEN_CALL_STATE);
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+//        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
+    }
+
     /**
      * 设置通知栏
      */
@@ -168,7 +174,7 @@ public class PlayMusicService extends Service {
         if (mNotification == null) {
             // 当版本大于26时要设置channel
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//                NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                 CharSequence name = "Novel Music";
                 String description = "Looking Book And Listen This Music ：)";
                 int importance = NotificationManager.IMPORTANCE_MIN;
@@ -219,12 +225,11 @@ public class PlayMusicService extends Service {
             final Intent nowPlayingIntent = new Intent();
             nowPlayingIntent.setComponent(new ComponentName("flandre.cn.novel", "flandre.cn.novel.activity.LocalMusicActivity"));
             nowPlayingIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            PendingIntent clickIntent = PendingIntent.getBroadcast(this, 0, nowPlayingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             PendingIntent click = PendingIntent.getActivity(this, 0, nowPlayingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, String.valueOf(NOTIFICATION_ID))
                     .setContent(remoteViews)
                     .setSmallIcon(R.mipmap.main)
-                    .setOngoing(false)
+                    .setOngoing(true)
                     .setVisibility(Notification.VISIBILITY_PUBLIC)
                     .setDefaults(Notification.DEFAULT_LIGHTS)
                     .setContentIntent(click)

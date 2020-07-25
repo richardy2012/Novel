@@ -10,15 +10,16 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.widget.Toast;
 
 /**
  * 拿到文件路径
  *
- * @author 百度
+ * @author from 百度
  */
 public class PathParse {
     private Context mContext;
-    private String path;
+    private String path = null;
 
     public String getPath() {
         return path;
@@ -32,15 +33,28 @@ public class PathParse {
         Uri uri = data.getData();
         assert uri != null;
         String path = uri.getPath();
-
-        if ("file".equalsIgnoreCase(uri.getScheme())) {  // 使用第三方应用打开
-            this.path = uri.getPath();
-        } else if (Build.VERSION.SDK_INT >= 24 && path.startsWith("/external")) {
-            this.path = Environment.getExternalStorageDirectory().getAbsolutePath() + path.replace("/external", "");
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {  // 4.4以后
-            this.path = getPath(uri);
-        } else {  // 4.4以下下系统调用方法
-            this.path = getRealPathFromURI(uri);
+        try {
+            if ("file".equalsIgnoreCase(uri.getScheme())) {  // 使用第三方应用打开
+                this.path = uri.getPath();
+            } else if (Build.VERSION.SDK_INT >= 24 && path.startsWith("/external")) {
+                this.path = Environment.getExternalStorageDirectory().getAbsolutePath() + path.replace("/external", "");
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {  // 4.4以后
+                this.path = getPath(uri);
+            } else {  // 4.4以下下系统调用方法
+                this.path = getRealPathFromURI(uri);
+            }
+        } catch (Exception e) {
+//            Toast.makeText(mContext, path, Toast.LENGTH_LONG).show();
+        }
+        // 有些手机协议content, 内容却没有:, 只好直接特别对待
+        if (this.path == null && !path.contains(":")) {
+            int pos = path.indexOf("/storage/emulated/");
+            if (pos != -1){
+                this.path = path.substring(pos);
+            }else {
+                path = path.substring(path.indexOf("/", 1) + 1);
+                this.path = Environment.getExternalStorageDirectory() + "/" + path;
+            }
         }
         return this;
     }
@@ -69,12 +83,13 @@ public class PathParse {
         if (isKitKat && DocumentsContract.isDocumentUri(mContext, uri)) {
             // ExternalStorageProvider
             if (isExternalStorageDocument(uri)) {
+
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
                 final String type = split[0];
 
 //                if ("primary".equalsIgnoreCase(type)) {
-                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                return Environment.getExternalStorageDirectory() + "/" + split[1];
 //                }
             }
             // DownloadsProvider

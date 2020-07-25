@@ -1,16 +1,16 @@
 package flandre.cn.novel.crawler;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.NovelTools;
 import flandre.cn.novel.info.*;
+import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
  * 创建源时继承该类
  * 2019.12.8
  */
+@SuppressWarnings("ALL")
 public abstract class BaseCrawler {
     public static final int DAY_RANK = 0;  // 周榜
     public static final int MONTH_RANK = 1;  // 月榜
@@ -45,62 +46,51 @@ public abstract class BaseCrawler {
     public static final int MIDDLE_THREAD_COUNT = 2;  // 允许一般的线程数量
     public static final int MIN_THREAD_COUNT = 1;  // 允许开的最小线程数
 
-    public static final int TIMEOUT = 30 * 1000;
+    public static final int TIMEOUT = 10 * 1000;
 
     public static final String BR_REPLACEMENT = "0x0a";
 
     String CHARSET;  // 网页的编码
     String DOMAIN;  // 网页的域名
-    public int THREAD_COUNT = MAX_THREAD_COUNT;  // 使用的线程数量
+    public int THREAD_COUNT = MIN_THREAD_COUNT;  // 使用的线程数量
 
     private WeakReference<Handler> handler;
-    private WeakReference<Context> mContext;
+    protected WeakReference<Context> mContext;
+    private OkHttpClient client;
 
-    public BaseCrawler(Activity activity, Handler handler) {
-        this.mContext = new WeakReference<>((Context) activity);
+    public BaseCrawler(Context context, Handler handler) {
+        this.mContext = new WeakReference<>((Context) context);
         this.handler = new WeakReference<>(handler);
+        client = new OkHttpClient.Builder()
+                .connectionPool(new ConnectionPool(THREAD_COUNT, TIMEOUT, TimeUnit.MILLISECONDS))
+                .connectTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
+                .readTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
+                .addInterceptor(new RedirectInterceptor()).build();
     }
 
-    private void configureConn(HttpURLConnection connection) throws IOException {
-        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 " +
+    private void configureConn(Request.Builder builder) throws IOException {
+        builder.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 " +
                 "(KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36");
-//        connection.addRequestProperty("Connection", "keep-alive");
-        connection.addRequestProperty("Connection", "close");
-        connection.addRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        connection.addRequestProperty("Referer", DOMAIN);
-        connection.addRequestProperty("Origin:", DOMAIN);
-        connection.setInstanceFollowRedirects(false);
-        connection.setConnectTimeout(TIMEOUT);
-        connection.setReadTimeout(TIMEOUT);
-        connection.connect();
+        builder.addHeader("Connection", "close");
+        builder.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        builder.addHeader("Referer", DOMAIN);
+        builder.addHeader("Origin:", DOMAIN);
+        builder.addHeader("connection", "Keep-Alive");
     }
 
-    private Document crawlerPOST(String Url, String data, boolean rediect) {
-        HttpURLConnection connection = null;
+    private Document crawlerPOST(String Url, String data, Callback callback) {
+        ResponseBody responseBody = null;
         try {
-            URL url = new URL(Url);
             byte[] bytes = data.getBytes(CHARSET);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setUseCaches(Boolean.FALSE);
-            connection.setDoOutput(Boolean.TRUE);
-            connection.setDoInput(Boolean.TRUE);
-            connection.addRequestProperty("Content-Length", String.valueOf(bytes.length));
-            configureConn(connection);
-            OutputStream outputStream = connection.getOutputStream();
-            outputStream.write(bytes);
-            outputStream.flush();
-            outputStream.close();
-            if (connection.getResponseCode() == 301 || connection.getResponseCode() == 302) {
-                String location = connection.getHeaderField("Location");
-                if (location.startsWith("/")) location = DOMAIN + location.substring(1);
-                return crawlerPOST(location, data, true);
-            }
-            InputStream inputStream = connection.getInputStream();
-            Document document = Jsoup.parse(inputStream, CHARSET, DOMAIN);
-            document.setBaseUri(Url);
-            inputStream.close();
-            return document;
+            RequestBody requestBody = RequestBody.create(bytes);
+            Request.Builder builder = new Request.Builder().url(Url).post(requestBody);
+            builder.addHeader("Content-Length", String.valueOf(bytes.length));
+            configureConn(builder);
+            if (callback == null){
+                Response response = client.newCall(builder.build()).execute();
+                responseBody = response.body();
+                return getDocument(response);
+            }else client.newCall(builder.build()).enqueue(callback);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (ProtocolException e) {
@@ -108,7 +98,7 @@ public abstract class BaseCrawler {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (connection != null) connection.disconnect();
+            if (responseBody != null) responseBody.close();
         }
         return null;
     }
@@ -119,29 +109,19 @@ public abstract class BaseCrawler {
      * @return Document
      */
     Document crawlerPOST(String Url, String data) {
-        return crawlerPOST(Url, data, false);
+        return crawlerPOST(Url, data, null);
     }
 
-    private Document crawlerGET(String Url, boolean redirect) {
-        HttpURLConnection connection = null;
+    private Document crawlerGET(String Url, Callback callback) {
+        ResponseBody responseBody = null;
         try {
-            URL url = new URL(Url);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setUseCaches(Boolean.FALSE);
-            configureConn(connection);
-            if (connection.getResponseCode() == 301 || connection.getResponseCode() == 302) {
-                String location = connection.getHeaderField("Location");
-                return crawlerGET(location, true);
-            }
-            if (connection.getResponseCode() >= 400) {
-                Log.e(String.valueOf(connection.getResponseCode()), Url);
-            }
-            InputStream inputStream = connection.getInputStream();
-            Document document = Jsoup.parse(inputStream, CHARSET, DOMAIN);
-            inputStream.close();
-            document.setBaseUri(Url);
-            return document;
+            Request.Builder request = new Request.Builder().url(Url).get();
+            configureConn(request);
+            if (callback == null) {
+                Response response = client.newCall(request.build()).execute();
+                responseBody = response.body();
+                return getDocument(response);
+            } else client.newCall(request.build()).enqueue(callback);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (ProtocolException e) {
@@ -149,9 +129,16 @@ public abstract class BaseCrawler {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (connection != null) connection.disconnect();
+            if (responseBody != null) responseBody.close();
         }
         return null;
+    }
+
+    private Document getDocument(Response response) throws IOException {
+        if (!response.isSuccessful()) throw new IOException("IOError with http code " + response.code());
+        Document document = Jsoup.parse(response.body().string());
+        document.setBaseUri(response.request().url().toString());
+        return document;
     }
 
     /**
@@ -160,18 +147,14 @@ public abstract class BaseCrawler {
      * @return Document
      */
     Document crawlerGET(String Url) {
-        return crawlerGET(Url, false);
+        return crawlerGET(Url, null);
     }
 
-    private HttpURLConnection crawlerImage(String Url) {
+    private Response crawlerImage(String Url) {
         try {
-            URL imageURL = new URL(Url);
-            HttpURLConnection conn = (HttpURLConnection) imageURL.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setUseCaches(Boolean.FALSE);
-            conn.setDoInput(true);
-            configureConn(conn);
-            return conn;
+            Request.Builder builder = new Request.Builder().url(Url).get();
+            configureConn(builder);
+            return client.newCall(builder.build()).execute();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -203,7 +186,7 @@ public abstract class BaseCrawler {
      * chapter: 最新章节
      * introduce: 介绍
      */
-    abstract List<NovelInfo> run_search(final String s);
+    public abstract List<NovelInfo> run_search(final String s);
 
     /**
      * 给小说搜索结果排序
@@ -247,7 +230,7 @@ public abstract class BaseCrawler {
     String withBr(Elements elements, String select, String extra, String rep){
         elements.select(select + " br").append(BR_REPLACEMENT);
         elements.select(select + " p").append(BR_REPLACEMENT);
-        return elements.select(select).text().replace(BR_REPLACEMENT + extra, "\n" + rep);
+        return elements.select(select).text().replace(BR_REPLACEMENT + extra, "\r\n" + rep);
     }
 
     String withBr(Element element, String select){
@@ -257,7 +240,7 @@ public abstract class BaseCrawler {
     String withBr(Element element, String select, String extra, String rep){
         element.select(select + " br").append(BR_REPLACEMENT);
         element.select(select + " p").append(BR_REPLACEMENT);
-        return element.select(select).text().replace(BR_REPLACEMENT + extra, "\n" + rep);
+        return element.select(select).text().replace(BR_REPLACEMENT + extra, "\r\n" + rep);
     }
 
     /**
@@ -293,7 +276,7 @@ public abstract class BaseCrawler {
      * url: 文章url
      * chapter: 章节名
      */
-    abstract List<NovelTextItem> run_list(final String URL);
+    public abstract List<NovelTextItem> run_list(final String URL);
 
     /**
      * 获取文本
@@ -345,7 +328,7 @@ public abstract class BaseCrawler {
      * text: 文本
      * chapter: 章节名
      */
-    abstract NovelText run_text(String URL);
+    public abstract NovelText run_text(String URL);
 
     /**
      * 更新小说
@@ -500,13 +483,8 @@ public abstract class BaseCrawler {
      * @return 没有错误返回URL的图片, 出错返回本地的一张图片
      */
     private Bitmap getImage(String imageUrl) {
-        HttpURLConnection conn = crawlerImage(imageUrl);
-        InputStream inputStream = null;
-        try {
-            inputStream = conn.getInputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Response response = crawlerImage(imageUrl);
+        InputStream inputStream = inputStream = response.body().byteStream();
         Bitmap bitmap = null;
         try {
             if (inputStream != null) {
@@ -519,7 +497,7 @@ public abstract class BaseCrawler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        conn.disconnect();
+        response.body().close();
         return bitmap;
     }
 
@@ -565,5 +543,23 @@ public abstract class BaseCrawler {
         }
 
         public abstract Runnable run();
+    }
+
+    static class RedirectInterceptor implements Interceptor{
+
+        @NotNull
+        @Override
+        public Response intercept(@NotNull Chain chain) throws IOException {okhttp3.Request request = chain.request();
+            Response response = chain.proceed(request);
+            int code = response.code();
+            if (code == 307 || code == 301 || code == 302) {
+                //获取重定向的地址
+                String location = response.headers().get("Location");
+                //重新构建请求
+                Request newRequest = request.newBuilder().url(location).build();
+                response = chain.proceed(newRequest);
+            }
+            return response;
+        }
     }
 }

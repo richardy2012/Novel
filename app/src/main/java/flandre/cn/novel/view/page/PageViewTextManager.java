@@ -2,6 +2,7 @@ package flandre.cn.novel.view.page;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.widget.Toast;
+import flandre.cn.novel.Tools.NovelConfigure;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.crawler.BaseCrawler;
 import flandre.cn.novel.database.SQLTools;
@@ -27,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static flandre.cn.novel.activity.BaseActivity.NOVEL_SERVICE_CONNECTED;
+import static flandre.cn.novel.fragment.AlarmTriggerDialogFragment.REST_TIME;
 
 /**
  * 小说文本界面
@@ -62,7 +65,7 @@ public class PageViewTextManager implements PageView.PageTurn {
     private boolean showActionBar = true;  // 是否能展示ActionBar
     private boolean redirect = true;  // 是否从外部跳转而来
     private boolean loadIsAdd = false;  // 加载对话框是否加载
-    private boolean showLoad = true;  // 是否展示加载对话框(true时, 在合适的时候展示)
+    private boolean showLoad = true;  // 是否显示对话框，用于区分是否是后台爬取数据
     private Handler handler;
     private NovelService mService;
     private BaseCrawler mCrawler;
@@ -93,16 +96,10 @@ public class PageViewTextManager implements PageView.PageTurn {
 
     private BaseCrawler getBaseCrawler() {
         if (mCrawler == null) {
-            try {
-                if (novelInfo.getSource() == null) {
-                    mCrawler = (BaseCrawler) NovelConfigureManager.getConstructor().newInstance(activity, this.handler);
-                } else {
-                    mCrawler = (BaseCrawler) Class.forName(novelInfo.getSource()).
-                            getConstructor(Activity.class, Handler.class).newInstance(activity, this.handler);
-                }
-            } catch (IllegalAccessException | InstantiationException | InvocationTargetException
-                    | ClassNotFoundException | NoSuchMethodException e) {
-                e.printStackTrace();
+            if (novelInfo.getSource() == null) {
+                mCrawler = NovelConfigureManager.getCrawler(activity, handler);
+            } else {
+                mCrawler = NovelConfigureManager.getCrawler(novelInfo.getSource(), activity, handler);
             }
         }
         return mCrawler;
@@ -157,7 +154,6 @@ public class PageViewTextManager implements PageView.PageTurn {
             pageView.setWatch(Integer.parseInt(split[1]));
             // 当Activity处于恢复时, 不需要再次从网上下载信息, 直接使用以前的
             if (list != null) {
-                showLoad = false;
                 flushFinish = false;
                 flushCount = 7;
                 handler.obtainMessage(0x302, null).sendToTarget();
@@ -182,7 +178,6 @@ public class PageViewTextManager implements PageView.PageTurn {
 
             handler.sendEmptyMessage(0x300);
         }
-        pageView.setChapter(chapter);
     }
 
     public void choiceChapter(int i) {
@@ -249,9 +244,6 @@ public class PageViewTextManager implements PageView.PageTurn {
      * 如果load为true,更新完后显示出来
      */
     private void loadText(Message message) {
-        if (showLoad) {
-            setLoad();
-        }
         BaseCrawler crawler = getBaseCrawler();
         // 当没有收藏图书时,获取列表数据,然后爬取text
         if (table == null) {
@@ -262,36 +254,10 @@ public class PageViewTextManager implements PageView.PageTurn {
         }
     }
 
-    private void handleListText(BaseCrawler crawler, Message message) {
-        // 第一次加载时, 会加载章节
-        if (list == null) {
-            if (message.obj == null) {
-                Toast.makeText(activity, "网络错误", Toast.LENGTH_SHORT).show();
-                activity.finish();
-                return;
-            }
-            list = (List<NovelTextItem>) message.obj;
-        }
-        // 爬取章节=当前章节-2, 爬取章节等于总章节-2, 表示当前章节是最后一章
-        if (crawlPosition == list.size() - 2 && !redirect) {
-//                Toast.makeText(TextActivity.this, "最后一章了", Toast.LENGTH_SHORT).show();
-            flushFinish = true;
-            return;
-        }
-        if (crawlPosition > list.size() - 6) {
-            crawlPosition = list.size() - 6;
-            handler.sendEmptyMessage(0x300);
-            return;
-        }
-        for (int i = 0; i < 7; i++) {
-            crawler.text(list.get(crawlPosition - 1 + i).getUrl(), i, table).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
-    }
-
     private void setLoad() {
         if (!loadIsAdd) {
-            loadTextListener.showLoadDialog();
             loadIsAdd = true;
+            loadTextListener.showLoadDialog();
         }
     }
 
@@ -332,9 +298,8 @@ public class PageViewTextManager implements PageView.PageTurn {
             // 更新章节文件
             pageView.updateText(novelTexts, chapter - crawlPosition);
             // 当展示了对话框且对话框已经在展示了把对话框去掉
-            if (showLoad && loadIsAdd) {
+            if (loadIsAdd) {
                 loadTextListener.cancelLoadDialog();
-                showLoad = false;
                 loadIsAdd = false;
             }
             if (redirect) {
@@ -378,7 +343,38 @@ public class PageViewTextManager implements PageView.PageTurn {
         handler.sendMessage(msg);
     }
 
+    private void handleListText(BaseCrawler crawler, Message message) {
+        boolean load = showLoad;
+        showLoad = false;
+        // 第一次加载时, 会加载章节
+        if (list == null) {
+            if (message.obj == null) {
+                Toast.makeText(activity, "网络错误", Toast.LENGTH_SHORT).show();
+                activity.finish();
+                return;
+            }
+            list = (List<NovelTextItem>) message.obj;
+        }
+        // 爬取章节=当前章节-2, 爬取章节等于总章节-2, 表示当前章节是最后一章
+        if (crawlPosition == list.size() - 2 && !redirect) {
+//                Toast.makeText(TextActivity.this, "最后一章了", Toast.LENGTH_SHORT).show();
+            flushFinish = true;
+            return;
+        }
+        if (crawlPosition > list.size() - 6) {
+            crawlPosition = list.size() - 6;
+            handler.sendEmptyMessage(0x300);
+            return;
+        }
+        if (load) setLoad();
+        for (int i = 0; i < 7; i++) {
+            crawler.text(list.get(crawlPosition - 1 + i).getUrl(), i, table).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+    }
+
     private void handleTableText(BaseCrawler crawler, Message message) {
+        boolean load = showLoad;
+        showLoad = false;
         if (emptyTable) {
             // 若表为空时,把本书的所有章节都添加进数据库(不包括文本)
             if (message.obj == null) {
@@ -435,6 +431,9 @@ public class PageViewTextManager implements PageView.PageTurn {
                 // 如果存在文本直接拿, 没有从网上爬
                 for (int i = 0; i < data.size(); i++) {
                     if (data.get(i) instanceof NovelTextItem) {
+                        if (load) {
+                            setLoad();
+                        }
                         crawler.text(((NovelTextItem) data.get(i)).getUrl(), i, table).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     } else {
                         Message msg = new Message();
@@ -446,6 +445,7 @@ public class PageViewTextManager implements PageView.PageTurn {
                     }
                 }
             } else {
+                setLoad();
                 // 表为空时从网上爬取目录进行填充
                 emptyTable = true;
                 // 当服务已经加载好了
@@ -521,7 +521,6 @@ public class PageViewTextManager implements PageView.PageTurn {
         boolean ret = chapter == 1 && isNowOverflow;
         if (!isPageEnable && !ret) {
             setLoad();
-            showLoad = true;
         }
         return ret;
     }
@@ -533,7 +532,7 @@ public class PageViewTextManager implements PageView.PageTurn {
             chapter++;
         }
         // 当观看的位置超过了限制时, 且刷新已经完成时, 进行章节缓冲的更换
-        if (position > BufferChapterCount - 3 && flushFinish) {
+        if (position > BufferChapterCount - 3 && flushFinish && lastChapter > 7) {
             flushCount = 0;
             crawlChapter = chapter;
             crawlPosition = crawlChapter - 2;
@@ -546,8 +545,6 @@ public class PageViewTextManager implements PageView.PageTurn {
         // 当不是最后一章但是看到最后一页时, 显示加载中对话框
         if (!isPageEnable && !ret) {
             setLoad();
-            // 设置加载完马上显示
-            showLoad = true;
         }
         if (ret) SQLTools.setFinishTime(String.valueOf(novelInfo.getId()), sqLiteNovel, activity);
         return ret;
@@ -575,7 +572,10 @@ public class PageViewTextManager implements PageView.PageTurn {
         // 存在闹钟时
         if (alarm != AlarmDialogFragment.NO_ALARM_STATE)
             if (alarm - addTime <= 0) {
-                sharedTools.setAlarm(AlarmDialogFragment.NO_ALARM_STATE);
+                NovelConfigure configure = NovelConfigureManager.getConfigure();
+                if (configure.isConstantAlarm())
+                    sharedTools.setAlarm(sharedTools.getAlarmTime() + (configure.isAlarmForce() ? REST_TIME * 1000 : 0));  // 如果会强制停留120秒就给闹钟多加120秒
+                else sharedTools.setAlarm(AlarmDialogFragment.NO_ALARM_STATE);
                 loadTextListener.showAlarmDialog();
             } else sharedTools.setAlarm(alarm - addTime);
         sharedTools.setTodayRead(addTime);

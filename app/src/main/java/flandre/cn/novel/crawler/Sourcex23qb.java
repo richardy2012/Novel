@@ -1,6 +1,6 @@
 package flandre.cn.novel.crawler;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Handler;
 import flandre.cn.novel.info.NovelInfo;
 import flandre.cn.novel.info.NovelRemind;
@@ -19,15 +19,15 @@ import static java.lang.Math.min;
 public class Sourcex23qb extends BaseCrawler {
     private List<NovelInfo> list;
 
-    public Sourcex23qb(Activity activity, Handler handler) {
-        super(activity, handler);
+    public Sourcex23qb(Context context, Handler handler) {
+        super(context, handler);
         this.CHARSET = "GBK";
         this.DOMAIN = "https://www.x23qb.com/";
         this.THREAD_COUNT = MIN_THREAD_COUNT;
     }
 
     @Override
-    List<NovelInfo> run_search(String s) {
+    public List<NovelInfo> run_search(String s) {
         list = new ArrayList<>();
         Document document = crawlerPOST(DOMAIN + "search.php", "searchkey=" + s);
         document.baseUri();
@@ -52,7 +52,7 @@ public class Sourcex23qb extends BaseCrawler {
     }
 
     @Override
-    List<NovelTextItem> run_list(String URL) {
+    public List<NovelTextItem> run_list(String URL) {
         List<NovelTextItem> list = new ArrayList<>();
         Document document = crawlerGET(URL);
         Elements elements = document.select("#chapterList > li > a");
@@ -102,7 +102,7 @@ public class Sourcex23qb extends BaseCrawler {
     }
 
     @Override
-    NovelText run_text(String URL) {
+    public NovelText run_text(String URL) {
         return run_text(URL, 1);
     }
 

@@ -59,7 +59,7 @@ public class ConfigureSourceActivity extends BaseActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
                 break;
@@ -69,17 +69,11 @@ public class ConfigureSourceActivity extends BaseActivity {
                     Map<String, String> map = NovelConfigureManager.getSource().get(current);
                     configure.setNowSourceValue(map.get("source"));
                     configure.setNowSourceKey(map.get("name"));
-                    try {
-                        NovelConfigureManager.setConstructor(Class.forName(map.get("source")).getConstructor(Activity.class, Handler.class));
-                    } catch (NoSuchMethodException e) {
-                        e.printStackTrace();
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
+                    NovelConfigureManager.setConstructor(map.get("source"));
                     // 保存配置文件并结束界面
                     NovelConfigureManager.saveConfigure(configure, this);
                     finish();
-                }catch (FileNotFoundException e) {
+                } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -108,7 +102,7 @@ public class ConfigureSourceActivity extends BaseActivity {
                     configure.getMode() == NovelConfigure.DAY ? R.drawable.choice_day : R.drawable.choice_night));
             holder.itemView.setTag(i);
             holder.itemView.setOnClickListener(this);
-            if (name.equals(configure.getNowSourceKey())){
+            if (name.equals(configure.getNowSourceKey())) {
                 current = i;
                 holder.imageView.setVisibility(View.VISIBLE);
             }
@@ -128,7 +122,7 @@ public class ConfigureSourceActivity extends BaseActivity {
             current = pos;
         }
 
-        class Holder extends RecyclerView.ViewHolder{
+        class Holder extends RecyclerView.ViewHolder {
             ImageView imageView;
             TextView textView;
 

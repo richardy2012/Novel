@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -178,7 +179,16 @@ public class UserFragment extends AttachFragment implements UserAdapter.OnItemCl
         if (resultCode == Activity.RESULT_OK) {
             pathParse.parse(data);
             String path = pathParse.getPath();
-            new ShareFile(path, mContext).setOnfinishParse(this).parseFile();
+//            String p = data.getData().getPath();
+//            AlertDialog.Builder b = new AlertDialog.Builder(mContext);
+//            b.setTitle(data.getData().getScheme());
+//            b.setMessage(path + " " + (new File(path).exists() ? "true" : "false"));
+//            b.setNegativeButton("确定", null);
+//            b.setPositiveButton("取消", null);
+//            b.create();//创建
+//            b.show();
+//            return;
+            new ShareFile(path, mContext).setOnfinishParse(this).parseFile(((IndexActivity) mContext).getBookFragment().getRefresh());
         }
     }
 

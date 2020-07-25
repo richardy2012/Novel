@@ -1,6 +1,6 @@
 package flandre.cn.novel.crawler;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Handler;
 import flandre.cn.novel.info.NovelInfo;
 import flandre.cn.novel.info.NovelRemind;
@@ -22,15 +22,15 @@ import static java.lang.StrictMath.min;
 public class Sourceaixiatxt extends BaseCrawler {
     private List<NovelInfo> list;
 
-    public Sourceaixiatxt(Activity activity, Handler handler) {
-        super(activity, handler);
-        DOMAIN = "http://www.aixiatxt.com/";
+    public Sourceaixiatxt(Context context, Handler handler) {
+        super(context, handler);
+        DOMAIN = "http://www.ixiatxt.com/";
         CHARSET = "UTF8";
-        THREAD_COUNT = MIDDLE_THREAD_COUNT;
+        THREAD_COUNT = MIN_THREAD_COUNT;
     }
 
     @Override
-    List<NovelInfo> run_search(String s) {
+    public List<NovelInfo> run_search(String s) {
         list = new ArrayList<>();
         Document document = crawlerGET(DOMAIN + "search.php?s=&searchkey=" + s);
         Elements elements = document.select("body > div:nth-child(4) > div.list > div > ul > li");
@@ -47,7 +47,7 @@ public class Sourceaixiatxt extends BaseCrawler {
     }
 
     @Override
-    List<NovelTextItem> run_list(String URL) {
+    public List<NovelTextItem> run_list(String URL) {
         List<NovelTextItem> list = new ArrayList<>();
         Document document = crawlerGET(URL);
         Element element = document.select("#info").get(2);
@@ -62,7 +62,7 @@ public class Sourceaixiatxt extends BaseCrawler {
     }
 
     @Override
-    NovelText run_text(String URL) {
+    public NovelText run_text(String URL) {
         return run_text(URL, 1);
     }
 

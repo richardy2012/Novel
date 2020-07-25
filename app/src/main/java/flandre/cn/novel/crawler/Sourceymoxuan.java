@@ -1,6 +1,6 @@
 package flandre.cn.novel.crawler;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Handler;
 import flandre.cn.novel.info.NovelInfo;
 import flandre.cn.novel.info.NovelRemind;
@@ -20,15 +20,15 @@ import static java.lang.StrictMath.min;
 public class Sourceymoxuan extends BaseCrawler {
     private List<NovelInfo> list;
 
-    public Sourceymoxuan(Activity activity, Handler handler) {
-        super(activity, handler);
+    public Sourceymoxuan(Context context, Handler handler) {
+        super(context, handler);
         CHARSET = "UTF-8";
         DOMAIN = "https://www.ymoxuan.com/";
         THREAD_COUNT = MIN_THREAD_COUNT;
     }
 
     @Override
-    List<NovelInfo> run_search(String s) {
+    public List<NovelInfo> run_search(String s) {
         list = new ArrayList<>();
 
         Document document = crawlerGET(DOMAIN + "search.htm?keyword=" + s);
@@ -47,7 +47,7 @@ public class Sourceymoxuan extends BaseCrawler {
     }
 
     @Override
-    List<NovelTextItem> run_list(String URL) {
+    public List<NovelTextItem> run_list(String URL) {
         List<NovelTextItem> list = new ArrayList<>();
         Document document = crawlerGET(URL);
 
@@ -101,7 +101,7 @@ public class Sourceymoxuan extends BaseCrawler {
     }
 
     @Override
-    NovelText run_text(String URL) {
+    public NovelText run_text(String URL) {
         return run_text(URL, 1);
     }
 

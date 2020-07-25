@@ -217,9 +217,9 @@ public class SQLTools {
         sqLiteNovel.getReadableDatabase().execSQL(
                 "create table " + table + "(" +
                         "id INTEGER primary key AUTOINCREMENT," +
-                        "chapter varchar(255)," +
-                        "url varcahr(255)," +
-                        "text text)"
+                        "chapter varchar(255)," +  // 章节名
+                        "url varcahr(255)," +  // 该章文本的URL
+                        "text text)"  // 文本
         );
     }
 

@@ -26,9 +26,9 @@ public class FileParse {
     private static final String[] CODE = new String[]{"utf8", "gbk", "utf16", "utf32", "ansi", "gb2312", "big5", "gb18030"};
     private final static String allChineseNum = "零一二三四五六七八九十百千万亿";
     private final static String chineseUnit = "十百千万亿";
-    private static final String compile = "第[0-9零一二三四五六七八九十百千万亿两]*?[章节 ]";
+    public static final String compile = "第[0-9零一二三四五六七八九十百千万亿两]*?[章节 ]";
 
-    private Charset code;  // 编码格式
+    protected Charset code = null;  // 编码格式
     private SQLiteNovel sqLiteNovel;
     private String path;  // 路径
     private StringBuilder stringBuffer;  // 文本缓冲
@@ -37,15 +37,16 @@ public class FileParse {
     private String name = null;  // 小说名
     private String author = null;  // 作者名
     private String introduce = null;  // 介绍
-    private String table;  // 表名
+    protected String table;  // 表名
     private Context mContext;
     private long novel_id;  // novel的id
     private OnFinishParse onfinishParse = null;  // 接口
 
     private BufferedReader reader;
 
-    public void setOnfinishParse(OnFinishParse onfinishParse) {
+    public FileParse setOnfinishParse(OnFinishParse onfinishParse) {
         this.onfinishParse = onfinishParse;
+        return this;
     }
 
     public FileParse(String path, SQLiteNovel sqLiteNovel, Context context) {
@@ -58,12 +59,8 @@ public class FileParse {
     /**
      * 解析小说
      */
-    public void parseFile() throws IOException {
+    public void parseFile() {
         final File file = new File(path);
-        if (!file.exists()) {
-            throw new FileNotFoundException();
-        }
-        Toast.makeText(mContext, "加载本地小说中...", Toast.LENGTH_SHORT).show();
         // 开一个新的线程实现小说的解析
         new ParseTask(this, file).execute();
     }
@@ -74,11 +71,11 @@ public class FileParse {
     private void parseData() throws IOException {
         sqLiteNovel.freeStatus = false;
         int read, lastLength, start = result.length();
-        int now = parseInt(result.substring(1, result.length() - 1));  // 当前章节是第几章
-        int next;  // 下一章节, 是第几章
+//        int now = parseInt(result.substring(1, result.length() - 1));  // 当前章节是第几章
+//        int next;  // 下一章节, 是第几章
         char[] buffer = new char[4092];
         String chapter;
-        String text;
+        String text = "";
 
         SQLiteDatabase database = sqLiteNovel.getReadableDatabase();
         database.beginTransaction();
@@ -86,15 +83,15 @@ public class FileParse {
         while (true) {
             while (true) {
                 // 匹配下一个章节, 没找到再读4092个字符, 找到时放入数据库, 读完时跳出大循环
-                result = regexp(compile, stringBuffer, start, 0);
+                result = regexp("\r\n" + compile, stringBuffer, start, 0);
                 if (!result.equals("")) {  // 读到新章节
-                    next = parseInt(result.substring(1, result.length() - 1));
+//                    next = parseInt(result.substring(3, result.length() - 1));
                     // 新章节与原来的章节差在3以内, 确认为新章节的头, 跳出循环
-                    if (Math.abs(next - now) >= 1 && Math.abs(next - now) <= 3)
+//                    if (Math.abs(next - now) >= 1 && Math.abs(next - now) <= 3)
                         break;
                     // 否则重新定位
-                    start = stringBuffer.indexOf(result, start) + result.length();
-                    continue;
+//                    start = stringBuffer.indexOf(result, start) + result.length();
+//                    continue;
                 }
                 start = stringBuffer.length();
                 read = reader.read(buffer);
@@ -102,23 +99,21 @@ public class FileParse {
                 stringBuffer.append(buffer, 0, read);
             }
             // 第一行是章节名, Linux是\n, 但我不信有人拿Linux来码字
-            lastLength = stringBuffer.indexOf("\r\n");
-            chapter = stringBuffer.substring(0, lastLength);
+            lastLength = stringBuffer.indexOf("\r\n", 2);
+            chapter = stringBuffer.substring(2, lastLength);
             start = stringBuffer.indexOf(result, start);
             // 文本是第二行开始到新章节标题
             text = strip(stringBuffer.substring(lastLength, start), "\r\n", "\r\n= -").replace("\r\n\r\n", "\r\n");
-            database.execSQL("insert into " + table +
-                    " (chapter, text) values (?, ?)", new String[]{chapter, text});
+            insertText(chapter, text, database);
             stringBuffer.delete(0, start);
             start = result.length();
             // 设置当前章节
-            now = next;
+//            now = next;
         }
-        lastLength = stringBuffer.indexOf("\r\n");
-        chapter = stringBuffer.substring(0, lastLength);
+        lastLength = stringBuffer.indexOf("\r\n", 2);
+        chapter = stringBuffer.substring(2, lastLength);
         text = strip(stringBuffer.substring(lastLength), "\r\n", "\r\n= -").replace("\r\n\r\n", "\r\n");
-        database.execSQL("insert into " + table +
-                " (chapter, text) values (?, ?)", new String[]{chapter, text});
+        insertText(chapter, text, database);
         database.setTransactionSuccessful();
         database.endTransaction();
         // 拿到最新的章节名, 放入novel的最新章节
@@ -130,6 +125,11 @@ public class FileParse {
         values.put("newChapter", newChapter);
         database.update("novel", values, "id=?", new String[]{String.valueOf(novel_id)});
         sqLiteNovel.freeStatus = true;
+    }
+
+    protected void insertText(String chapter, String text, SQLiteDatabase database) {
+        database.execSQL("insert into " + table +
+                " (chapter, text) values (?, ?)", new String[]{chapter, text});
     }
 
     /**
@@ -175,6 +175,7 @@ public class FileParse {
         values.put("time", new Date().getTime());
         values.put("image", image.getAbsolutePath());
         values.put("watch", "1:1");
+        extraNovel(values);
         novel_id = sqLiteNovel.getReadableDatabase().insert("novel", null, values);
         // 在nc里面记录表名
         values = new ContentValues();
@@ -236,7 +237,7 @@ public class FileParse {
             read = reader.read(buffer);
             count += read;
             stringBuffer = stringBuffer.append(new String(buffer, 0, read));
-            result = regexp(compile, stringBuffer, start, 0);
+            result = regexp("\r\n" + compile, stringBuffer, start, 0);
             if (!result.equals("")) break;
         }
         if (result.equals("")) {
@@ -257,7 +258,7 @@ public class FileParse {
     /**
      * 获取小说的编码
      */
-    private void getCode(File file) throws IOException {
+    protected void getCode(File file) throws IOException {
         byte[] bytes = new byte[2048];
         int read;
         InputStream stream = new FileInputStream(file);
@@ -272,7 +273,7 @@ public class FileParse {
                 }
             } catch (UnsupportedCharsetException e) {
                 e.printStackTrace();
-            }catch (StringIndexOutOfBoundsException e){
+            } catch (StringIndexOutOfBoundsException e) {
                 e.printStackTrace();
                 throw new ParseException("can not parse novel");
             }
@@ -280,7 +281,7 @@ public class FileParse {
         throw new ParseException("can not parse novel");
     }
 
-    private String strip(String src, String front, String back) {
+    static String strip(String src, String front, String back) {
         int start = 0, end = src.length();
         try {
 
@@ -299,13 +300,21 @@ public class FileParse {
         return src.substring(start, end);
     }
 
-    private String regexp(String compile, StringBuilder input, int start, int group) throws IOException {
+    private String regexp(String compile, StringBuilder input, int start, int group) {
         Pattern pattern = Pattern.compile(compile, Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(input);
         if (matcher.find(start)) {
             return matcher.group(group);
         }
         return "";
+    }
+
+    protected void prepare(InputStream inputStream) throws Exception {
+
+    }
+
+    protected void extraNovel(ContentValues values) {
+
     }
 
     /**
@@ -407,7 +416,9 @@ public class FileParse {
         protected Integer doInBackground(Void... voids) {
             try {
                 mParse.getCode(file);
-                mParse.reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), mParse.code));
+                InputStream inputStream = new FileInputStream(file);
+                mParse.prepare(inputStream);
+                mParse.reader = new BufferedReader(new InputStreamReader(inputStream, mParse.code));
                 mParse.parseInfo();
                 if (mParse.checkInfo()) {
                     mParse.saveInfo();
@@ -419,7 +430,7 @@ public class FileParse {
             } catch (ParseException e) {
                 e.printStackTrace();
                 return OnFinishParse.ERROR;
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return 3;
