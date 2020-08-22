@@ -44,7 +44,7 @@ public class NovelConfigureManager {
             put("source", Sourcelinovelib.class.getName());
         }});
         add(new HashMap<String, String>() {{
-            put("name", "凤凰小说 www.fhxiaoshuo.org");
+            put("name", "凤凰小说 www.fhxsz.com");
             put("source", Sourcefhxiaoshuo.class.getName());
         }});
         add(new HashMap<String, String>() {{

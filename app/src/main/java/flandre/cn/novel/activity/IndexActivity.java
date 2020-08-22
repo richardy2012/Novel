@@ -104,8 +104,6 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
 
         //设置线程
         setupHandler();
-        // 设置线程优先级
-//        android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
 
         setupValues();
         setupTool();

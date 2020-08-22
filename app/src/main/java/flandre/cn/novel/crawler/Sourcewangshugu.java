@@ -163,7 +163,7 @@ public class Sourcewangshugu extends BaseCrawler {
                 if (list == null) return;
                 if (rank != -1) list.set(rank, novelInfo);  // 因为是排行榜, 所以要确保位置不变
                 else list.add(novelInfo);
-            } catch (NullPointerException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

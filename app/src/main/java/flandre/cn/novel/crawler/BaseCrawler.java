@@ -19,6 +19,7 @@ import org.jsoup.select.Elements;
 import java.io.*;
 import java.lang.ref.WeakReference;
 import java.net.*;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -62,6 +63,7 @@ public abstract class BaseCrawler {
         this.mContext = new WeakReference<>((Context) context);
         this.handler = new WeakReference<>(handler);
         client = new OkHttpClient.Builder()
+                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
                 .connectionPool(new ConnectionPool(THREAD_COUNT, TIMEOUT, TimeUnit.MILLISECONDS))
                 .connectTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
                 .readTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
@@ -86,11 +88,11 @@ public abstract class BaseCrawler {
             Request.Builder builder = new Request.Builder().url(Url).post(requestBody);
             builder.addHeader("Content-Length", String.valueOf(bytes.length));
             configureConn(builder);
-            if (callback == null){
+            if (callback == null) {
                 Response response = client.newCall(builder.build()).execute();
                 responseBody = response.body();
                 return getDocument(response);
-            }else client.newCall(builder.build()).enqueue(callback);
+            } else client.newCall(builder.build()).enqueue(callback);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (ProtocolException e) {
@@ -136,8 +138,7 @@ public abstract class BaseCrawler {
 
     private Document getDocument(Response response) throws IOException {
         if (!response.isSuccessful()) throw new IOException("IOError with http code " + response.code());
-        Document document = Jsoup.parse(response.body().string());
-        document.setBaseUri(response.request().url().toString());
+        Document document = Jsoup.parse(new String(response.body().bytes(), CHARSET), response.request().url().toString());
         return document;
     }
 
@@ -221,23 +222,24 @@ public abstract class BaseCrawler {
 
     /**
      * 把Br转换成空格
+     *
      * @return 转换后的文本
      */
-    String withBr(Elements element, String select){
+    String withBr(Elements element, String select) {
         return withBr(element, select, "", "");
     }
 
-    String withBr(Elements elements, String select, String extra, String rep){
+    String withBr(Elements elements, String select, String extra, String rep) {
         elements.select(select + " br").append(BR_REPLACEMENT);
         elements.select(select + " p").append(BR_REPLACEMENT);
         return elements.select(select).text().replace(BR_REPLACEMENT + extra, "\r\n" + rep);
     }
 
-    String withBr(Element element, String select){
+    String withBr(Element element, String select) {
         return withBr(element, select, "", "");
     }
 
-    String withBr(Element element, String select, String extra, String rep){
+    String withBr(Element element, String select, String extra, String rep) {
         element.select(select + " br").append(BR_REPLACEMENT);
         element.select(select + " p").append(BR_REPLACEMENT);
         return element.select(select).text().replace(BR_REPLACEMENT + extra, "\r\n" + rep);
@@ -363,7 +365,7 @@ public abstract class BaseCrawler {
             }
 
             return list;
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -420,7 +422,12 @@ public abstract class BaseCrawler {
      * 获取小说的排行版
      */
     public List<NovelInfo> rank(int type) {
-        return run_rank(type);
+        try {
+            return run_rank(type);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -434,7 +441,12 @@ public abstract class BaseCrawler {
      * 获取搜索界面的提示
      */
     public List<NovelRemind> remind() {
-        return run_remind();
+        try {
+            return run_remind();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -545,11 +557,12 @@ public abstract class BaseCrawler {
         public abstract Runnable run();
     }
 
-    static class RedirectInterceptor implements Interceptor{
+    static class RedirectInterceptor implements Interceptor {
 
         @NotNull
         @Override
-        public Response intercept(@NotNull Chain chain) throws IOException {okhttp3.Request request = chain.request();
+        public Response intercept(@NotNull Chain chain) throws IOException {
+            okhttp3.Request request = chain.request();
             Response response = chain.proceed(request);
             int code = response.code();
             if (code == 307 || code == 301 || code == 302) {

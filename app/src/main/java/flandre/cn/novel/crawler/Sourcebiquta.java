@@ -200,9 +200,7 @@ public class Sourcebiquta extends BaseCrawler {
                 if (list == null) return;
                 if (rank != -1) list.set(rank, novelInfo);
                 else list.add(novelInfo);
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            } catch (ParseException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

@@ -107,7 +107,7 @@ public class SearchRemindFragment extends AttachFragment {
 
         @Override
         protected void onPostExecute(List<NovelRemind> list) {
-            if (list == null) {
+            if (list == null || list.size() == 0) {
                 list = new ArrayList<>();
                 NovelRemind novelRemind = new NovelRemind();
                 novelRemind.setName("网络异常");

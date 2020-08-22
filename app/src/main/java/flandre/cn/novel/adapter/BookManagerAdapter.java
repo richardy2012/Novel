@@ -1,13 +1,13 @@
 package flandre.cn.novel.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import flandre.cn.novel.R;
-import flandre.cn.novel.Tools.NovelConfigureManager;
 
 import java.util.List;
 
@@ -54,7 +54,7 @@ public class BookManagerAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) convertView.getTag();
         }
         viewHolder.textView.setText(s);
-        viewHolder.textView.setTextColor(NovelConfigureManager.getConfigure().getNameTheme());
+        viewHolder.textView.setTextColor(Color.WHITE);
         return convertView;
     }
 

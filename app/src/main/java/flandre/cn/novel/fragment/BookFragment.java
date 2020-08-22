@@ -47,7 +47,6 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
     @Override
     public void onResume() {
         super.onResume();
-        loadData();
         handleData();
     }
 
@@ -62,6 +61,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
     }
 
     public void loadData() {
+        if (bookAdapter == null) return;
         // 拿到收藏的小说, 填充主界面, 若没有小说, 显示空空如也
         List<NovelInfo> list = SQLTools.getNovelData(sqLiteNovel);
         hasDelete = null;
@@ -102,6 +102,7 @@ public class BookFragment extends AttachFragment implements SwipeRefreshLayout.O
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        loadData();
     }
 
     @Override

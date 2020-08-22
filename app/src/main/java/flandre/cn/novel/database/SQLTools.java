@@ -2,10 +2,12 @@ package flandre.cn.novel.database;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import flandre.cn.novel.Tools.NovelTools;
+import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.info.NovelDownloadInfo;
 import flandre.cn.novel.info.NovelInfo;
 import flandre.cn.novel.info.WrapperNovelInfo;
@@ -189,6 +191,7 @@ public class SQLTools {
         sqLiteNovel.getReadableDatabase().delete("nc", "md5=?", new String[]{table});
         sqLiteNovel.getReadableDatabase().delete("novel", "name=? and author=?", new String[]{name, author});
         sqLiteNovel.getReadableDatabase().delete("download", "novel_id = ?", new String[]{novel_id});
+        context.sendBroadcast(new Intent(IndexActivity.LOAD_DATA));
     }
 
     /**
@@ -400,6 +403,7 @@ public class SQLTools {
                         "url varcahr(255)," +
                         "text text)"
         );
+        context.sendBroadcast(new Intent(IndexActivity.LOAD_DATA));
     }
 
     public static File getImagePath(Context context, NovelInfo novelInfo) {

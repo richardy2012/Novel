@@ -16,6 +16,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.view.KeyEvent;
 import android.widget.RemoteViews;
 import flandre.cn.novel.MusicAidlInterface;
 import flandre.cn.novel.R;
@@ -110,6 +111,7 @@ public class PlayMusicService extends Service {
         filter.addAction(PlayMusicService.NOTIFICATION_CHANGE);
         filter.addAction(PlayMusicService.NOTIFICATION_PAUSE);
         filter.addAction(Intent.ACTION_HEADSET_PLUG);
+        filter.addAction(Intent.ACTION_MEDIA_BUTTON);
         filter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
         registerReceiver(receiver, filter);
 
@@ -654,6 +656,8 @@ public class PlayMusicService extends Service {
     }
 
     private class Receiver extends BroadcastReceiver {
+        private int count = 0;
+        private boolean isClick = false;
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -698,6 +702,41 @@ public class PlayMusicService extends Service {
                     break;
                 case PlayMusicService.NOTIFICATION_PAUSE:
                     if (isPlaying()) pause();
+                    break;
+                case Intent.ACTION_MEDIA_BUTTON:
+                    KeyEvent keyEvent = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                    if (keyEvent == null) break;
+                    int keyAction = keyEvent.getAction();
+                    if (KeyEvent.ACTION_DOWN == keyAction) {
+                        if (KeyEvent.KEYCODE_HEADSETHOOK == keyEvent.getKeyCode()) {
+                            if (count == 0)
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (!isClick) {
+                                            switch (count) {
+                                                case 1:
+                                                    if (musicPlay.isPlaying()) pause();
+                                                    else play();
+                                                    break;
+                                                case 2:
+                                                    nextMusic();
+                                                    break;
+                                                case 3:
+                                                    lastMusic();
+                                                    break;
+                                            }
+                                            count = 0;
+                                        } else {
+                                            isClick = false;
+                                            handler.postDelayed(this, 500);
+                                        }
+                                    }
+                                }, 500);
+                            else isClick = true;
+                            count++;
+                        }
+                    }
                     break;
             }
             // cancel时就不需要delay了

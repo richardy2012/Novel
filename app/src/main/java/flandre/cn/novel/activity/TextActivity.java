@@ -1,5 +1,6 @@
 package flandre.cn.novel.activity;
 
+import android.content.Intent;
 import android.os.*;
 import android.support.v4.app.FragmentTransaction;
 import android.view.*;
@@ -155,9 +156,12 @@ public class TextActivity extends BaseActivity implements PageViewTextManager.Lo
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (table != null) SQLTools.setTime(novelInfo.getId(), sqLiteNovel);
+    protected void onPause() {
+        super.onPause();
+        if (table != null) {
+            SQLTools.setTime(novelInfo.getId(), sqLiteNovel);
+            sendBroadcast(new Intent(IndexActivity.LOAD_DATA));
+        }
     }
 
     @Override

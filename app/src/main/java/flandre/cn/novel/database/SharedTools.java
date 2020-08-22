@@ -105,7 +105,7 @@ public class SharedTools {
      * @param musicSaveData 要保存的信息
      */
     public void saveMusic(MusicSaveData musicSaveData) {
-        SharedPreferences sharedPreferences = mContext.getSharedPreferences("novel", Activity.MODE_MULTI_PROCESS);
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences("music", Activity.MODE_MULTI_PROCESS);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("SaveList", musicSaveData.getSaveList());
         editor.putLong("SongId", musicSaveData.getSongId());
@@ -119,7 +119,7 @@ public class SharedTools {
      * 拿到之前保存的播放信息
      */
     public MusicSaveData getMusic() {
-        SharedPreferences sharedPreferences = mContext.getSharedPreferences("novel", Activity.MODE_MULTI_PROCESS);
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences("music", Activity.MODE_MULTI_PROCESS);
         String saveList = sharedPreferences.getString("SaveList", null);
         long songId = sharedPreferences.getLong("SongId", -1);
         int playStatus = sharedPreferences.getInt("PlayStatus", PlayMusicService.STATUS_ALL_LOOPING);

@@ -3,6 +3,7 @@ package flandre.cn.novel.activity;
 import android.app.Dialog;
 import android.content.*;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -67,6 +68,22 @@ public abstract class BaseActivity extends AppCompatActivity implements Download
         filter.addAction(PlayMusicService.PROGRESS_CHANGE);
         filter.addAction(PlayMusicService.CLEAR_PLAY_LIST);
         registerReceiver(receiver, filter);
+    }
+
+    @Override
+    public void startActivity(Intent intent, @Nullable Bundle options) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && (isInMultiWindowMode() || isInPictureInPictureMode())) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+        }
+        super.startActivity(intent, options);
+    }
+
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode, @Nullable Bundle options) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && (isInMultiWindowMode() || isInPictureInPictureMode())) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+        }
+        super.startActivityForResult(intent, requestCode, options);
     }
 
     /**

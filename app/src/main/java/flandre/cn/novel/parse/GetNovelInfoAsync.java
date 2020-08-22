@@ -1,9 +1,7 @@
 package flandre.cn.novel.parse;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.util.Base64;
 import android.widget.Toast;
 import flandre.cn.novel.Tools.AES;

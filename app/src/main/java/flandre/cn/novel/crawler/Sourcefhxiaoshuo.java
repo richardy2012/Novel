@@ -23,7 +23,7 @@ public class Sourcefhxiaoshuo extends BaseCrawler {
     public Sourcefhxiaoshuo(Context context, Handler handler) {
         super(context, handler);
         CHARSET = "GBK";
-        DOMAIN = "https://www.fhxiaoshuo.org/";
+        DOMAIN = "https://www.fhxsz.com/";
         THREAD_COUNT = MIDDLE_THREAD_COUNT;
     }
 
@@ -185,7 +185,7 @@ public class Sourcefhxiaoshuo extends BaseCrawler {
                 if (list == null) return;
                 if (rank != -1) list.set(rank, novelInfo);
                 else list.add(novelInfo);
-            } catch (NullPointerException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

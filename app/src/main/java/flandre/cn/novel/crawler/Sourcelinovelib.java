@@ -196,7 +196,7 @@ public class Sourcelinovelib extends BaseCrawler {
                 if (list == null) return;
                 if (rank != -1) list.set(rank, novelInfo);
                 else list.add(novelInfo);
-            } catch (NullPointerException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

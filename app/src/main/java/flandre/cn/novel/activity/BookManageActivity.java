@@ -2,6 +2,8 @@ package flandre.cn.novel.activity;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v7.app.ActionBar;
@@ -46,16 +48,16 @@ public class BookManageActivity extends BaseActivity implements View.OnClickList
         linearLayout = findViewById(R.id.bottom);
         Spinner spinner = findViewById(R.id.select);
         textView = findViewById(R.id.select_all);
-        textView.setTextColor(NovelConfigureManager.getConfigure().getNameTheme());
-        linearLayout.setBackgroundColor((~NovelConfigureManager.getConfigure().getBackgroundTheme()) & 0x11ffffff | 0x11000000);
+        textView.setTextColor(Color.WHITE);
+        linearLayout.setBackgroundColor(NovelConfigureManager.getConfigure().getMainTheme());
         textView.setOnClickListener(this);
         spinner.setAdapter(new BookManagerAdapter(new ArrayList<String>() {{
             add("删除");
             add("设为连载");
             add("设为完结");
         }}, this));
-        spinner.setPopupBackgroundDrawable(new ColorDrawable(NovelConfigureManager.getConfigure().getBackgroundTheme()));
-
+        spinner.setPopupBackgroundDrawable(new ColorDrawable(NovelConfigureManager.getConfigure().getMainTheme()));
+        spinner.getBackground().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
         spinner.setOnItemSelectedListener(this);
 
         setupActionBar();

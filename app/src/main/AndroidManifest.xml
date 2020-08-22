@@ -17,7 +17,9 @@
             android:supportsRtl="true"
             android:theme="@style/HasActionBar"
             android:usesCleartextTraffic="true"
-            android:requestLegacyExternalStorage="true">
+            android:requestLegacyExternalStorage="true"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true">
         <provider
                 android:name="android.support.v4.content.FileProvider"
                 android:authorities="flandre.cn.novel.fileProvider"

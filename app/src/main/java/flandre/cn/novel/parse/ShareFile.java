@@ -156,7 +156,7 @@ public class ShareFile {
 
     public void shareFile() {
         if (mNovelInfo.getSource() != null) {
-            final String[] items = {"分享摘要，仅本软件可用", "分享文本，需要先下载小说且速度慢"};
+            final String[] items = {"分享摘要，仅本软件可用", "分享文本，需要先下载小说"};
             AlertDialog.Builder listDialog =
                     new AlertDialog.Builder(mContext);
             listDialog.setTitle("分享方式");
