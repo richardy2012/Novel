@@ -9,6 +9,7 @@ import flandre.cn.novel.Tools.ByteBuilder;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.crawler.BaseCrawler;
+import flandre.cn.novel.crawler.Crawler;
 import flandre.cn.novel.database.SQLTools;
 import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.info.NovelInfo;
@@ -45,9 +46,9 @@ public class GetNovelInfoAsync extends AsyncTask<String, Void, Integer> {
             String address = byteBuilder.readString(byteBuilder.readInt());
 
             if (SQLTools.getNovelId(SQLiteNovel.getSqLiteNovel(), name, author) == -1) {
-                BaseCrawler crawler = NovelConfigureManager.getCrawler(source, mContext.get(), null);
+                Crawler crawler = NovelConfigureManager.getCrawler(source, mContext.get(), null);
                 if (crawler == null) return null;
-                crawler.getNovelInfo(address, novelInfo).run().run();
+                ((BaseCrawler) crawler).getNovelInfo(address, novelInfo).run().run();
                 SQLTools.saveInSQLite(novelInfo, SQLiteNovel.getSqLiteNovel(), mContext.get());
                 return OnFinishParse.OK;
             } else {

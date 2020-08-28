@@ -2,7 +2,6 @@ package flandre.cn.novel.view.page;
 
 import android.app.Activity;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
@@ -12,7 +11,7 @@ import android.os.Message;
 import android.widget.Toast;
 import flandre.cn.novel.Tools.NovelConfigure;
 import flandre.cn.novel.Tools.NovelConfigureManager;
-import flandre.cn.novel.crawler.BaseCrawler;
+import flandre.cn.novel.crawler.Crawler;
 import flandre.cn.novel.database.SQLTools;
 import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.database.SharedTools;
@@ -68,7 +67,7 @@ public class PageViewTextManager implements PageView.PageTurn {
     private boolean showLoad = true;  // 是否显示对话框，用于区分是否是后台爬取数据
     private Handler handler;
     private NovelService mService;
-    private BaseCrawler mCrawler;
+    private Crawler mCrawler;
 
     public PageViewTextManager(PageView pageView, Activity activity) {
         this.pageView = pageView;
@@ -94,7 +93,7 @@ public class PageViewTextManager implements PageView.PageTurn {
         });
     }
 
-    private BaseCrawler getBaseCrawler() {
+    private Crawler getCrawler() {
         if (mCrawler == null) {
             if (novelInfo.getSource() == null) {
                 mCrawler = NovelConfigureManager.getCrawler(activity, handler);
@@ -162,7 +161,7 @@ public class PageViewTextManager implements PageView.PageTurn {
             crawlPosition = crawlChapter;
             // 获取目录列表
             setLoad();
-            getBaseCrawler().list(novelInfo.getUrl());
+            getCrawler().list(novelInfo.getUrl());
         } else {
             if (savedInstanceState == null) {
                 split = (novelInfo.getWatch()).split(":");
@@ -244,7 +243,7 @@ public class PageViewTextManager implements PageView.PageTurn {
      * 如果load为true,更新完后显示出来
      */
     private void loadText(Message message) {
-        BaseCrawler crawler = getBaseCrawler();
+        Crawler crawler = getCrawler();
         // 当没有收藏图书时,获取列表数据,然后爬取text
         if (table == null) {
             handleListText(crawler, message);
@@ -343,7 +342,7 @@ public class PageViewTextManager implements PageView.PageTurn {
         handler.sendMessage(msg);
     }
 
-    private void handleListText(BaseCrawler crawler, Message message) {
+    private void handleListText(Crawler crawler, Message message) {
         boolean load = showLoad;
         showLoad = false;
         // 第一次加载时, 会加载章节
@@ -372,7 +371,7 @@ public class PageViewTextManager implements PageView.PageTurn {
         }
     }
 
-    private void handleTableText(BaseCrawler crawler, Message message) {
+    private void handleTableText(Crawler crawler, Message message) {
         boolean load = showLoad;
         showLoad = false;
         if (emptyTable) {

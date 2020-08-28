@@ -113,13 +113,13 @@ public class Sourcex23qb extends BaseCrawler {
         Document document = crawlerGET(DOMAIN + "paihang.html");
         Elements elements = null;
         switch (type) {
-            case BaseCrawler.DAY_RANK:
+            case DAY_RANK:
                 elements = document.select("#tabData_9 > div > ul > li");
                 break;
-            case BaseCrawler.MONTH_RANK:
+            case MONTH_RANK:
                 elements = document.select("#tabData_10 > div > ul > li");
                 break;
-            case BaseCrawler.TOTAL_RANK:
+            case TOTAL_RANK:
                 elements = document.select("#main > div:nth-child(11) > div.topbook > ul > li");
                 break;
         }

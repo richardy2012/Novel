@@ -97,13 +97,13 @@ public class Sourcembtxt extends BaseCrawler {
         for (int i = 0; i < 8; i++) list.add(null);
         Document document = null;
         switch (type) {
-            case BaseCrawler.DAY_RANK:
+            case DAY_RANK:
                 document = crawlerGET(DOMAIN + "allvote.html");
                 break;
-            case BaseCrawler.MONTH_RANK:
+            case MONTH_RANK:
                 document = crawlerGET(DOMAIN + "monthvote.html");
                 break;
-            case BaseCrawler.TOTAL_RANK:
+            case TOTAL_RANK:
                 document = crawlerGET(DOMAIN + "weekvisit.html");
                 break;
         }

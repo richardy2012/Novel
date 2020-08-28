@@ -14,7 +14,8 @@ import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.NovelConfigure;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.adapter.FragmentPagerAdapter;
-import flandre.cn.novel.crawler.BaseCrawler;
+import flandre.cn.novel.crawler.Crawler;
+import flandre.cn.novel.crawler.Crawler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +43,9 @@ public class RankFragment extends AttachFragment {
         tabLayout = view.findViewById(R.id.tab);
         Adapter adapter = new Adapter(getChildFragmentManager());
         if (savedInstanceState == null) {
-            dayFragment = DataRankFragment.newInstance(BaseCrawler.DAY_RANK);
-            monthFragment = DataRankFragment.newInstance(BaseCrawler.MONTH_RANK);
-            totalFragment = DataRankFragment.newInstance(BaseCrawler.TOTAL_RANK);
+            dayFragment = DataRankFragment.newInstance(Crawler.DAY_RANK);
+            monthFragment = DataRankFragment.newInstance(Crawler.MONTH_RANK);
+            totalFragment = DataRankFragment.newInstance(Crawler.TOTAL_RANK);
         }else {
             dayFragment = (DataRankFragment) getChildFragmentManager().findFragmentByTag("DayFragment");
             monthFragment = (DataRankFragment) getChildFragmentManager().findFragmentByTag("MonthFragment");

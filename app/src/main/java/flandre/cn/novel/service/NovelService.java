@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.crawler.BaseCrawler;
+import flandre.cn.novel.crawler.Crawler;
 import flandre.cn.novel.database.SQLTools;
 import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.info.NovelDownloadInfo;
@@ -32,7 +33,7 @@ import static java.lang.Math.min;
  * 提供小说的下载和更新
  * 2020.3.20
  */
-public class NovelService extends Service implements BaseCrawler.DownloadFinish, BaseCrawler.UpdateFinish {
+public class NovelService extends Service implements Crawler.DownloadFinish, Crawler.UpdateFinish {
     public static final String DOWNLOAD_FINISH = "flandre.cn.novel.downloadfinish";
     public static final String DOWNLOAD_FAIL = "flandre.cn.novel.downloadfail";
 
@@ -231,8 +232,8 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
             }
 
             // 开线程继续小说下载
-            BaseCrawler crawler = NovelConfigureManager.getCrawler(novelInfo.getSource(), null, null);
-            downloadPool = Executors.newFixedThreadPool(crawler.THREAD_COUNT);
+            Crawler crawler = NovelConfigureManager.getCrawler(novelInfo.getSource(), null, null);
+            downloadPool = Executors.newFixedThreadPool(((BaseCrawler) crawler).THREAD_COUNT);
             for (Map<String, String> map : list) {
                 downloadPool.execute(crawler.download(map.get("url"), Integer.parseInt(map.get("id")), table, this));
             }
@@ -486,7 +487,7 @@ public class NovelService extends Service implements BaseCrawler.DownloadFinish,
         if (updateList.size() != 0) {
             ExecutorService fixedThreadPool = Executors.newFixedThreadPool(min(updateList.size(), 4));
             for (Map<String, String> map : updateList) {
-                BaseCrawler crawler = NovelConfigureManager.getCrawler(map.get("source"), null, null);
+                Crawler crawler = NovelConfigureManager.getCrawler(map.get("source"), null, null);
                 fixedThreadPool.execute(crawler.update(map.get("URL"), Integer.parseInt(map.get("id")),
                         Integer.parseInt(map.get("newId")), this));
             }

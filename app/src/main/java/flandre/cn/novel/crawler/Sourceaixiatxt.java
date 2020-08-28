@@ -87,13 +87,13 @@ public class Sourceaixiatxt extends BaseCrawler {
         Document document = crawlerGET(DOMAIN);
         Elements elements = null;
         switch (type) {
-            case BaseCrawler.DAY_RANK:
+            case DAY_RANK:
                 elements = document.select("body > div:nth-child(3) > div.mpLeft > div:nth-child(2) > div > ul:nth-child(2) > li");
                 break;
-            case BaseCrawler.MONTH_RANK:
+            case MONTH_RANK:
                 elements = document.select("body > div:nth-child(3) > div.mpLeft > div:nth-child(2) > div > ul:nth-child(3) > li");
                 break;
-            case BaseCrawler.TOTAL_RANK:
+            case TOTAL_RANK:
                 elements = document.select("body > div:nth-child(3) > div.mpLeft > div:nth-child(2) > div > ul:nth-child(4) > li");
                 break;
         }

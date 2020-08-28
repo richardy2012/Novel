@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
 
     <application
             android:allowBackup="true"
@@ -20,6 +21,13 @@
             android:requestLegacyExternalStorage="true"
             android:resizeableActivity="true"
             android:supportsPictureInPicture="true">
+
+        <receiver android:name=".service.PlayMusicService$MediaButtonReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+        </receiver>
+
         <provider
                 android:name="android.support.v4.content.FileProvider"
                 android:authorities="flandre.cn.novel.fileProvider"

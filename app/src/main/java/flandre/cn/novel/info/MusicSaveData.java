@@ -4,11 +4,11 @@ package flandre.cn.novel.info;
  * 音乐保存信息
  */
 public class MusicSaveData {
-    private String saveList;
-    private long songId;
-    private int playStatus;
-    private int current;
-    private boolean isShowNotification;
+    private String saveList;  // 播放列表
+    private long songId;  // 当前歌曲id
+    private int playStatus;  // 播放顺序
+    private int current;  // 播放位置
+    private boolean isShowNotification;  // 是否显示通知
 
     public MusicSaveData(String saveList, long songId, int playStatus, int current, boolean isShowNotification) {
         this.saveList = saveList;

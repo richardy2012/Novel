@@ -87,13 +87,13 @@ public class Sourcewangshugu extends BaseCrawler {
         for (int i = 0; i < 8; i++) list.add(null);
         Document document = null;
         switch (type) {
-            case BaseCrawler.DAY_RANK:
+            case DAY_RANK:
                 document = crawlerGET(DOMAIN + "books/toplist/weekvote-1.html");
                 break;
-            case BaseCrawler.MONTH_RANK:
+            case MONTH_RANK:
                 document = crawlerGET(DOMAIN + "books/toplist/monthvote-1.html");
                 break;
-            case BaseCrawler.TOTAL_RANK:
+            case TOTAL_RANK:
                 document = crawlerGET(DOMAIN + "books/toplist/allvote-1.html");
                 break;
         }

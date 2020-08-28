@@ -116,13 +116,13 @@ public class Sourcebiquta extends BaseCrawler {
         Document document = crawlerGET(DOMAIN + "biqutaph.html");
         Elements elements = null;
         switch (type) {
-            case BaseCrawler.DAY_RANK:
+            case DAY_RANK:
                 elements = document.select("#con_hng_1 > ul > li > a");
                 break;
-            case BaseCrawler.MONTH_RANK:
+            case MONTH_RANK:
                 elements = document.select("#con_hng_2 > ul > li > a");
                 break;
-            case BaseCrawler.TOTAL_RANK:
+            case TOTAL_RANK:
                 elements = document.select("#con_hng_3 > ul > li > a");
                 break;
         }

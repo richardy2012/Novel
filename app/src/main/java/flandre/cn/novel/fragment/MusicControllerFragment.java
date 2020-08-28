@@ -26,7 +26,7 @@ import java.util.Date;
  * 音乐的控件
  * 2020.4.1
  */
-public class MusicControlerFragment extends AttachFragment {
+public class MusicControllerFragment extends AttachFragment {
     private SeekBar progress;
     private TextView position;
     private TextView duration;
@@ -34,7 +34,7 @@ public class MusicControlerFragment extends AttachFragment {
     private TextView singer;
     private ImageView last;
     private ImageView next;
-    private ImageView controler;
+    private ImageView controller;
     private boolean isProgressChanging = false;
     private Handler handler;
     private Runnable updateProgress = new Runnable() {
@@ -62,14 +62,14 @@ public class MusicControlerFragment extends AttachFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.music_controler_fragment_layout, container, false);
+        View view = inflater.inflate(R.layout.music_controller_fragment_layout, container, false);
         view.setBackgroundColor(NovelConfigureManager.getConfigure().getMainTheme());
         progress = view.findViewById(R.id.progress);
         name = view.findViewById(R.id.name);
         name.requestFocus();
         singer = view.findViewById(R.id.singer);
         last = view.findViewById(R.id.last);
-        controler = view.findViewById(R.id.control);
+        controller = view.findViewById(R.id.control);
         next = view.findViewById(R.id.next);
         position = view.findViewById(R.id.position);
         duration = view.findViewById(R.id.duration);
@@ -80,7 +80,7 @@ public class MusicControlerFragment extends AttachFragment {
 
     private void setTheme() {
         last.setImageResource(R.drawable.last_music_night);
-        controler.setImageResource(R.drawable.play_night);
+        controller.setImageResource(R.drawable.play_night);
         next.setImageResource(R.drawable.next_music_night);
         progress.setProgress(0);
         progress.setMax(100);
@@ -147,7 +147,7 @@ public class MusicControlerFragment extends AttachFragment {
             }
         });
 
-        controler.setOnClickListener(new View.OnClickListener() {
+        controller.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (((LocalMusicActivity) mContext).getMusicService() == null) return;
@@ -170,7 +170,7 @@ public class MusicControlerFragment extends AttachFragment {
                 name.setText(musicInfo.getName());
                 singer.setText(musicInfo.getSinger());
                 try {
-                    controler.setImageResource(musicService.isPlaying() ? R.drawable.pause_night : R.drawable.play_night);
+                    controller.setImageResource(musicService.isPlaying() ? R.drawable.pause_night : R.drawable.play_night);
                 } catch (RuntimeException e) {
                     e.printStackTrace();
                 }
@@ -252,11 +252,19 @@ public class MusicControlerFragment extends AttachFragment {
     @Override
     public void onNextSong() {
         if (((LocalMusicActivity) mContext).getMusicService() != null) setData();
+        if (!isProgressChanging) {
+            isProgressChanging = true;
+            handler.postDelayed(updateProgress, 100);
+        }
     }
 
     @Override
     public void onLastSong() {
         if (((LocalMusicActivity) mContext).getMusicService() != null) setData();
+        if (!isProgressChanging) {
+            isProgressChanging = true;
+            handler.postDelayed(updateProgress, 100);
+        }
     }
 
     @Override
@@ -270,7 +278,7 @@ public class MusicControlerFragment extends AttachFragment {
         duration.setText("05:00");
         name.setText("空闲中");
         singer.setText("长按我可能改变通知栏颜色");
-        controler.setImageResource(R.drawable.play_night);
+        controller.setImageResource(R.drawable.play_night);
         progress.setProgress(0);
     }
 

@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothProfile;
 import android.content.*;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -16,6 +17,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.RemoteViews;
 import flandre.cn.novel.MusicAidlInterface;
@@ -90,10 +92,21 @@ public class PlayMusicService extends Service {
     private boolean isContinuePlay = false;  // 电话结束后是否继续播放音乐
     private PhoneListener phoneListener;
 
+    private Runnable saveProgress = new Runnable() {
+        @Override
+        public void run() {
+            if (musicPlay.isPlaying) {
+                SharedTools.saveMusicProgress(PlayMusicService.this, musicPlay.getCurrentPosition());
+            }
+            handler.postDelayed(saveProgress, 500);
+        }
+    };
+
 
     @Override
     public void onCreate() {
         super.onCreate();
+
         handler = new Handler(getMainLooper());
         // 设置音乐的数据
         mBinder = new ServiceStub(this);
@@ -111,9 +124,11 @@ public class PlayMusicService extends Service {
         filter.addAction(PlayMusicService.NOTIFICATION_CHANGE);
         filter.addAction(PlayMusicService.NOTIFICATION_PAUSE);
         filter.addAction(Intent.ACTION_HEADSET_PLUG);
-        filter.addAction(Intent.ACTION_MEDIA_BUTTON);
         filter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
         registerReceiver(receiver, filter);
+
+        ((AudioManager) getSystemService(AUDIO_SERVICE)).registerMediaButtonEventReceiver(
+                new ComponentName(getPackageName(), MediaButtonReceiver.class.getName()));
 
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (isShowNotification) setNotification();
@@ -122,6 +137,7 @@ public class PlayMusicService extends Service {
         phoneListener = new PhoneListener();
         TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         tmgr.listen(phoneListener, PhoneStateListener.LISTEN_CALL_STATE);
+        handler.postDelayed(saveProgress, 500);
     }
 
     @Override
@@ -629,6 +645,7 @@ public class PlayMusicService extends Service {
         musicPlay.release();
         musicPlay.currentMediaPlayer = null;
         changeNotification(PlayMusicService.NOTIFICATION_CREATE);
+        handler.removeCallbacks(saveProgress);
     }
 
     private class PhoneListener extends PhoneStateListener {
@@ -656,8 +673,6 @@ public class PlayMusicService extends Service {
     }
 
     private class Receiver extends BroadcastReceiver {
-        private int count = 0;
-        private boolean isClick = false;
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -703,41 +718,6 @@ public class PlayMusicService extends Service {
                 case PlayMusicService.NOTIFICATION_PAUSE:
                     if (isPlaying()) pause();
                     break;
-                case Intent.ACTION_MEDIA_BUTTON:
-                    KeyEvent keyEvent = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-                    if (keyEvent == null) break;
-                    int keyAction = keyEvent.getAction();
-                    if (KeyEvent.ACTION_DOWN == keyAction) {
-                        if (KeyEvent.KEYCODE_HEADSETHOOK == keyEvent.getKeyCode()) {
-                            if (count == 0)
-                                handler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (!isClick) {
-                                            switch (count) {
-                                                case 1:
-                                                    if (musicPlay.isPlaying()) pause();
-                                                    else play();
-                                                    break;
-                                                case 2:
-                                                    nextMusic();
-                                                    break;
-                                                case 3:
-                                                    lastMusic();
-                                                    break;
-                                            }
-                                            count = 0;
-                                        } else {
-                                            isClick = false;
-                                            handler.postDelayed(this, 500);
-                                        }
-                                    }
-                                }, 500);
-                            else isClick = true;
-                            count++;
-                        }
-                    }
-                    break;
             }
             // cancel时就不需要delay了
             if (!action.equals(PlayMusicService.NOTIFICATION_CLOSE)) {
@@ -754,16 +734,80 @@ public class PlayMusicService extends Service {
     }
 
     /**
+     * 监听耳机按钮
+     */
+    public static class MediaButtonReceiver extends BroadcastReceiver {
+        private static MusicAidlInterface mService = null;  // 懒汉式单例
+        private static int count = 0;
+        private static boolean isClick = false;
+        private Handler handler;
+
+        public MediaButtonReceiver() {
+            super();
+            handler = new Handler();
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mService == null) {
+                mService = MusicAidlInterface.Stub.asInterface(peekService(context, new Intent(context, PlayMusicService.class)));
+            }
+            if (mService == null) return;
+            if (!intent.getAction().equals(Intent.ACTION_MEDIA_BUTTON)) return;
+            KeyEvent keyEvent = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+            int keyAction = keyEvent.getAction();
+            if (KeyEvent.ACTION_DOWN == keyAction) {
+                int keyCode = keyEvent.getKeyCode();
+                // 当耳机空间的中间按钮被按时
+                if (KeyEvent.KEYCODE_HEADSETHOOK == keyCode || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE) {
+                    if (count == 0) {
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!isClick) {  // 如果已经停止按, 那么处理以下事件
+                                    try {
+                                        switch (count) {
+                                            case 1:  // 按一次, 开始或停止
+                                                if (mService.isPlaying()) mService.pause();
+                                                else mService.play();
+                                                break;
+                                            case 2:  // 按两次, 下一首
+                                                mService.nextMusic();
+                                                break;
+                                            case 3:  // 按三次, 上一首
+                                                mService.lastMusic();
+                                                break;
+                                        }
+                                    } catch (RemoteException e) {
+                                        e.printStackTrace();
+                                    }
+                                    count = 0;
+                                    isClick = false;
+                                } else {
+                                    isClick = false;
+                                    handler.postDelayed(this, 300);  // 刷新检查时间
+                                }
+                            }
+                        }, 400);
+                    } else if (count == 1) isClick = true;  // 如果是第二次按, 那么刷新检查事件
+                    count++;
+                }
+            }
+        }
+    }
+
+    /**
      * 音乐播放的实现
      */
     static class MusicPlay implements MediaPlayer.OnCompletionListener {
         WeakReference<PlayMusicService> mService;
         private MediaPlayer currentMediaPlayer;  // 音乐的播放者
+        private boolean isPlaying = false;
 
         public MusicPlay(PlayMusicService mService) {
             this.mService = new WeakReference<>(mService);
             currentMediaPlayer = new MediaPlayer();
-            currentMediaPlayer.setOnCompletionListener(this);
+            currentMediaPlayer.setLooping(false);
         }
 
         private boolean preparePlayer() {
@@ -799,16 +843,19 @@ public class PlayMusicService extends Service {
                             return true;
                         } catch (IOException e) {
                             e.printStackTrace();
+                            isPlaying = false;
                             return false;
                         }
                     }
                 }
             }
+            isPlaying = false;
             return false;
         }
 
         private boolean isPlaying() {
-            return currentMediaPlayer.isPlaying();
+//            return currentMediaPlayer.isPlaying();
+            return isPlaying;
         }
 
         private int getDuration() {
@@ -825,24 +872,33 @@ public class PlayMusicService extends Service {
 
         private void start() {
             currentMediaPlayer.start();
+            currentMediaPlayer.setOnCompletionListener(this);
+            isPlaying = true;
         }
 
         private void pause() {
             currentMediaPlayer.pause();
+            isPlaying = false;
         }
 
         private void next() {
             mService.get().playPosition++;
-            if (prepare(currentMediaPlayer))
+            if (prepare(currentMediaPlayer)) {
                 currentMediaPlayer.start();
+                isPlaying = true;
+                currentMediaPlayer.setOnCompletionListener(this);
+            }
         }
 
         private void last() {
             mService.get().playPosition--;
             if (mService.get().playPosition < 0) mService.get().playPosition = mService.get().playList.size() - 1;
             if (mService.get().playPosition < 0) mService.get().playPosition = 0;
-            if (prepare(currentMediaPlayer))
+            if (prepare(currentMediaPlayer)) {
                 currentMediaPlayer.start();
+                isPlaying = true;
+                currentMediaPlayer.setOnCompletionListener(this);
+            }
         }
 
         @Override
@@ -853,6 +909,7 @@ public class PlayMusicService extends Service {
             // 播放目标歌曲
             if (prepare(currentMediaPlayer)) {
                 currentMediaPlayer.start();
+                currentMediaPlayer.setOnCompletionListener(this);
                 mService.get().setNotification();
                 mService.get().saveData();
                 Intent intent = new Intent();

@@ -22,12 +22,11 @@ import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.activity.ConfigureSourceActivity;
 import flandre.cn.novel.activity.NovelDetailActivity;
 import flandre.cn.novel.activity.SearchActivity;
-import flandre.cn.novel.crawler.BaseCrawler;
+import flandre.cn.novel.crawler.Crawler;
 import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.info.NovelInfo;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.List;
 
@@ -98,7 +97,7 @@ public class SearchResultFragment extends AttachFragment implements View.OnClick
                 sqLiteNovel.getReadableDatabase().insert("search", null, values);
             }
             cursor.close();
-            BaseCrawler crawler = NovelConfigureManager.getCrawler(mFragment.get().mContext, null);
+            Crawler crawler = NovelConfigureManager.getCrawler(mFragment.get().mContext, null);
             if (crawler == null) return null;
             return crawler.search(s[0]);
         }

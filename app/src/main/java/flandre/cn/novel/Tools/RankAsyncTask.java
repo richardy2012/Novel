@@ -9,12 +9,11 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import flandre.cn.novel.activity.IndexActivity;
 import flandre.cn.novel.adapter.RankAdapter;
-import flandre.cn.novel.crawler.BaseCrawler;
+import flandre.cn.novel.crawler.Crawler;
 import flandre.cn.novel.fragment.DataRankFragment;
 import flandre.cn.novel.info.NovelInfo;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class RankAsyncTask extends AsyncTask<Integer, Void, List<NovelInfo>> {
@@ -31,7 +30,7 @@ public class RankAsyncTask extends AsyncTask<Integer, Void, List<NovelInfo>> {
 
     @Override
     protected List<NovelInfo> doInBackground(Integer... voids) {
-        BaseCrawler baseCrawler = NovelConfigureManager.getCrawler(mContext.get(), null);
+        Crawler baseCrawler = NovelConfigureManager.getCrawler(mContext.get(), null);
         if (baseCrawler == null) return null;
         return baseCrawler.rank(voids[0]);
     }
@@ -47,8 +46,10 @@ public class RankAsyncTask extends AsyncTask<Integer, Void, List<NovelInfo>> {
             TextView text = fragment.getFrameLayout().findViewWithTag("IOError");
             if (text != null) fragment.getFrameLayout().removeView(text);
             while (list.remove(null)) ;
-            adapter.update(list);
-        } else {
+            if (list.size() != 0)
+                adapter.update(list);
+        }
+        if (list == null || list.size() == 0) {
             adapter.update(null);
             TextView text = fragment.getFrameLayout().findViewWithTag("IOError");
             if (text != null) fragment.getFrameLayout().removeView(text);

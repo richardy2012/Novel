@@ -112,13 +112,13 @@ public class Sourceymoxuan extends BaseCrawler {
         Document document = crawlerGET(DOMAIN);
         Elements elements = null;
         switch (type) {
-            case BaseCrawler.DAY_RANK:
+            case DAY_RANK:
                 elements = document.select("body > section.container > div.left > section > ul > li > span.n > a");
                 break;
-            case BaseCrawler.MONTH_RANK:
+            case MONTH_RANK:
                 elements = document.select("body > section.container > div.left > article.author.clearfix > div > dl > dt > a");
                 break;
-            case BaseCrawler.TOTAL_RANK:
+            case TOTAL_RANK:
                 elements = document.select("body > section.container > div.right > section:nth-child(1) > div > ul > li > a");
                 break;
         }

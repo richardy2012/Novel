@@ -101,9 +101,9 @@ public class NovelConfigureManager {
         return source;
     }
 
-    public static BaseCrawler getCrawler(Context context, Handler handler){
+    public static Crawler getCrawler(Context context, Handler handler){
         try {
-            return (BaseCrawler) constructor.newInstance(context, handler);
+            return (Crawler) constructor.newInstance(context, handler);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
@@ -218,9 +218,9 @@ public class NovelConfigureManager {
         }
     }
 
-    public static BaseCrawler getCrawler(String source, Context context, Handler handler){
+    public static Crawler getCrawler(String source, Context context, Handler handler){
         try {
-            return (BaseCrawler) Class.forName(source).
+            return (Crawler) Class.forName(source).
                 getConstructor(Context.class, Handler.class).newInstance(context, handler);
         } catch (IllegalAccessException e) {
             e.printStackTrace();

@@ -16,12 +16,11 @@ import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.Decoration;
 import flandre.cn.novel.Tools.NovelConfigureManager;
 import flandre.cn.novel.activity.SearchActivity;
-import flandre.cn.novel.crawler.BaseCrawler;
+import flandre.cn.novel.crawler.Crawler;
 import flandre.cn.novel.database.SQLiteNovel;
 import flandre.cn.novel.info.NovelRemind;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,7 +99,7 @@ public class SearchRemindFragment extends AttachFragment {
 
         @Override
         protected List<NovelRemind> doInBackground(Void... voids) {
-            BaseCrawler crawler = NovelConfigureManager.getCrawler(mFragment.get().mContext, null);
+            Crawler crawler = NovelConfigureManager.getCrawler(mFragment.get().mContext, null);
             if (crawler == null) return null;
             return crawler.remind();
         }

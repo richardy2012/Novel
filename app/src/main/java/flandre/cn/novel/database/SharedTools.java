@@ -100,6 +100,16 @@ public class SharedTools {
     }
 
     /**
+     * 保存当前播放位置
+     */
+    public static void saveMusicProgress(Context context, int progress){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("music", Activity.MODE_MULTI_PROCESS);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("Current", progress);
+        editor.apply();
+    }
+
+    /**
      * 保存当前的播放信息
      *
      * @param musicSaveData 要保存的信息
@@ -110,7 +120,7 @@ public class SharedTools {
         editor.putString("SaveList", musicSaveData.getSaveList());
         editor.putLong("SongId", musicSaveData.getSongId());
         editor.putInt("PlayStatus", musicSaveData.getPlayStatus());
-        editor.putInt("Current", musicSaveData.getCurrent());
+//        editor.putInt("Current", musicSaveData.getCurrent());
         editor.putBoolean("IsShowNotification", musicSaveData.isShowNotification());
         editor.apply();
     }

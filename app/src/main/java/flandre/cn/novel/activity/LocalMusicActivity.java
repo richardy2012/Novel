@@ -16,7 +16,6 @@ import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
@@ -25,13 +24,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.*;
 import android.widget.*;
 import com.github.promeg.pinyinhelper.Pinyin;
-import flandre.cn.novel.BuildConfig;
 import flandre.cn.novel.MusicAidlInterface;
 import flandre.cn.novel.R;
 import flandre.cn.novel.Tools.*;
 import flandre.cn.novel.database.SharedTools;
 import flandre.cn.novel.fragment.AlarmDialogFragment;
-import flandre.cn.novel.fragment.MusicControlerFragment;
+import flandre.cn.novel.fragment.MusicControllerFragment;
 import flandre.cn.novel.fragment.MusicDialogFragment;
 import flandre.cn.novel.info.MusicInfo;
 import flandre.cn.novel.parse.ShareFile;
@@ -54,7 +52,7 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
     private MusicDialogFragment mDialogFragment;
     private AlarmDialogFragment mAlarmDialogFragment;
     private Map<Long, MusicInfo> musicData;  // 所有的歌曲
-    private MusicControlerFragment musicControlerFragment;  // 歌曲的控制组件
+    private MusicControllerFragment musicControlerFragment;  // 歌曲的控制组件
     private long nowSongId = -1;  // 当前播放的歌曲ID
     private Map<String, Integer> musicPosition;
     private RelativeLayout relativeLayout;
@@ -156,10 +154,10 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
             }
         });
         if (savedInstanceState == null) {
-            musicControlerFragment = new MusicControlerFragment();
+            musicControlerFragment = new MusicControllerFragment();
             getSupportFragmentManager().beginTransaction().add(R.id.control, musicControlerFragment, "ControlFragment").commit();
         } else {
-            musicControlerFragment = (MusicControlerFragment) getSupportFragmentManager().findFragmentByTag("ControlFragment");
+            musicControlerFragment = (MusicControllerFragment) getSupportFragmentManager().findFragmentByTag("ControlFragment");
             getSupportFragmentManager().beginTransaction().attach(musicControlerFragment);
         }
         mDialogFragment = new MusicDialogFragment();
