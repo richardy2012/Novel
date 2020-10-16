@@ -318,7 +318,8 @@ public class PlayMusicService extends Service {
         Cursor cursor = cr.query(uri, music_pos, "title != '' and _size > 1048576 and duration > 60000",
                 null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
         while (cursor.moveToNext()) {
-            if (!cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).toLowerCase().trim().endsWith("mp3"))
+            String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).toLowerCase().trim();
+            if (!(name.endsWith("mp3") || name.endsWith("MP3")))
                 continue;
             MusicInfo musicInfo = new MusicInfo();
             musicInfo.setDuration(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
@@ -806,8 +807,13 @@ public class PlayMusicService extends Service {
 
         public MusicPlay(PlayMusicService mService) {
             this.mService = new WeakReference<>(mService);
-            currentMediaPlayer = new MediaPlayer();
+            currentMediaPlayer = getMediaPlayer();
+        }
+
+        private MediaPlayer getMediaPlayer() {
+            MediaPlayer currentMediaPlayer = new MediaPlayer();
             currentMediaPlayer.setLooping(false);
+            return currentMediaPlayer;
         }
 
         private boolean preparePlayer() {
@@ -822,6 +828,7 @@ public class PlayMusicService extends Service {
          * 准备音乐
          */
         private boolean prepare(MediaPlayer player) {
+            isPlaying = false;
             PlayMusicService service = mService.get();
             // 当前播放列表起码要有歌才能播放
             if (service.playList.size() > 0) {
@@ -843,7 +850,6 @@ public class PlayMusicService extends Service {
                             return true;
                         } catch (IOException e) {
                             e.printStackTrace();
-                            isPlaying = false;
                             return false;
                         }
                     }
@@ -883,22 +889,14 @@ public class PlayMusicService extends Service {
 
         private void next() {
             mService.get().playPosition++;
-            if (prepare(currentMediaPlayer)) {
-                currentMediaPlayer.start();
-                isPlaying = true;
-                currentMediaPlayer.setOnCompletionListener(this);
-            }
+            if (prepare(currentMediaPlayer)) start();
         }
 
         private void last() {
             mService.get().playPosition--;
             if (mService.get().playPosition < 0) mService.get().playPosition = mService.get().playList.size() - 1;
             if (mService.get().playPosition < 0) mService.get().playPosition = 0;
-            if (prepare(currentMediaPlayer)) {
-                currentMediaPlayer.start();
-                isPlaying = true;
-                currentMediaPlayer.setOnCompletionListener(this);
-            }
+            if (prepare(currentMediaPlayer)) start();
         }
 
         @Override
@@ -908,8 +906,7 @@ public class PlayMusicService extends Service {
                 mService.get().playPosition++;
             // 播放目标歌曲
             if (prepare(currentMediaPlayer)) {
-                currentMediaPlayer.start();
-                currentMediaPlayer.setOnCompletionListener(this);
+                start();
                 mService.get().setNotification();
                 mService.get().saveData();
                 Intent intent = new Intent();

@@ -156,6 +156,14 @@ public class TextActivity extends BaseActivity implements PageViewTextManager.Lo
     }
 
     @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN && pageViewTextManager.isLoadIsAdd()){
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         if (table != null) {

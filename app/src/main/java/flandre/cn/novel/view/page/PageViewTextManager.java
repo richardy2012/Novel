@@ -23,7 +23,6 @@ import flandre.cn.novel.info.WrapperNovelText;
 import flandre.cn.novel.serializable.SelectList;
 import flandre.cn.novel.service.NovelService;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -260,6 +259,10 @@ public class PageViewTextManager implements PageView.PageTurn {
         }
     }
 
+    public boolean isLoadIsAdd() {
+        return loadIsAdd;
+    }
+
     /**
      * 更新一条text文本
      * message.arg1: 更新的位置
@@ -387,6 +390,7 @@ public class PageViewTextManager implements PageView.PageTurn {
             emptyTable = false;
             if (crawlPosition > list.size() - 6) crawlPosition = list.size() - 6;
             if (chapter > list.size()) chapter = list.size();
+            pageView.setWatch(1);
             // 爬取文本
             for (int i = 0; i < 7; i++) {
                 crawler.text(list.get(crawlPosition - 1 + i).getUrl(), i, table).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

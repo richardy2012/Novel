@@ -62,7 +62,7 @@ public class NovelConfigureManager {
      */
     public static Map<String, String> novelSource = new HashMap<String, String>() {{
         put(Sourcex23qb.class.getName(), "铅笔小说(www.x23qb.com)");
-        put(Sourceymoxuan.class.getName(), "衍墨轩(www.ymoxuan.com)");
+        put(Sourceymoxuan.class.getName(), "衍墨轩(www.ymxxs.com)");
         put(Sourcebiquta.class.getName(), "笔趣塔(www.biquta.la)");
         put(Sourcewangshugu.class.getName(), "望书阁(www.wangshugu.com)");
         put(Sourcefhxiaoshuo.class.getName(), "凤凰小说(www.fhxiaoshuo.org)");

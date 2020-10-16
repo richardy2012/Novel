@@ -278,7 +278,7 @@ public class PageView extends View {
      */
     private void calcText() {
         if (drawText == null) return;
-        int a = (int) textPaint.measureText("\n");
+//        int a = (int) textPaint.measureText("\n");
         pageCount = (height - paddingTop - paddingBottom + rowSpace) / (size + rowSpace);  // 页面的行数
         heightRest = (height - paddingTop - paddingBottom + rowSpace) % (size + rowSpace);  // 剩余的高度
         leftPadding = width;

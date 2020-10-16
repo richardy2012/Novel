@@ -118,8 +118,8 @@
                 android:layout_below="@id/sep"
                 android:layout_gravity="center_horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:src="@drawable/loading_day"/>
+                android:layout_height="100dp"/>
+                <!--android:src="@drawable/loading_day"/>-->
     </RelativeLayout>
 
 </android.support.v4.widget.NestedScrollView>

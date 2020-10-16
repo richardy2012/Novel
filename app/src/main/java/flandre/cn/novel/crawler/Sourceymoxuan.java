@@ -23,7 +23,7 @@ public class Sourceymoxuan extends BaseCrawler {
     public Sourceymoxuan(Context context, Handler handler) {
         super(context, handler);
         CHARSET = "UTF-8";
-        DOMAIN = "https://www.ymoxuan.com/";
+        DOMAIN = "https://www.ymxxs.com/";
         THREAD_COUNT = MIN_THREAD_COUNT;
     }
 

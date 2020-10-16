@@ -47,6 +47,7 @@ import static flandre.cn.novel.service.PlayMusicService.music_pos;
  * 本地音乐播放
  * 2020.4.1
  */
+@SuppressWarnings("ALL")
 public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragment.OnClickItemListener {
     private Adapter mAdapter;
     private MusicDialogFragment mDialogFragment;
@@ -249,7 +250,8 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
         Cursor cursor = cr.query(uri, music_pos, "title != '' and _size > 1048576 and duration > 60000",
                 null, "title_key");
         while (cursor.moveToNext()) {
-            if (!cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).toLowerCase().trim().endsWith("mp3"))
+			String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).toLowerCase().trim();
+            if (!(name.endsWith("mp3") || name.endsWith("MP3")))
                 continue;
             MusicInfo musicInfo = new MusicInfo();
             musicInfo.setSongId(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID)));

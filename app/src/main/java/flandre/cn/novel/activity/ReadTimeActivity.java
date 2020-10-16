@@ -54,6 +54,7 @@ public class ReadTimeActivity extends BaseActivity implements ReadTimeAdapter.On
         actionBar.setTitle("阅读时长");
         actionBar.setBackgroundDrawable(new ColorDrawable(configure.getMainTheme()));
         handler = new Handler(getMainLooper());
+        setupLoading();
         setupValue();
         setupData();
     }
@@ -75,7 +76,6 @@ public class ReadTimeActivity extends BaseActivity implements ReadTimeAdapter.On
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setupLoading();
                     loadDate();
                     isLoadData = true;
                 }
