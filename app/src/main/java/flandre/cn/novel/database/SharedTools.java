@@ -18,6 +18,18 @@ public class SharedTools {
         mContext = context;
     }
 
+    public static void setHeadImagePath(Context context, String path){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("novel", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("head", path);
+        editor.apply();
+    }
+
+    public static String getHeadImagePath(Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("novel", Activity.MODE_PRIVATE);
+        return sharedPreferences.getString("head", null);
+    }
+
     /**
      * 设置总阅读时间
      *

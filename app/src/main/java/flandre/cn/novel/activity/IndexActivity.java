@@ -65,6 +65,7 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
     private boolean isPlaying = false;  // 是否正在播放音乐
 
     private Handler handler;  // UI线程消息处理
+    private long time;
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -381,8 +382,10 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
                 changeTheme();
                 break;
             case 0x2:
+            case 0x3:
                 userFragment.handleFile(requestCode, resultCode, data);
                 break;
+
         }
     }
 
@@ -457,6 +460,17 @@ public class IndexActivity extends BaseActivity implements PopUpAdapter.OnPopUpC
                 break;
         }
         drawerLayout.closeDrawers();
+    }
+
+    @Override
+    public void onBackPressed() {
+        long time = System.currentTimeMillis();
+        if (time - this.time < 1000) {
+            super.onBackPressed();
+        } else {
+            Toast.makeText(this, "再按一次返回键退出", Toast.LENGTH_SHORT).show();
+            this.time = time;
+        }
     }
 
     /**

@@ -15,4 +15,10 @@
         <attr name="textPadding" format="dimension"/>
         <attr name="textColor" format="color"/>
     </declare-styleable>
+
+    <declare-styleable name="CircleArcView">
+        <attr name="color" format="color"/>
+        <attr name="thick" format="dimension"/>
+        <attr name="angle" format="float"/>
+    </declare-styleable>
 </resources>

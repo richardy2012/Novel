@@ -36,7 +36,7 @@ public class PathParse {
         try {
             if ("file".equalsIgnoreCase(uri.getScheme())) {  // 使用第三方应用打开
                 this.path = uri.getPath();
-            } else if (Build.VERSION.SDK_INT >= 24 && path.startsWith("/external")) {
+            } else if (Build.VERSION.SDK_INT >= 24 && path.startsWith("/external") && isEternal(path)) {
                 this.path = Environment.getExternalStorageDirectory().getAbsolutePath() + path.replace("/external", "");
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {  // 4.4以后
                 this.path = getPath(uri);
@@ -57,6 +57,10 @@ public class PathParse {
             }
         }
         return this;
+    }
+
+    private boolean isEternal(String path){
+        return !(path.startsWith("/external/image") || path.startsWith("/external/video") || path.startsWith("/external/audio"));
     }
 
     public String getRealPathFromURI(Uri contentUri) {
@@ -108,11 +112,11 @@ public class PathParse {
                 final String type = split[0];
 
                 Uri contentUri = null;
-                if ("image".equals(type)) {
+                if (type.startsWith("image")) {
                     contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                } else if ("video".equals(type)) {
+                } else if (type.startsWith("video")) {
                     contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                } else if ("audio".equals(type)) {
+                } else if (type.startsWith("audio")) {
                     contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
                 }
 
