@@ -18,6 +18,18 @@ public class SharedTools {
         mContext = context;
     }
 
+    public static void setSongSort(Context context, boolean sort){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("novel", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("sort", sort);
+        editor.apply();
+    }
+
+    public static boolean getSongSort(Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("novel", Activity.MODE_PRIVATE);
+        return sharedPreferences.getBoolean("sort", true);
+    }
+
     public static void setHeadImagePath(Context context, String path){
         SharedPreferences sharedPreferences = context.getSharedPreferences("novel", Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();

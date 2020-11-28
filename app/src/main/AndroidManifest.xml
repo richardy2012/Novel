@@ -54,8 +54,8 @@
         </activity>
         <activity
                 android:name=".activity.IndexActivity"
-                android:theme="@style/AppTheme"
-                android:launchMode="singleTask">
+                android:theme="@style/AppTheme">
+                <!--android:launchMode="singleTask">-->
         </activity>
         <activity android:name=".activity.SearchActivity">
             <meta-data
@@ -114,7 +114,8 @@
         <activity
                 android:name=".activity.LocalMusicActivity"
                 android:parentActivityName=".activity.IndexActivity"
-                android:launchMode="singleTask">
+                android:launchMode="singleTop">
+            <!--android:launchMode="singleTask">-->
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
                     android:value=".activity.IndexActivity"/>

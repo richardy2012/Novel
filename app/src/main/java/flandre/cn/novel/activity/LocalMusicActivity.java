@@ -16,11 +16,13 @@ import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.view.*;
 import android.widget.*;
 import com.github.promeg.pinyinhelper.Pinyin;
@@ -62,6 +64,7 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
     private LinearLayoutManager mManager;
 
     private boolean checkEnable = false;
+    private boolean sortBySongName;  // true表示按照歌手排序, false按照歌名排序
     private LinearLayout checkControl;
     private View sep;
 
@@ -180,6 +183,7 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
         addMusicListener(this);
         mAlarmDialogFragment = AlarmDialogFragment.newInstance("定时关闭");
         mAlarmDialogFragment.setListener(this);
+        sortBySongName = SharedTools.getSongSort(this);
         checkPermission();
     }
 
@@ -242,7 +246,6 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
      * 加载音乐数据
      */
     private void loadData() {
-        musicPosition = new HashMap<>();
         musicData = new HashMap<>();
         List<MusicInfo> list = new ArrayList<>();
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -250,7 +253,7 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
         Cursor cursor = cr.query(uri, music_pos, "title != '' and _size > 1048576 and duration > 60000",
                 null, "title_key");
         while (cursor.moveToNext()) {
-			String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).toLowerCase().trim();
+            String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)).toLowerCase().trim();
             if (!(name.endsWith("mp3") || name.endsWith("MP3")))
                 continue;
             MusicInfo musicInfo = new MusicInfo();
@@ -259,11 +262,23 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
             musicInfo.setName(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
             musicInfo.setSinger(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
             musicInfo.setData(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)));
-            musicInfo.setSort(Pinyin.toPinyin(musicInfo.getName().charAt(0)).substring(0, 1).toUpperCase());
+            if (musicInfo.getSinger().contains("<unknown>") && musicInfo.getName().contains("-")) {
+                musicInfo.setSinger(musicInfo.getName().split("-")[0].trim());
+                musicInfo.setName(musicInfo.getName().split("-")[1].trim());
+            }
             list.add(musicInfo);
             musicData.put(musicInfo.getSongId(), musicInfo);
         }
         cursor.close();
+        sort(list);
+    }
+
+    private void sort(List<MusicInfo> list) {
+        musicPosition = new HashMap<>();
+        for (MusicInfo musicInfo : musicData.values()) {
+            musicInfo.setSort(Pinyin.toPinyin(sortBySongName ? musicInfo.getSinger().charAt(0) :
+                    musicInfo.getName().charAt(0)).substring(0, 1).toUpperCase());
+        }
         Collections.sort(list, new MusicComparator());
         // 整理每个字母对应的位置
         for (int i = 0; i < list.size(); i++) {
@@ -302,10 +317,44 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.music_menu, menu);
+        final MenuItem item = menu.findItem(R.id.search);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                List<MusicInfo> list = new ArrayList<>();
+                if (s.equals("")) {
+                    for (MusicInfo musicInfo : LocalMusicActivity.this.musicData.values())
+                        list.add(musicInfo);
+                } else {
+                    for (MusicInfo musicInfo : LocalMusicActivity.this.musicData.values())
+                        if (musicInfo.getName().contains(s) || musicInfo.getSinger().contains(s)) list.add(musicInfo);
+                }
+                sort(list);
+                return false;
+            }
+        });
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (sortBySongName) {
+            menu.findItem(R.id.songName).setVisible(false);
+            menu.findItem(R.id.singerName).setVisible(true);
+        } else {
+            menu.findItem(R.id.songName).setVisible(true);
+            menu.findItem(R.id.singerName).setVisible(false);
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -315,7 +364,7 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
                 finish();
                 break;
             case R.id.list:
-                if (musicService != null) {
+                if (musicService != null && !mDialogFragment.isAdded()) {
                     try {
                         long[] queue = musicService.getPlayQueue();
                         List<MusicInfo> musicInfos = new ArrayList<>();
@@ -332,7 +381,20 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
                 }
                 break;
             case R.id.alarm:
+                if (mAlarmDialogFragment.isAdded()) break;
                 mAlarmDialogFragment.show(getSupportFragmentManager(), "AlarmDialogFragment");
+                break;
+            case R.id.songName:
+                SharedTools.setSongSort(this, true);
+                sortBySongName = true;
+                sort(mAdapter.data);
+                invalidateOptionsMenu();
+                break;
+            case R.id.singerName:
+                SharedTools.setSongSort(this, false);
+                sortBySongName = false;
+                sort(mAdapter.data);
+                invalidateOptionsMenu();
                 break;
         }
 //        return super.onOptionsItemSelected(item);
@@ -469,7 +531,7 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         Intent intent;
         PendingIntent pendingIntent;
-        switch (pos){
+        switch (pos) {
             case 0:
                 intent = new Intent(PlayMusicService.NOTIFICATION_PAUSE);
                 pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
@@ -589,11 +651,11 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
                                     }
                                 }
                             }).setNegativeButton("关闭", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }).create();
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            }).create();
                     alertDialog.show();
 //                    setDialogTheme(alertDialog);
                 }
@@ -678,7 +740,7 @@ public class LocalMusicActivity extends BaseActivity implements AlarmDialogFragm
             });
         }
 
-        private void setDialogTheme(AlertDialog alertDialog){
+        private void setDialogTheme(AlertDialog alertDialog) {
             try {
                 Field mAlert = AlertDialog.class.getDeclaredField("mAlert");
                 mAlert.setAccessible(true);

@@ -70,19 +70,27 @@ public abstract class BaseActivity extends AppCompatActivity implements Download
         registerReceiver(receiver, filter);
     }
 
-    @Override
-    public void startActivity(Intent intent, @Nullable Bundle options) {
+    private void checkForScreen(Intent intent){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && (isInMultiWindowMode() || isInPictureInPictureMode())) {
             intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
         }
+    }
+
+    @Override
+    public void startActivity(Intent intent) {
+        checkForScreen(intent);
+        super.startActivity(intent);
+    }
+
+    @Override
+    public void startActivity(Intent intent, @Nullable Bundle options) {
+        checkForScreen(intent);
         super.startActivity(intent, options);
     }
 
     @Override
     public void startActivityForResult(Intent intent, int requestCode, @Nullable Bundle options) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && (isInMultiWindowMode() || isInPictureInPictureMode())) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
-        }
+        checkForScreen(intent);
         super.startActivityForResult(intent, requestCode, options);
     }
 

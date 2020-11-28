@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
     private void startActivity() {
         close = true;
         Intent intent = new Intent(MainActivity.this, IndexActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);  // 进入的时候清空所有activity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && (isInMultiWindowMode() || isInPictureInPictureMode())) {
             intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
         }
